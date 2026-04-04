@@ -2,7 +2,9 @@
 统一错误处理
 """
 
-from fastapi import Request, status
+# mypy: disable-error-code="arg-type"
+
+from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
 from app.core.exceptions import (
@@ -101,12 +103,14 @@ def _get_status_code(exc: StockAnalyzerError) -> int:
         return status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
-def register_exception_handlers(app) -> None:
+def register_exception_handlers(app: "FastAPI") -> None:
     """
     注册异常处理器
 
     Args:
         app: FastAPI 应用实例
     """
-    app.add_exception_handler(StockAnalyzerError, stock_analyzer_exception_handler)
+    app.add_exception_handler(
+        StockAnalyzerError, stock_analyzer_exception_handler
+    )
     app.add_exception_handler(Exception, generic_exception_handler)

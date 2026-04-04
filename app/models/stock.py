@@ -14,7 +14,7 @@ class StockCode(str):
     """股票代码类型"""
 
     @classmethod
-    def __get_validators__(cls):
+    def __get_validators__(cls) -> object:
         yield cls.validate
 
     @classmethod

@@ -12,14 +12,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import api_router
 from app.core.error_handler import register_exception_handlers
-from app.utils.logger import get_logger, setup_logging
+from app.utils.logger import get_logger
 from config import settings
 
 logger = get_logger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """
     应用生命周期管理
 
@@ -78,7 +78,7 @@ def create_app() -> FastAPI:
 
     # 根路径
     @app.get("/")
-    async def root():
+    async def root() -> dict[str, str]:
         return {
             "name": settings.app_name,
             "version": "0.1.0",

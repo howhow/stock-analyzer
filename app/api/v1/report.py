@@ -13,7 +13,7 @@ router = APIRouter(prefix="/report", tags=["报告"])
 
 
 @router.get("/{analysis_id}", response_class=HTMLResponse)
-async def get_report(analysis_id: str):
+async def get_report(analysis_id: str) -> str:
     """
     获取 HTML 报告
 

@@ -63,7 +63,7 @@ def setup_logging() -> None:
     )
 
 
-def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
+def get_logger(name: str | None = None) -> Any:
     """
     获取日志记录器
 

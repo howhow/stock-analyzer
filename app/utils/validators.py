@@ -26,7 +26,9 @@ def validate_stock_code(code: str) -> str:
     # 支持格式: 600519.SH, 000001.SZ, 00700.HK (港股可能是5位或6位)
     pattern = r"^\d{5,6}\.(SH|SZ|HK)$"
     if not re.match(pattern, code.upper()):
-        raise ValueError(f"invalid stock code format: {code}, expected: XXXXXX.SH/SZ/HK")
+        raise ValueError(
+            f"invalid stock code format: {code}, expected: XXXXXX.SH/SZ/HK"
+        )
 
     return code.upper()
 

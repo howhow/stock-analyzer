@@ -6,7 +6,6 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -191,7 +190,9 @@ class AnalysisRequest(BaseModel):
 class BatchAnalysisRequest(BaseModel):
     """批量分析请求"""
 
-    stock_codes: list[str] = Field(..., min_length=1, max_length=50, description="股票代码列表")
+    stock_codes: list[str] = Field(
+        ..., min_length=1, max_length=50, description="股票代码列表"
+    )
     analysis_type: AnalysisType = Field(
         default=AnalysisType.BOTH, description="分析类型"
     )

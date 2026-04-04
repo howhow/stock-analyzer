@@ -2,9 +2,9 @@
 分析 API
 """
 
-from typing import Annotated
+from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 
 from app.models import (
     AnalysisRequest,
@@ -84,7 +84,7 @@ async def analyze_stock(request: AnalysisRequest) -> AnalysisResponse:
     summary="批量股票分析",
     description="批量分析多只股票，异步处理",
 )
-async def batch_analyze(request: BatchAnalysisRequest):
+async def batch_analyze(request: BatchAnalysisRequest) -> dict[str, str | int]:
     """
     批量股票分析（异步）
 
@@ -132,7 +132,3 @@ async def get_analysis_result(analysis_id: str) -> AnalysisResult:
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Analysis result not found: {analysis_id}",
     )
-
-
-# 导入 datetime
-from datetime import datetime

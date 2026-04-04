@@ -8,7 +8,7 @@ from typing import Generator
 
 
 @contextmanager
-def timer(name: str = "operation") -> Generator[dict, None, None]:
+def timer(name: str = "operation") -> Generator[dict[str, float | str], None, None]:
     """
     计时上下文管理器
 
@@ -24,7 +24,7 @@ def timer(name: str = "operation") -> Generator[dict, None, None]:
     Yields:
         包含耗时信息的字典
     """
-    result = {"name": name, "elapsed": 0.0}
+    result: dict[str, float | str] = {"name": name, "elapsed": 0.0}
     start = time.perf_counter()
     try:
         yield result

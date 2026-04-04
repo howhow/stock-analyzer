@@ -10,7 +10,7 @@ router = APIRouter(tags=["健康检查"])
 
 
 @router.get("/health")
-async def health_check():
+async def health_check() -> dict[str, str]:
     """
     健康检查接口
 
@@ -25,7 +25,7 @@ async def health_check():
 
 
 @router.get("/ready")
-async def readiness_check():
+async def readiness_check() -> dict[str, dict[str, str] | str]:
     """
     就绪检查接口
 
