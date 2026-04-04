@@ -7,9 +7,11 @@
 import asyncio
 import time
 from enum import Enum
-from typing import Callable
+from typing import Callable, TypeVar
 
 from app.utils.logger import get_logger
+
+T = TypeVar("T")
 
 logger = get_logger(__name__)
 
@@ -151,7 +153,7 @@ class CircuitBreaker:
                     threshold=self.failure_threshold,
                 )
 
-    async def call[T](self, func: Callable[[], T]) -> T:
+    async def call(self, func: Callable[[], T]) -> T:
         """
         通过熔断器调用函数
 
@@ -166,15 +168,13 @@ class CircuitBreaker:
             Exception: 原始异常
         """
         if not await self.can_execute():
-            raise CircuitBreakerOpenError(
-                f"Circuit breaker '{self.name}' is open"
-            )
+            raise CircuitBreakerOpenError(f"Circuit breaker '{self.name}' is open")
 
         try:
             result = await func() if asyncio.iscoroutinefunction(func) else func()
             await self.record_success()
             return result
-        except Exception as e:
+        except Exception:
             await self.record_failure()
             raise
 
