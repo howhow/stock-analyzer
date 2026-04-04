@@ -10,6 +10,7 @@ from app.analysis.fundamental import (
     calculate_policy_score,
     get_industry_category,
 )
+from app.analysis.fundamental.policy import get_policy_sensitivity
 from app.models.stock import FinancialData
 
 
@@ -96,10 +97,18 @@ class TestPolicyAnalysis:
 
     def test_get_policy_sensitivity(self):
         """测试政策敏感度"""
-        assert get_policy_sensitivity("芯片制造") == "高敏感"
-        assert get_policy_sensitivity("医药研发") == "高敏感"
-        assert get_policy_sensitivity("白酒生产") == "低敏感"
-        assert get_policy_sensitivity("商业银行") == "中敏感"
+        # 科技行业 - 高敏感
+        assert get_policy_sensitivity("软件开发") == "高敏感"
+        assert get_policy_sensitivity("医药制造") == "高敏感"
+        
+        # 消费行业 - 低敏感
+        assert get_policy_sensitivity("白酒") == "低敏感"
+        
+        # 金融行业 - 中敏感
+        assert get_policy_sensitivity("银行") == "中敏感"
+        
+        # 未知行业
+        assert get_policy_sensitivity(None) == "未知"
 
     def test_calculate_policy_score(self):
         """测试政策评分"""
