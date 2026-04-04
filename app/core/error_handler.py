@@ -110,7 +110,5 @@ def register_exception_handlers(app: "FastAPI") -> None:
     Args:
         app: FastAPI 应用实例
     """
-    app.add_exception_handler(
-        StockAnalyzerError, stock_analyzer_exception_handler
-    )
+    app.add_exception_handler(StockAnalyzerError, stock_analyzer_exception_handler)
     app.add_exception_handler(Exception, generic_exception_handler)

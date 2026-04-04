@@ -3,7 +3,6 @@ Pytest 配置
 """
 
 import pytest
-from typing import Generator
 
 
 @pytest.fixture

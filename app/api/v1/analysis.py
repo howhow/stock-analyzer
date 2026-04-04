@@ -55,7 +55,10 @@ async def analyze_stock(request: AnalysisRequest) -> AnalysisResponse:
         from app.models import DimensionScores, Recommendation
 
         result = AnalysisResponse(
-            analysis_id=f"mock-{request.stock_code}-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            analysis_id=(
+                f"mock-{request.stock_code}-"
+                f"{datetime.now().strftime('%Y%m%d%H%M%S')}"
+            ),
             stock_code=request.stock_code,
             stock_name="模拟股票",
             scores=DimensionScores(
