@@ -1,4 +1,3 @@
-"""
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -126,7 +125,10 @@ dmypy.json
 Thumbs.db
 
 # Project specific
-reports/
+reports/real/
+reports/enhanced/
+reports/output/
+reports/regression/
 logs/
 *.db
 *.sqlite
