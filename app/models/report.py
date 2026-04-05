@@ -50,9 +50,7 @@ class ReportMetadata(BaseModel):
 
     # 时间信息
     created_at: datetime = Field(default_factory=datetime.now, description="创建时间")
-    expires_at: datetime | None = Field(
-        default=None, description="过期时间（默认7天）"
-    )
+    expires_at: datetime | None = Field(default=None, description="过期时间（默认7天）")
 
     # 访问信息
     access_count: int = Field(default=0, description="访问次数")
