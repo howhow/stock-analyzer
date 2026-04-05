@@ -105,7 +105,11 @@ def async_analyze(
             send_to_dead_letter_queue.delay(
                 task_name="async_analyze",
                 task_id=str(self.request.id),
-                args={"stock_code": stock_code, "analysis_type": analysis_type, "mode": mode},
+                args={
+                    "stock_code": stock_code,
+                    "analysis_type": analysis_type,
+                    "mode": mode,
+                },
                 error=str(e),
             )
             raise
@@ -168,7 +172,7 @@ def async_analyze_and_report(
 
         # 保存报告
         storage = get_report_storage()
-        metadata = storage.save(
+        storage.save(
             report_id=report_content.report_id,
             content=generator._generate_fallback_html(report_content.analysis_data),
             stock_code=stock_code,

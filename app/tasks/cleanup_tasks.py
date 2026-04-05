@@ -78,16 +78,9 @@ def cleanup_expired_cache(self: Any) -> dict[str, Any]:
     )
 
     try:
-        import redis.asyncio as redis
-        from config import settings
-
-        # 同步连接 Redis
-        client = redis.from_url(settings.redis_url)
-
-        # 获取所有匹配的缓存键
-        # 这里使用 SCAN 而不是 KEYS 避免阻塞
+        # TODO: 实际从 Redis 清理过期缓存
+        # 这里简化处理，实际需要连接 Redis 并执行清理
         cleaned = 0
-        cursor = 0
 
         # 注意：这里简化处理，实际需要异步处理
         logger.info(

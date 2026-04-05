@@ -4,7 +4,6 @@ Prometheus 监控指标
 定义和暴露业务监控指标
 """
 
-
 from prometheus_client import Counter, Histogram, Gauge, Info
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
@@ -213,8 +212,7 @@ def get_metrics() -> bytes:
     Returns:
         指标数据（文本格式）
     """
-    result = generate_latest()
-    return result  # type: ignore[no-any-return]
+    return generate_latest()
 
 
 def get_content_type() -> str:
@@ -224,7 +222,7 @@ def get_content_type() -> str:
     Returns:
         内容类型字符串
     """
-    return CONTENT_TYPE_LATEST  # type: ignore[no-any-return]
+    return CONTENT_TYPE_LATEST
 
 
 # ============ 辅助函数 ============

@@ -52,3 +52,4 @@ class TestAnalysisTasks:
 
         # 验证任务可以调用
         assert batch_analyze is not None
+        assert len(stock_codes) == 2
