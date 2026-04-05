@@ -3,7 +3,7 @@ Limiter补充测试 - 提升覆盖率
 """
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
 
 from app.core.limiter import (
     SlidingWindowLimiter,
@@ -23,9 +23,7 @@ class TestSlidingWindowLimiterMore:
         mock_redis.eval = AsyncMock(return_value=[1, 9, 60])
 
         limiter = SlidingWindowLimiter(redis_client=mock_redis)
-        allowed, remaining, reset_time = await limiter.is_allowed(
-            "test_key", 10, 60
-        )
+        allowed, remaining, reset_time = await limiter.is_allowed("test_key", 10, 60)
 
         assert allowed is True
         assert remaining == 9
@@ -38,9 +36,7 @@ class TestSlidingWindowLimiterMore:
         mock_redis.eval = AsyncMock(return_value=[0, 0, 30])
 
         limiter = SlidingWindowLimiter(redis_client=mock_redis)
-        allowed, remaining, reset_time = await limiter.is_allowed(
-            "test_key", 10, 60
-        )
+        allowed, remaining, reset_time = await limiter.is_allowed("test_key", 10, 60)
 
         assert allowed is False
         assert remaining == 0
@@ -54,9 +50,7 @@ class TestSlidingWindowLimiterMore:
 
         limiter = SlidingWindowLimiter(redis_client=mock_redis)
         # Redis错误时应该降级允许请求
-        allowed, remaining, reset_time = await limiter.is_allowed(
-            "test_key", 10, 60
-        )
+        allowed, remaining, reset_time = await limiter.is_allowed("test_key", 10, 60)
 
         assert allowed is True
 
@@ -78,6 +72,7 @@ class TestRateLimiterMore:
         limiter = RateLimiter()
 
         import uuid
+
         user_id = f"service_{uuid.uuid4()}"
 
         allowed, remaining, _ = await limiter.check_limit(
@@ -93,6 +88,7 @@ class TestRateLimiterMore:
         limiter = RateLimiter()
 
         import uuid
+
         user_id = f"user_{uuid.uuid4()}"
 
         allowed, remaining, _ = await limiter.check_limit(

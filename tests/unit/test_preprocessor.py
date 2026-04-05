@@ -2,7 +2,6 @@
 Preprocessor测试 - 补充覆盖率
 """
 
-import pytest
 import pandas as pd
 import numpy as np
 from datetime import date
@@ -80,11 +79,13 @@ class TestDataPreprocessor:
 
     def test_fill_missing_values(self):
         """测试填充缺失值"""
-        preprocessor = DataPreprocessor()
+        DataPreprocessor()  # 实例化测试
 
-        df = pd.DataFrame({
-            "close": [10.0, np.nan, 12.0, np.nan, 14.0],
-        })
+        df = pd.DataFrame(
+            {
+                "close": [10.0, np.nan, 12.0, np.nan, 14.0],
+            }
+        )
 
         # pandas 2.x需要直接调用ffill
         df_filled = df.ffill()
@@ -96,9 +97,11 @@ class TestDataPreprocessor:
         """测试移除异常值"""
         preprocessor = DataPreprocessor()
 
-        df = pd.DataFrame({
-            "close": [10.0, 11.0, 1000.0, 12.0, 13.0],  # 1000是异常值
-        })
+        df = pd.DataFrame(
+            {
+                "close": [10.0, 11.0, 1000.0, 12.0, 13.0],  # 1000是异常值
+            }
+        )
 
         result = preprocessor.remove_outliers(df, columns=["close"])
 

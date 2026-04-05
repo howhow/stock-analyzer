@@ -237,9 +237,7 @@ class RateLimiter:
         """
         # 获取该等级的限流配置
         tier_limits = RATE_LIMITS.get(tier, RATE_LIMITS[UserTier.FREE])
-        max_requests, window_seconds = tier_limits.get(
-            endpoint, (10, 60)
-        )
+        max_requests, window_seconds = tier_limits.get(endpoint, (10, 60))
 
         # 构建限流键
         key = f"rate_limit:{tier.value}:{user_id}:{endpoint}"
@@ -367,9 +365,7 @@ def rate_limit(endpoint: str = "analyze") -> Callable[[Request], dict[str, Any]]
 # ============ 中间件 ============
 
 
-async def rate_limit_middleware(
-    request: Request, call_next: Callable[..., Any]
-) -> Any:
+async def rate_limit_middleware(request: Request, call_next: Callable[..., Any]) -> Any:
     """
     限流中间件
 

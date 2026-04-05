@@ -2,9 +2,7 @@
 TushareClient补充测试 - 提升覆盖率
 """
 
-import pytest
-from unittest.mock import MagicMock, patch, AsyncMock
-from datetime import date
+from unittest.mock import patch
 
 from app.data.tushare_client import TushareClient
 
@@ -19,14 +17,14 @@ class TestTushareClientMore:
 
     def test_client_init_without_token(self):
         """测试无token初始化"""
-        with patch('app.data.tushare_client.settings') as mock_settings:
+        with patch("app.data.tushare_client.settings") as mock_settings:
             mock_settings.tushare_token = "default_token"
             client = TushareClient()
             assert client is not None
 
     def test_build_query_params(self):
         """测试构建查询参数"""
-        client = TushareClient(token="test")
+        TushareClient(token="test")  # 实例化测试
 
         # 测试参数构建
         params = {
@@ -41,7 +39,7 @@ class TestTushareClientMore:
 
     def test_parse_response_data(self):
         """测试解析响应数据"""
-        client = TushareClient(token="test")
+        TushareClient(token="test")  # 实例化测试
 
         # 模拟API响应
         mock_response = {
@@ -61,7 +59,7 @@ class TestTushareClientMore:
 
     def test_error_handling(self):
         """测试错误处理"""
-        client = TushareClient(token="test")
+        TushareClient(token="test")  # 实例化测试
 
         # 测试空响应处理
         empty_response = {"data": None}
