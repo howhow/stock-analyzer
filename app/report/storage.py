@@ -152,7 +152,9 @@ class ReportStorage:
 
         try:
             data = json.loads(metadata_path.read_text(encoding="utf-8"))
-            data["file_path"] = Path(data["file_path"]) if data.get("file_path") else None
+            data["file_path"] = (
+                Path(data["file_path"]) if data.get("file_path") else None
+            )
             return ReportMetadata(**data)
         except Exception as e:
             logger.error("metadata_load_failed", report_id=report_id, error=str(e))
@@ -226,7 +228,9 @@ class ReportStorage:
                 if len(reports) >= limit + offset:
                     break
             except Exception as e:
-                logger.warning("metadata_parse_failed", file=str(meta_file), error=str(e))
+                logger.warning(
+                    "metadata_parse_failed", file=str(meta_file), error=str(e)
+                )
                 continue
 
         return reports[offset:offset + limit]
@@ -254,7 +258,9 @@ class ReportStorage:
                     self.delete(data["report_id"])
                     cleaned += 1
             except Exception as e:
-                logger.warning("cleanup_parse_failed", file=str(meta_file), error=str(e))
+                logger.warning(
+                    "cleanup_parse_failed", file=str(meta_file), error=str(e)
+                )
                 continue
 
         logger.info("expired_reports_cleaned", count=cleaned)
@@ -341,19 +347,27 @@ class ReportStorage:
 
     def _save_metadata(self, metadata: ReportMetadata) -> None:
         """保存元数据"""
-        metadata_path = self.config.base_path / "metadata" / f"{metadata.report_id}.json"
+        metadata_path = (
+            self.config.base_path / "metadata" / f"{metadata.report_id}.json"
+        )
 
         data = metadata.model_dump()
         data["file_path"] = str(data["file_path"]) if data.get("file_path") else None
         data["created_at"] = data["created_at"].isoformat()
-        data["expires_at"] = data["expires_at"].isoformat() if data.get("expires_at") else None
+        data["expires_at"] = (
+            data["expires_at"].isoformat() if data.get("expires_at") else None
+        )
         data["last_accessed_at"] = (
-            data["last_accessed_at"].isoformat() if data.get("last_accessed_at") else None
+            data["last_accessed_at"].isoformat()
+            if data.get("last_accessed_at")
+            else None
         )
         data["status"] = data["status"].value
         data["format"] = data["format"].value
 
-        metadata_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        metadata_path.write_text(
+            json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
 
     def _update_access_info(self, metadata: ReportMetadata) -> None:
         """更新访问信息"""
