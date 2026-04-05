@@ -1,4 +1,6 @@
 [flake8]
-max-line-length = 100
-extend-ignore = E203
-# E203: black与flake8的已知冲突：切片操作冒号前空格
+max-line-length = 88
+extend-ignore = E203,W503,F401
+# E203: black与flake8的已知冲突
+# W503: 二元运算符换行
+# F401: 未使用的导入（测试文件常见）
