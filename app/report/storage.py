@@ -233,7 +233,7 @@ class ReportStorage:
                 )
                 continue
 
-        return reports[offset:offset + limit]
+        return reports[offset : offset + limit]
 
     def cleanup_expired(self) -> int:
         """
