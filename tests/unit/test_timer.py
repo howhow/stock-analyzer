@@ -2,7 +2,6 @@
 Timer测试 - 补充覆盖率
 """
 
-import pytest
 import time
 
 from app.utils.timer import Timer, timer
@@ -45,4 +44,3 @@ class TestTimer:
         except RuntimeError:
             # 或者抛出RuntimeError也是预期行为
             pass
-

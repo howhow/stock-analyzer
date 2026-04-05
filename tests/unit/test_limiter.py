@@ -129,6 +129,7 @@ class TestRateLimiter:
 
         # 使用唯一的用户ID避免缓存冲突
         import uuid
+
         user_id = f"user_{uuid.uuid4()}"
 
         allowed, remaining, reset_time = await limiter.check_limit(
