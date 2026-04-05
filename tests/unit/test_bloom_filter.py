@@ -2,9 +2,7 @@
 布隆过滤器测试
 """
 
-import pytest
-
-from app.core.bloom_filter import BloomFilter, LocalBloomFilter
+from app.core.bloom_filter import LocalBloomFilter
 
 
 class TestLocalBloomFilter:
@@ -34,7 +32,7 @@ class TestLocalBloomFilter:
         # 不存在的元素可能返回True（误判），但概率很低
         # 这里测试大概率不存在的元素
         result = bf.contains("nonexistent_item_xyz_123")
-        # 由于误判率，这里不做严格断言
+        assert isinstance(result, bool)  # 验证返回类型
 
     def test_add_multiple(self) -> None:
         """测试添加多个元素"""

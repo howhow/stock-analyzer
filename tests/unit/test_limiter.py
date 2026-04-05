@@ -83,10 +83,10 @@ class TestSlidingWindowLimiter:
         for i in range(11):
             allowed, remaining, _ = limiter._check_with_local(key, 10, 60)
             if i < 10:
-                assert allowed is True, f"Request {i+1} should be allowed"
+                assert allowed is True, f"Request {i + 1} should be allowed"
             else:
                 # 第11次应该被拒绝
-                assert allowed is False, f"Request {i+1} should be denied"
+                assert allowed is False, f"Request {i + 1} should be denied"
                 assert remaining == 0
 
     def test_check_with_local_different_keys(self) -> None:
