@@ -1,4 +1,5 @@
 import pytest
+
 """
 熔断器单元测试
 """

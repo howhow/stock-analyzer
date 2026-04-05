@@ -4,7 +4,6 @@
 实现多维度评分计算
 """
 
-
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
