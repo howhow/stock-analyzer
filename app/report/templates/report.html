@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股票分析报告 - {{ stock_code }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            padding: 32px 24px;
+        }
+        
+        .stock-code {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+        
+        .stock-name {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 16px;
+        }
+        
+        .meta-info {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .score-item {
+            text-align: center;
+            padding: 20px 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .score-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #1890ff;
+        }
+        
+        .score-label {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+        
+        .score-grade {
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .recommendation-box {
+            text-align: center;
+            padding: 32px;
+            border-radius: 12px;
+            margin: 16px 0;
+        }
+        
+        .recommendation-box.buy {
+            background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+            color: white;
+        }
+        
+        .recommendation-box.hold {
+            background: linear-gradient(135deg, #faad14 0%, #ffc53d 100%);
+            color: white;
+        }
+        
+        .recommendation-box.sell {
+            background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+            color: white;
+        }
+        
+        .recommendation-text {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .confidence-text {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #fafafa;
+            border-radius: 8px;
+        }
+        
+        .info-label {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .info-value {
+            font-weight: 500;
+            color: #1a1a1a;
+            font-size: 14px;
+        }
+        
+        .price-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 12px;
+        }
+        
+        .price-box {
+            text-align: center;
+            padding: 16px;
+            border-radius: 8px;
+        }
+        
+        .price-box.entry {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+        }
+        
+        .price-box.stop {
+            background: #fff2f0;
+            border: 1px solid #ffa39e;
+        }
+        
+        .price-box.target {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+        }
+        
+        .price-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .price-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .price-box.entry .price-value { color: #1890ff; }
+        .price-box.stop .price-value { color: #ff4d4f; }
+        .price-box.target .price-value { color: #52c41a; }
+        
+        .timing-card {
+            background: linear-gradient(135deg, #f6ffed 0%, #e6f7ff 100%);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+        
+        .timing-text {
+            font-size: 16px;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+        
+        .warning-box {
+            background: #fffbe6;
+            border: 1px solid #ffe58f;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        
+        .warning-text {
+            font-size: 13px;
+            color: #d48806;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 24px;
+            color: white;
+            opacity: 0.8;
+        }
+        
+        .footer p {
+            margin: 4px 0;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 600px) {
+            .score-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .price-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="card header">
+            <div class="stock-code">{{ stock_code }}</div>
+            {% if stock_name %}
+            <div class="stock-name">{{ stock_name }}</div>
+            {% endif %}
+            <div class="meta-info">
+                生成时间: {{ generated_at }} | 分析类型: {{ analysis_type }}
+            </div>
+        </div>
+        
+        <!-- 评分 -->
+        <div class="card">
+            <h3 class="section-title">综合评分</h3>
+            <div class="score-grid">
+                <div class="score-item">
+                    <div class="score-value">{{ scores.total | round(1) }}</div>
+                    <div class="score-label">综合评分</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value">{{ scores.signal_strength | round(1) }}</div>
+                    <div class="score-label">信号强度</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value">{{ scores.opportunity_quality | round(1) }}</div>
+                    <div class="score-label">机会质量</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value">{{ scores.risk_level | round(1) }}</div>
+                    <div class="score-label">安全等级</div>
+                </div>
+            </div>
+            <div class="score-grade">{{ score_grade }}</div>
+        </div>
+        
+        <!-- 投资建议 -->
+        <div class="card">
+            <h3 class="section-title">投资建议</h3>
+            <div class="recommendation-box {% if '买入' in recommendation %}buy{% elif '持有' in recommendation %}hold{% else %}sell{% endif %}">
+                <div class="recommendation-text">{{ recommendation }}</div>
+                <div class="confidence-text">置信度: {{ confidence | round(0) }}%</div>
+            </div>
+        </div>
+        
+        <!-- 分析详情 -->
+        <div class="card">
+            <h3 class="section-title">分析详情</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">威科夫阶段</span>
+                    <span class="info-value">{{ wyckoff_phase }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">多周期对齐</span>
+                    <span class="info-value">{{ mtf_alignment }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">入场时机</span>
+                    <span class="info-value">{{ entry_timing }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">风险评估</span>
+                    <span class="info-value">{{ risk_assessment }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 价格参考 -->
+        <div class="card">
+            <h3 class="section-title">价格参考</h3>
+            <div class="price-section">
+                {% if entry_price %}
+                <div class="price-box entry">
+                    <div class="price-label">建议入场价</div>
+                    <div class="price-value">{{ entry_price | round(2) }}</div>
+                </div>
+                {% endif %}
+                {% if stop_loss_price %}
+                <div class="price-box stop">
+                    <div class="price-label">止损价</div>
+                    <div class="price-value">{{ stop_loss_price | round(2) }}</div>
+                </div>
+                {% endif %}
+                {% if target_price %}
+                <div class="price-box target">
+                    <div class="price-label">目标价</div>
+                    <div class="price-value">{{ target_price | round(2) }}</div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="info-grid" style="margin-top: 16px;">
+                <div class="info-item">
+                    <span class="info-label">支撑位</span>
+                    <span class="info-value">{% if support_levels %}{{ support_levels | join(', ') }}{% else %}-{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">压力位</span>
+                    <span class="info-value">{% if resistance_levels %}{{ resistance_levels | join(', ') }}{% else %}-{% endif %}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 时机建议 -->
+        <div class="card">
+            <h3 class="section-title">时机建议</h3>
+            <div class="timing-card">
+                <div class="timing-text">{{ timing_advice }}</div>
+            </div>
+        </div>
+        
+        <!-- 风险提示 -->
+        <div class="card">
+            <div class="warning-box">
+                <div class="warning-text">
+                    ⚠️ 风险提示：本报告仅供参考，不构成投资建议。股市有风险，投资需谨慎。
+                    过去的表现不代表未来收益，请根据自身风险承受能力做出投资决策。
+                </div>
+            </div>
+        </div>
+        
+        <!-- 页脚 -->
+        <div class="footer">
+            <p>股票分析报告 v{{ generator_version | default('1.0.0') }}</p>
+            <p>分析ID: {{ analysis_id }}</p>
+            <p>© 2026 Stock Analyzer. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
