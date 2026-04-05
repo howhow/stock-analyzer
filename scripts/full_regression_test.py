@@ -31,6 +31,10 @@ from typing import Any
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+# 强制加载 .env 文件
+from dotenv import load_dotenv
+load_dotenv(project_root / ".env")
+
 # 测试配置
 TEST_STOCK = "688981.SH"
 TEST_STOCK_NAME = "中芯国际"
@@ -73,9 +77,17 @@ def test_data_fetcher() -> tuple[bool, str]:
     try:
         import asyncio
         from datetime import date, timedelta
-        from app.data import DataFetcher
+        from app.data import TushareClient
+        from config import settings
 
-        fetcher = DataFetcher()
+        # 确保 token 已配置
+        if not settings.tushare_token:
+            return False, "Tushare token 未配置"
+
+        client = TushareClient(token=settings.tushare_token)
+
+        if not client.pro:
+            return False, "Tushare Pro API 初始化失败"
 
         # 获取日线数据
         end_date = date.today()
@@ -83,7 +95,7 @@ def test_data_fetcher() -> tuple[bool, str]:
 
         async def fetch_data() -> tuple[bool, str]:
             try:
-                quotes = await fetcher.get_daily_quotes(
+                quotes = await client.get_daily_quotes(
                     TEST_STOCK, start_date, end_date
                 )
 
@@ -101,7 +113,7 @@ def test_data_fetcher() -> tuple[bool, str]:
                 if missing_fields:
                     return False, f"缺失字段: {missing_fields}"
 
-                return True, f"成功获取 {len(quotes)} 天数据"
+                return True, f"成功获取 {len(quotes)} 天数据 (Tushare)"
 
             except Exception as e:
                 return False, f"数据获取异常: {str(e)}"
@@ -122,17 +134,21 @@ def test_technical_indicators() -> tuple[bool, str]:
     try:
         import asyncio
         from datetime import date, timedelta
-        from app.data import DataFetcher
+        from app.data import TushareClient
         from app.analysis.indicators import ema, sma, macd, rsi, atr
+        from config import settings
 
-        fetcher = DataFetcher()
+        client = TushareClient(token=settings.tushare_token)
+
+        if not client.pro:
+            return False, "Tushare Pro API 初始化失败"
 
         end_date = date.today()
         start_date = end_date - timedelta(days=100)
 
         async def fetch_and_test() -> tuple[bool, str]:
             try:
-                quotes = await fetcher.get_daily_quotes(
+                quotes = await client.get_daily_quotes(
                     TEST_STOCK, start_date, end_date
                 )
 
@@ -194,10 +210,15 @@ def test_analysis_engine() -> tuple[bool, str, float | None]:
     try:
         import asyncio
         from datetime import date, timedelta
-        from app.data import DataFetcher
+        from app.data import TushareClient
         from app.analysis import Analyst, Trader, SystemAnalyzer
+        from config import settings
 
-        fetcher = DataFetcher()
+        client = TushareClient(token=settings.tushare_token)
+
+        if not client.pro:
+            return False, "Tushare Pro API 初始化失败", None
+
         analyst = Analyst()
         trader = Trader()
 
@@ -206,7 +227,7 @@ def test_analysis_engine() -> tuple[bool, str, float | None]:
 
         async def fetch_and_analyze() -> tuple[bool, str, float | None]:
             try:
-                quotes = await fetcher.get_daily_quotes(
+                quotes = await client.get_daily_quotes(
                     TEST_STOCK, start_date, end_date
                 )
 
@@ -288,11 +309,14 @@ def test_report_generation() -> tuple[bool, str]:
             "wyckoff_phase": "积累",
             "mtf_alignment": "看涨",
             "entry_timing": "立即",
+            "timing_advice": "建议关注 50 元附近的支撑",
             "entry_price": 50.00,
             "stop_loss_price": 48.00,
             "target_price": 55.00,
             "expected_return": 10.0,
             "risk_assessment": "中等风险",
+            "support_levels": [48.0, 46.0],
+            "resistance_levels": [55.0, 58.0],
             "analyst_report": {
                 "technical": {"trend": "上涨", "strength": 4},
                 "fundamental": {"pe_ratio": 30.5, "pb_ratio": 3.2},
@@ -321,7 +345,8 @@ def test_report_generation() -> tuple[bool, str]:
         return True, f"报告已保存: {report_path}"
 
     except Exception as e:
-        return False, f"报告生成异常: {str(e)}"
+        import traceback
+        return False, f"报告生成异常: {str(e)}\n{traceback.format_exc()}"
 
 
 def test_cache_strategy() -> tuple[bool, str]:
