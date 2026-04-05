@@ -67,7 +67,7 @@ def analyze_policy_impact(
         政策影响分析结果
     """
     details = {}
-    score = 50  # 默认中性分数
+    score: float = 50  # 默认中性分数
 
     # 政策敏感度
     sensitivity = get_policy_sensitivity(industry_name)
@@ -78,8 +78,8 @@ def analyze_policy_impact(
         positive_count = sum(1 for e in policy_events if e.get("impact") == "positive")
         negative_count = sum(1 for e in policy_events if e.get("impact") == "negative")
 
-        details["positive_events"] = positive_count
-        details["negative_events"] = negative_count
+        details["positive_events"] = positive_count  # type: ignore[assignment]
+        details["negative_events"] = negative_count  # type: ignore[assignment]
 
         # 根据正负事件调整分数
         score += positive_count * 10

@@ -69,7 +69,7 @@ def analyze_industry_position(
         行业地位分析结果
     """
     details = {}
-    score = 50  # 默认中等分数
+    score: float = 50  # 默认中等分数
 
     # 行业分类
     category = get_industry_category(industry_name)

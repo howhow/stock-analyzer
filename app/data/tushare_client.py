@@ -133,7 +133,7 @@ class TushareClient(BaseDataSource):
 
         try:
             result = await self._call_tushare(
-                self.pro.daily,
+                self.pro.daily,  # type: ignore[union-attr]
                 ts_code=stock_code,
                 start_date=start_date.strftime("%Y%m%d"),
                 end_date=end_date.strftime("%Y%m%d"),
@@ -149,7 +149,8 @@ class TushareClient(BaseDataSource):
                 quotes.append(
                     DailyQuote(
                         stock_code=data.get("stock_code", stock_code),
-                        trade_date=self._parse_date(data.get("trade_date")),
+                        trade_date=self._parse_date(data.get("trade_date"))
+                        or date.today(),
                         open=float(data.get("open", 0)),
                         close=float(data.get("close", 0)),
                         high=float(data.get("high", 0)),
@@ -213,7 +214,7 @@ class TushareClient(BaseDataSource):
         try:
             # 获取最新财务数据
             result = await self._call_tushare(
-                self.pro.daily_basic,
+                self.pro.daily_basic,  # type: ignore[union-attr]
                 ts_code=stock_code,
                 fields="ts_code,trade_date,pe,pb,turnover_rate",
             )
@@ -227,7 +228,7 @@ class TushareClient(BaseDataSource):
 
             return FinancialData(
                 stock_code=mapped.get("stock_code", stock_code),
-                report_date=self._parse_date(mapped.get("trade_date")),
+                report_date=self._parse_date(mapped.get("trade_date")) or date.today(),
                 pe_ratio=mapped.get("pe_ratio"),
                 pb_ratio=mapped.get("pb_ratio"),
             )
@@ -251,7 +252,7 @@ class TushareClient(BaseDataSource):
         try:
             # 调用trade_calendar接口检查连接
             result = await self._call_tushare(
-                self.pro.trade_cal,
+                self.pro.trade_cal,  # type: ignore[union-attr]
                 exchange="SSE",
                 start_date=datetime.now().strftime("%Y%m%d"),
                 end_date=datetime.now().strftime("%Y%m%d"),

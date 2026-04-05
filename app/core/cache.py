@@ -61,7 +61,7 @@ class CacheManager:
                     decode_responses=True,
                 )
                 # 测试连接
-                await self._redis_client.ping()
+                await self._redis_client.ping()  # type: ignore[misc]
                 logger.info("redis_connected", url=self.redis_url)
             except Exception as e:
                 logger.warning("redis_connection_failed", error=str(e))
