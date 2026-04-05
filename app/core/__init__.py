@@ -2,6 +2,11 @@
 核心模块
 """
 
+from app.core.bloom_filter import BloomFilter
+from app.core.cache import CacheManager
+from app.core.circuit_breaker import CircuitBreakerRegistry
+from app.core.distributed_lock import DistributedLock
+from app.core.error_handler import register_exception_handlers
 from app.core.exceptions import (
     AIError,
     AIProviderError,
@@ -50,4 +55,10 @@ __all__ = [
     "AIError",
     "AIQuotaExceededError",
     "AIProviderError",
+    # 核心组件
+    "CacheManager",
+    "CircuitBreakerRegistry",
+    "BloomFilter",
+    "DistributedLock",
+    "register_exception_handlers",
 ]
