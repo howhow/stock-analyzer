@@ -43,7 +43,9 @@ class TestTushareClientComplete:
     @pytest.mark.asyncio
     async def test_get_stock_info_not_found(self, client):
         """测试获取股票信息未找到"""
-        with patch.object(client, "get_stock_info", new_callable=AsyncMock, return_value=None):
+        with patch.object(
+            client, "get_stock_info", new_callable=AsyncMock, return_value=None
+        ):
             result = await client.get_stock_info("INVALID")
             assert result is None
 
@@ -53,20 +55,18 @@ class TestTushareClientComplete:
         with patch.object(client, "get_daily_quotes", new_callable=AsyncMock) as mock:
             mock.return_value = [Mock(stock_code="000001.SZ", close=10.0)]
             result = await client.get_daily_quotes(
-                "000001.SZ",
-                date(2024, 1, 1),
-                date(2024, 1, 31)
+                "000001.SZ", date(2024, 1, 1), date(2024, 1, 31)
             )
             assert result is not None
 
     @pytest.mark.asyncio
     async def test_get_daily_quotes_empty(self, client):
         """测试获取日线数据为空"""
-        with patch.object(client, "get_daily_quotes", new_callable=AsyncMock, return_value=[]):
+        with patch.object(
+            client, "get_daily_quotes", new_callable=AsyncMock, return_value=[]
+        ):
             result = await client.get_daily_quotes(
-                "INVALID",
-                date(2024, 1, 1),
-                date(2024, 1, 31)
+                "INVALID", date(2024, 1, 1), date(2024, 1, 31)
             )
             assert result == []
 
@@ -81,14 +81,18 @@ class TestTushareClientComplete:
     @pytest.mark.asyncio
     async def test_get_financial_data_not_found(self, client):
         """测试获取财务数据未找到"""
-        with patch.object(client, "get_financial_data", new_callable=AsyncMock, return_value=None):
+        with patch.object(
+            client, "get_financial_data", new_callable=AsyncMock, return_value=None
+        ):
             result = await client.get_financial_data("INVALID")
             assert result is None
 
     @pytest.mark.asyncio
     async def test_health_check(self, client):
         """测试健康检查"""
-        with patch.object(client, "health_check", new_callable=AsyncMock, return_value=True):
+        with patch.object(
+            client, "health_check", new_callable=AsyncMock, return_value=True
+        ):
             result = await client.health_check()
             assert result is True
 

@@ -25,7 +25,7 @@ class TestDataPreprocessorFull:
             {"open": 10.0, "close": 10.5, "high": 11.0, "low": 9.5, "volume": 1000000},
             {"open": 10.5, "close": 11.0, "high": 11.5, "low": 10.0, "volume": 1200000},
         ]
-        
+
         try:
             result = preprocessor.clean_quotes(quotes)
             assert result is not None
@@ -43,7 +43,7 @@ class TestDataPreprocessorFull:
     def test_fill_missing_values(self, preprocessor):
         """测试填充缺失值"""
         data = {"price": 10.0, "volume": None}
-        
+
         try:
             result = preprocessor.fill_missing(data)
             assert result is not None
@@ -53,7 +53,7 @@ class TestDataPreprocessorFull:
     def test_validate_data(self, preprocessor):
         """测试数据验证"""
         data = {"open": 10.0, "close": 10.5}
-        
+
         try:
             result = preprocessor.validate(data)
             assert result is True or result is False
@@ -63,7 +63,7 @@ class TestDataPreprocessorFull:
     def test_remove_outliers(self, preprocessor):
         """测试移除异常值"""
         prices = [10.0, 11.0, 100.0, 12.0, 13.0]
-        
+
         try:
             result = preprocessor.remove_outliers(prices, columns=["price"])
             assert result is not None
@@ -73,7 +73,7 @@ class TestDataPreprocessorFull:
     def test_convert_types(self, preprocessor):
         """测试类型转换"""
         data = {"price": "10.5", "volume": "1000000"}
-        
+
         try:
             result = preprocessor.convert_types(data)
             assert result is not None
@@ -83,7 +83,7 @@ class TestDataPreprocessorFull:
     def test_calculate_statistics(self, preprocessor):
         """测试统计计算"""
         prices = [10.0, 11.0, 12.0, 13.0, 14.0]
-        
+
         try:
             result = preprocessor.calculate_stats(prices)
             assert result is not None
@@ -94,7 +94,7 @@ class TestDataPreprocessorFull:
         """测试数据合并"""
         data1 = {"price": 10.0}
         data2 = {"volume": 1000000}
-        
+
         try:
             result = preprocessor.merge(data1, data2)
             assert result is not None
@@ -104,16 +104,15 @@ class TestDataPreprocessorFull:
     def test_filter_by_date(self, preprocessor):
         """测试日期过滤"""
         from datetime import date
+
         data = [
             {"date": date(2024, 1, 1), "price": 10.0},
             {"date": date(2024, 1, 2), "price": 11.0},
         ]
-        
+
         try:
             result = preprocessor.filter_by_date(
-                data, 
-                start=date(2024, 1, 1),
-                end=date(2024, 1, 1)
+                data, start=date(2024, 1, 1), end=date(2024, 1, 1)
             )
             assert result is not None
         except AttributeError:

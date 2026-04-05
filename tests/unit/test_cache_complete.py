@@ -132,7 +132,7 @@ class TestCacheManagerComplete:
                 "level1": {
                     "level2": "value",
                 }
-            }
+            },
         }
 
         await cache.set("complex_key", complex_data)

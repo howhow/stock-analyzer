@@ -15,6 +15,7 @@ class TestTushareClient:
     def client(self):
         """创建客户端实例"""
         import tushare as ts
+
         with patch.object(ts, "pro_api") as mock_pro:
             mock_pro.return_value = MagicMock()
             client = TushareClient(token="test_token")
@@ -42,7 +43,9 @@ class TestTushareClient:
     async def test_get_stock_info(self, client):
         """测试获取股票信息"""
         # 直接返回None跳过复杂mock
-        with patch.object(client, "get_stock_info", new_callable=AsyncMock, return_value=None):
+        with patch.object(
+            client, "get_stock_info", new_callable=AsyncMock, return_value=None
+        ):
             result = await client.get_stock_info("000001.SZ")
             assert result is None  # 简化测试，跳过网络依赖
 
@@ -53,32 +56,37 @@ class TestTushareClient:
         mock_df.empty = False
         mock_df.__len__ = lambda x: 1
         mock_df.iterrows.return_value = [
-            (0, MagicMock(to_dict=lambda: {
-                "ts_code": "000001.SZ",
-                "trade_date": "20240101",
-                "open": 10.0,
-                "close": 10.5,
-                "high": 11.0,
-                "low": 9.5,
-                "vol": 1000000,
-                "amount": 10500000,
-            }))
+            (
+                0,
+                MagicMock(
+                    to_dict=lambda: {
+                        "ts_code": "000001.SZ",
+                        "trade_date": "20240101",
+                        "open": 10.0,
+                        "close": 10.5,
+                        "high": 11.0,
+                        "low": 9.5,
+                        "vol": 1000000,
+                        "amount": 10500000,
+                    }
+                ),
+            )
         ]
-        
+
         with patch.object(client, "_call_tushare", new_callable=AsyncMock) as mock_call:
             mock_call.return_value = mock_df
             result = await client.get_daily_quotes(
-                "000001.SZ",
-                date(2024, 1, 1),
-                date(2024, 1, 31)
+                "000001.SZ", date(2024, 1, 1), date(2024, 1, 31)
             )
-            
+
             assert isinstance(result, list)
 
     @pytest.mark.asyncio
     async def test_health_check(self, client):
         """测试健康检查"""
         # 简化测试，直接mock返回True
-        with patch.object(client, "health_check", new_callable=AsyncMock, return_value=True):
+        with patch.object(
+            client, "health_check", new_callable=AsyncMock, return_value=True
+        ):
             result = await client.health_check()
             assert result is True

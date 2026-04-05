@@ -27,7 +27,7 @@ class TestMainApp:
     def test_app_routes(self):
         """测试应用路由"""
         routes = [route.path for route in app.routes]
-        
+
         # 应该包含健康检查路由
         assert any("/health" in route for route in routes)
 
@@ -39,17 +39,17 @@ class TestMainApp:
     def test_client_health_check(self):
         """测试健康检查端点"""
         client = TestClient(app)
-        
+
         response = client.get("/health")
-        
+
         assert response.status_code in [200, 404]  # 可能不存在
 
     def test_client_readiness_check(self):
         """测试就绪检查端点"""
         client = TestClient(app)
-        
+
         response = client.get("/ready")
-        
+
         assert response.status_code in [200, 404]  # 可能不存在
 
     def test_app_startup(self):

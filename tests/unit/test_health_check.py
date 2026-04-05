@@ -49,6 +49,7 @@ class TestHealthChecker:
         """测试检查数据源"""
         # 直接测试HealthStatus对象创建
         from app.data.health_check import HealthStatus
+
         status = HealthStatus(
             source_name="test_source",
             is_healthy=True,
@@ -69,16 +70,16 @@ class TestHealthChecker:
     def test_get_cached_status(self):
         """测试获取缓存状态"""
         checker = HealthChecker()
-        
+
         status = HealthStatus(
             source_name="test",
             is_healthy=True,
             response_time_ms=100,
             last_check_time=datetime.now(),
         )
-        
+
         checker._status_cache["test"] = status
         cached = checker.get_cached_status("test")
-        
+
         assert cached is not None
         assert cached.source_name == "test"

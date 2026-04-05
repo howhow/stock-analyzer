@@ -25,51 +25,51 @@ class TestFinancialAnalysis:
             net_profit=100000000.0,
             total_assets=5000000000.0,
             total_liabilities=4000000000.0,
-            operating_cash_flow=150000000.0
+            operating_cash_flow=150000000.0,
         )
 
     def test_analyze_profitability(self, financial_data):
         """测试盈利能力分析"""
         result = analyze_profitability(financial_data)
-        
+
         assert isinstance(result, dict)
         assert "score" in result
 
     def test_analyze_solvency(self, financial_data):
         """测试偿债能力分析"""
         result = analyze_solvency(financial_data)
-        
+
         assert isinstance(result, dict)
         assert "score" in result
 
     def test_analyze_growth(self, financial_data):
         """测试成长能力分析"""
         result = analyze_growth(financial_data)
-        
+
         assert isinstance(result, dict)
         assert "score" in result
 
     def test_calculate_financial_score(self, financial_data):
         """测试财务评分计算"""
         result = calculate_financial_score(financial_data)
-        
+
         assert isinstance(result, dict)
         assert "total_score" in result
 
     def test_analyze_profitability_empty(self):
         """测试盈利能力分析空数据"""
         result = analyze_profitability(None)
-        
+
         assert isinstance(result, dict)
 
     def test_analyze_solvency_empty(self):
         """测试偿债能力分析空数据"""
         result = analyze_solvency(None)
-        
+
         assert isinstance(result, dict)
 
     def test_analyze_growth_empty(self):
         """测试成长能力分析空数据"""
         result = analyze_growth(None)
-        
+
         assert isinstance(result, dict)

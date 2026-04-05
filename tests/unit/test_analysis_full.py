@@ -126,7 +126,7 @@ class TestScoringEngineFull:
             "momentum": 0.6,
             "volume": 0.7,
         }
-        
+
         try:
             result = engine.calculate_score(factors)
             assert 0 <= result <= 100

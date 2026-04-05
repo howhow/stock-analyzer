@@ -33,14 +33,20 @@ class TestAKShareClientFull:
     @pytest.mark.asyncio
     async def test_get_daily_quotes(self, client):
         """测试获取日线数据"""
-        with patch.object(client, "get_daily_quotes", new_callable=AsyncMock, return_value=[]):
-            result = await client.get_daily_quotes("000001", date(2024, 1, 1), date(2024, 1, 31))
+        with patch.object(
+            client, "get_daily_quotes", new_callable=AsyncMock, return_value=[]
+        ):
+            result = await client.get_daily_quotes(
+                "000001", date(2024, 1, 1), date(2024, 1, 31)
+            )
             assert isinstance(result, list)
 
     @pytest.mark.asyncio
     async def test_get_financial_data(self, client):
         """测试获取财务数据"""
-        with patch.object(client, "get_financial_data", new_callable=AsyncMock, return_value=None):
+        with patch.object(
+            client, "get_financial_data", new_callable=AsyncMock, return_value=None
+        ):
             result = await client.get_financial_data("000001")
             assert result is None
 
@@ -57,6 +63,7 @@ class TestTushareClientFull:
     def client(self):
         """创建客户端实例"""
         import tushare as ts
+
         with patch.object(ts, "pro_api") as mock_pro:
             mock_pro.return_value = MagicMock()
             client = TushareClient(token="test_token")
@@ -85,18 +92,20 @@ class TestTushareClientFull:
     @pytest.mark.asyncio
     async def test_get_daily_quotes(self, client):
         """测试获取日线数据"""
-        with patch.object(client, "get_daily_quotes", new_callable=AsyncMock, return_value=[]):
+        with patch.object(
+            client, "get_daily_quotes", new_callable=AsyncMock, return_value=[]
+        ):
             result = await client.get_daily_quotes(
-                "000001.SZ",
-                date(2024, 1, 1),
-                date(2024, 1, 31)
+                "000001.SZ", date(2024, 1, 1), date(2024, 1, 31)
             )
             assert isinstance(result, list)
 
     @pytest.mark.asyncio
     async def test_get_financial_data(self, client):
         """测试获取财务数据"""
-        with patch.object(client, "get_financial_data", new_callable=AsyncMock, return_value=None):
+        with patch.object(
+            client, "get_financial_data", new_callable=AsyncMock, return_value=None
+        ):
             result = await client.get_financial_data("000001.SZ")
             assert result is None
 

@@ -25,7 +25,7 @@ class TestTraderFull:
             name="平安银行",
             industry="银行",
             market="SZ",
-            list_date=date(1991, 4, 3)
+            list_date=date(1991, 4, 3),
         )
 
     @pytest.fixture
@@ -34,16 +34,18 @@ class TestTraderFull:
         quotes = []
         base_price = 10.0
         for i in range(30):
-            quotes.append(DailyQuote(
-                stock_code="000001.SZ",
-                trade_date=date(2024, 1, 1) + pd.Timedelta(days=i),
-                open=base_price + i * 0.1,
-                high=base_price + i * 0.1 + 0.5,
-                low=base_price + i * 0.1 - 0.3,
-                close=base_price + i * 0.1 + 0.2,
-                volume=1000000 + i * 10000,
-                amount=(base_price + i * 0.1) * (1000000 + i * 10000)
-            ))
+            quotes.append(
+                DailyQuote(
+                    stock_code="000001.SZ",
+                    trade_date=date(2024, 1, 1) + pd.Timedelta(days=i),
+                    open=base_price + i * 0.1,
+                    high=base_price + i * 0.1 + 0.5,
+                    low=base_price + i * 0.1 - 0.3,
+                    close=base_price + i * 0.1 + 0.2,
+                    volume=1000000 + i * 10000,
+                    amount=(base_price + i * 0.1) * (1000000 + i * 10000),
+                )
+            )
         return quotes
 
     @pytest.fixture
@@ -55,7 +57,7 @@ class TestTraderFull:
             revenue=1000000000.0,
             net_profit=100000000.0,
             total_assets=5000000000.0,
-            total_liabilities=4000000000.0
+            total_liabilities=4000000000.0,
         )
 
     def test_init(self, trader):
@@ -67,7 +69,7 @@ class TestTraderFull:
     async def test_analyze_success(self, trader, stock_info, quotes, financial):
         """测试交易分析成功"""
         result = await trader.analyze(stock_info, quotes, financial)
-        
+
         assert result is not None
         assert result.analyzer_name == "trader"
 
@@ -77,19 +79,21 @@ class TestTraderFull:
         # 只有10天数据，不足20天
         quotes = []
         for i in range(10):
-            quotes.append(DailyQuote(
-                stock_code="000001.SZ",
-                trade_date=date(2024, 1, 1) + pd.Timedelta(days=i),
-                open=10.0,
-                high=10.5,
-                low=9.8,
-                close=10.2,
-                volume=1000000,
-                amount=10200000.0
-            ))
-        
+            quotes.append(
+                DailyQuote(
+                    stock_code="000001.SZ",
+                    trade_date=date(2024, 1, 1) + pd.Timedelta(days=i),
+                    open=10.0,
+                    high=10.5,
+                    low=9.8,
+                    close=10.2,
+                    volume=1000000,
+                    amount=10200000.0,
+                )
+            )
+
         result = await trader.analyze(stock_info, quotes)
-        
+
         assert result is not None
         # 应该有警告
         assert len(result.warnings) > 0
@@ -98,7 +102,7 @@ class TestTraderFull:
     async def test_analyze_without_financial(self, trader, stock_info, quotes):
         """测试无财务数据分析"""
         result = await trader.analyze(stock_info, quotes, None)
-        
+
         assert result is not None
         assert result.analyzer_name == "trader"
 
@@ -109,19 +113,21 @@ class TestTraderFull:
         quotes = []
         for i in range(30):
             volatility = (i % 5) * 2  # 高波动
-            quotes.append(DailyQuote(
-                stock_code="000001.SZ",
-                trade_date=date(2024, 1, 1) + pd.Timedelta(days=i),
-                open=10.0 + volatility,
-                high=10.5 + volatility,
-                low=9.5 - volatility,
-                close=10.0 + volatility * 0.5,
-                volume=1000000 + volatility * 100000,
-                amount=(10.0 + volatility) * (1000000 + volatility * 100000)
-            ))
-        
+            quotes.append(
+                DailyQuote(
+                    stock_code="000001.SZ",
+                    trade_date=date(2024, 1, 1) + pd.Timedelta(days=i),
+                    open=10.0 + volatility,
+                    high=10.5 + volatility,
+                    low=9.5 - volatility,
+                    close=10.0 + volatility * 0.5,
+                    volume=1000000 + volatility * 100000,
+                    amount=(10.0 + volatility) * (1000000 + volatility * 100000),
+                )
+            )
+
         result = await trader.analyze(stock_info, quotes, financial)
-        
+
         assert result is not None
 
     @pytest.mark.asyncio
@@ -130,19 +136,21 @@ class TestTraderFull:
         # 创建上升趋势数据
         quotes = []
         for i in range(30):
-            quotes.append(DailyQuote(
-                stock_code="000001.SZ",
-                trade_date=date(2024, 1, 1) + pd.Timedelta(days=i),
-                open=10.0 + i * 0.2,
-                high=10.5 + i * 0.2,
-                low=9.8 + i * 0.2,
-                close=10.2 + i * 0.2,
-                volume=1000000 + i * 50000,
-                amount=(10.0 + i * 0.2) * (1000000 + i * 50000)
-            ))
-        
+            quotes.append(
+                DailyQuote(
+                    stock_code="000001.SZ",
+                    trade_date=date(2024, 1, 1) + pd.Timedelta(days=i),
+                    open=10.0 + i * 0.2,
+                    high=10.5 + i * 0.2,
+                    low=9.8 + i * 0.2,
+                    close=10.2 + i * 0.2,
+                    volume=1000000 + i * 50000,
+                    amount=(10.0 + i * 0.2) * (1000000 + i * 50000),
+                )
+            )
+
         result = await trader.analyze(stock_info, quotes, financial)
-        
+
         assert result is not None
 
     @pytest.mark.asyncio
@@ -151,19 +159,21 @@ class TestTraderFull:
         # 创建下降趋势数据
         quotes = []
         for i in range(30):
-            quotes.append(DailyQuote(
-                stock_code="000001.SZ",
-                trade_date=date(2024, 1, 1) + pd.Timedelta(days=i),
-                open=15.0 - i * 0.2,
-                high=15.5 - i * 0.2,
-                low=14.8 - i * 0.2,
-                close=15.0 - i * 0.2,
-                volume=1000000 + i * 50000,
-                amount=(15.0 - i * 0.2) * (1000000 + i * 50000)
-            ))
-        
+            quotes.append(
+                DailyQuote(
+                    stock_code="000001.SZ",
+                    trade_date=date(2024, 1, 1) + pd.Timedelta(days=i),
+                    open=15.0 - i * 0.2,
+                    high=15.5 - i * 0.2,
+                    low=14.8 - i * 0.2,
+                    close=15.0 - i * 0.2,
+                    volume=1000000 + i * 50000,
+                    amount=(15.0 - i * 0.2) * (1000000 + i * 50000),
+                )
+            )
+
         result = await trader.analyze(stock_info, quotes, financial)
-        
+
         assert result is not None
 
     @pytest.mark.asyncio
@@ -173,25 +183,27 @@ class TestTraderFull:
         quotes = []
         for i in range(30):
             price = 10.0 + (i % 10) * 0.3  # 震荡
-            quotes.append(DailyQuote(
-                stock_code="000001.SZ",
-                trade_date=date(2024, 1, 1) + pd.Timedelta(days=i),
-                open=price,
-                high=price + 0.5,
-                low=price - 0.3,
-                close=price + 0.1,
-                volume=1000000,
-                amount=price * 1000000
-            ))
-        
+            quotes.append(
+                DailyQuote(
+                    stock_code="000001.SZ",
+                    trade_date=date(2024, 1, 1) + pd.Timedelta(days=i),
+                    open=price,
+                    high=price + 0.5,
+                    low=price - 0.3,
+                    close=price + 0.1,
+                    volume=1000000,
+                    amount=price * 1000000,
+                )
+            )
+
         result = await trader.analyze(stock_info, quotes, financial)
-        
+
         assert result is not None
 
     def test_extract_price_series(self, trader, quotes):
         """测试提取价格序列"""
         prices = trader.extract_price_series(quotes)
-        
+
         assert isinstance(prices, dict)
         assert "close" in prices
         assert "high" in prices
@@ -207,17 +219,20 @@ class TestTraderFull:
 
     def test_validate_data_insufficient(self, trader):
         """测试数据验证 - 数据不足"""
-        quotes = [DailyQuote(
-            stock_code="000001.SZ",
-            trade_date=date(2024, 1, 1),
-            open=10.0,
-            high=10.5,
-            low=9.8,
-            close=10.2,
-            volume=1000000,
-            amount=10200000.0
-        ) for _ in range(10)]
-        
+        quotes = [
+            DailyQuote(
+                stock_code="000001.SZ",
+                trade_date=date(2024, 1, 1),
+                open=10.0,
+                high=10.5,
+                low=9.8,
+                close=10.2,
+                volume=1000000,
+                amount=10200000.0,
+            )
+            for _ in range(10)
+        ]
+
         result = trader.validate_data(quotes, min_days=20)
         assert result is False
 

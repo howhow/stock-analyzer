@@ -32,7 +32,9 @@ class TestAKShareClient:
     async def test_get_stock_info(self, client):
         """测试获取股票信息"""
         # 简化测试，直接mock返回None
-        with patch.object(client, "get_stock_info", new_callable=AsyncMock, return_value=None):
+        with patch.object(
+            client, "get_stock_info", new_callable=AsyncMock, return_value=None
+        ):
             result = await client.get_stock_info("000001")
             assert result is None  # 简化测试，跳过网络依赖
 

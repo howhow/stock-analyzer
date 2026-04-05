@@ -26,32 +26,38 @@ class TestDataFetcherFull:
     @pytest.mark.asyncio
     async def test_get_stock_info(self, fetcher):
         """测试获取股票信息"""
-        with patch.object(fetcher, "get_stock_info", new_callable=AsyncMock, return_value=None):
+        with patch.object(
+            fetcher, "get_stock_info", new_callable=AsyncMock, return_value=None
+        ):
             result = await fetcher.get_stock_info("000001.SZ")
             assert result is None
 
     @pytest.mark.asyncio
     async def test_get_daily_quotes(self, fetcher):
         """测试获取日线数据"""
-        with patch.object(fetcher, "get_daily_quotes", new_callable=AsyncMock, return_value=[]):
+        with patch.object(
+            fetcher, "get_daily_quotes", new_callable=AsyncMock, return_value=[]
+        ):
             result = await fetcher.get_daily_quotes(
-                "000001.SZ",
-                date(2024, 1, 1),
-                date(2024, 1, 31)
+                "000001.SZ", date(2024, 1, 1), date(2024, 1, 31)
             )
             assert isinstance(result, list)
 
     @pytest.mark.asyncio
     async def test_get_financial_data(self, fetcher):
         """测试获取财务数据"""
-        with patch.object(fetcher, "get_financial_data", new_callable=AsyncMock, return_value=None):
+        with patch.object(
+            fetcher, "get_financial_data", new_callable=AsyncMock, return_value=None
+        ):
             result = await fetcher.get_financial_data("000001.SZ")
             assert result is None
 
     @pytest.mark.asyncio
     async def test_health_check(self, fetcher):
         """测试健康检查"""
-        with patch.object(fetcher, "health_check", new_callable=AsyncMock, return_value=True):
+        with patch.object(
+            fetcher, "health_check", new_callable=AsyncMock, return_value=True
+        ):
             result = await fetcher.health_check()
             assert result is True
 

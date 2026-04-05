@@ -20,30 +20,36 @@ class TestDataFetcherComplete:
         """Mock Tushare客户端"""
         client = MagicMock()
         client.name = "tushare"
-        client.get_stock_info = AsyncMock(return_value=StockInfo(
-            code="600519.SH",
-            name="贵州茅台",
-            market="SH",
-            industry="白酒",
-        ))
-        client.get_daily_quotes = AsyncMock(return_value=[
-            DailyQuote(
-                stock_code="600519.SH",
-                trade_date=date(2024, 1, 1),
-                open=100.0,
-                close=101.0,
-                high=102.0,
-                low=99.0,
-                volume=100000,
-                amount=10000000,
+        client.get_stock_info = AsyncMock(
+            return_value=StockInfo(
+                code="600519.SH",
+                name="贵州茅台",
+                market="SH",
+                industry="白酒",
             )
-        ])
-        client.get_financial_data = AsyncMock(return_value=FinancialData(
-            stock_code="600519.SH",
-            report_date=date(2024, 1, 1),
-            revenue=1000000000,
-            net_profit=100000000,
-        ))
+        )
+        client.get_daily_quotes = AsyncMock(
+            return_value=[
+                DailyQuote(
+                    stock_code="600519.SH",
+                    trade_date=date(2024, 1, 1),
+                    open=100.0,
+                    close=101.0,
+                    high=102.0,
+                    low=99.0,
+                    volume=100000,
+                    amount=10000000,
+                )
+            ]
+        )
+        client.get_financial_data = AsyncMock(
+            return_value=FinancialData(
+                stock_code="600519.SH",
+                report_date=date(2024, 1, 1),
+                revenue=1000000000,
+                net_profit=100000000,
+            )
+        )
         client.health_check = AsyncMock(return_value=True)
         return client
 
@@ -70,7 +76,9 @@ class TestDataFetcherComplete:
         return cache
 
     @pytest.mark.asyncio
-    async def test_get_stock_info_from_tushare(self, mock_tushare, mock_akshare, mock_cache):
+    async def test_get_stock_info_from_tushare(
+        self, mock_tushare, mock_akshare, mock_cache
+    ):
         """测试从Tushare获取股票信息"""
         fetcher = DataFetcher(
             tushare_client=mock_tushare,
@@ -91,11 +99,13 @@ class TestDataFetcherComplete:
         mock_tushare.get_stock_info = AsyncMock(side_effect=DataSourceError("Failed"))
         mock_akshare = MagicMock()
         mock_akshare.name = "akshare"
-        mock_akshare.get_stock_info = AsyncMock(return_value=StockInfo(
-            code="600519.SH",
-            name="茅台",
-            market="SH",
-        ))
+        mock_akshare.get_stock_info = AsyncMock(
+            return_value=StockInfo(
+                code="600519.SH",
+                name="茅台",
+                market="SH",
+            )
+        )
 
         fetcher = DataFetcher(
             tushare_client=mock_tushare,
@@ -158,7 +168,9 @@ class TestDataFetcherComplete:
         assert "All data sources failed" in str(exc.value)
 
     @pytest.mark.asyncio
-    async def test_get_daily_quotes_success(self, mock_tushare, mock_akshare, mock_cache):
+    async def test_get_daily_quotes_success(
+        self, mock_tushare, mock_akshare, mock_cache
+    ):
         """测试获取日线数据"""
         fetcher = DataFetcher(
             tushare_client=mock_tushare,
@@ -176,7 +188,9 @@ class TestDataFetcherComplete:
         assert result[0].stock_code == "600519.SH"
 
     @pytest.mark.asyncio
-    async def test_get_daily_quotes_no_cache(self, mock_tushare, mock_akshare, mock_cache):
+    async def test_get_daily_quotes_no_cache(
+        self, mock_tushare, mock_akshare, mock_cache
+    ):
         """测试不使用缓存获取日线数据"""
         fetcher = DataFetcher(
             tushare_client=mock_tushare,
@@ -195,7 +209,9 @@ class TestDataFetcherComplete:
         mock_cache.get.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_get_financial_data_success(self, mock_tushare, mock_akshare, mock_cache):
+    async def test_get_financial_data_success(
+        self, mock_tushare, mock_akshare, mock_cache
+    ):
         """测试获取财务数据"""
         fetcher = DataFetcher(
             tushare_client=mock_tushare,

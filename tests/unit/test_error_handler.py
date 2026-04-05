@@ -82,11 +82,13 @@ class TestStockAnalyzerExceptionHandler:
         request = Mock(spec=Request)
         request.url = Mock()
         request.url.path = "/api/v1/analysis"
-        
-        exc = InvalidParameterError("Invalid parameter", details={"field": "stock_code"})
-        
+
+        exc = InvalidParameterError(
+            "Invalid parameter", details={"field": "stock_code"}
+        )
+
         response = await stock_analyzer_exception_handler(request, exc)
-        
+
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         # JSONResponse会自动序列化，这里验证状态码即可
 
@@ -96,11 +98,11 @@ class TestStockAnalyzerExceptionHandler:
         request = Mock(spec=Request)
         request.url = Mock()
         request.url.path = "/api/v1/stock/000001.SZ"
-        
+
         exc = DataNotFoundError("Stock not found", details={"code": "000001.SZ"})
-        
+
         response = await stock_analyzer_exception_handler(request, exc)
-        
+
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     @pytest.mark.asyncio
@@ -109,11 +111,11 @@ class TestStockAnalyzerExceptionHandler:
         request = Mock(spec=Request)
         request.url = Mock()
         request.url.path = "/api/v1/analysis"
-        
+
         exc = AuthenticationError("Token expired")
-        
+
         response = await stock_analyzer_exception_handler(request, exc)
-        
+
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
@@ -126,11 +128,11 @@ class TestGenericExceptionHandler:
         request = Mock(spec=Request)
         request.url = Mock()
         request.url.path = "/api/v1/analysis"
-        
+
         exc = ValueError("Unexpected error")
-        
+
         response = await generic_exception_handler(request, exc)
-        
+
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
@@ -140,10 +142,10 @@ class TestRegisterExceptionHandlers:
     def test_register_exception_handlers(self) -> None:
         """测试注册异常处理器"""
         app = FastAPI()
-        
+
         # 注册异常处理器
         register_exception_handlers(app)
-        
+
         # 验证异常处理器已注册
         assert StockAnalyzerError in app.exception_handlers
         assert Exception in app.exception_handlers
@@ -152,12 +154,12 @@ class TestRegisterExceptionHandlers:
         """测试异常处理器集成"""
         app = FastAPI()
         register_exception_handlers(app)
-        
+
         @app.get("/test-error")
         async def test_error():
             raise InvalidParameterError("Test error")
-        
+
         client = TestClient(app)
         response = client.get("/test-error")
-        
+
         assert response.status_code == status.HTTP_400_BAD_REQUEST

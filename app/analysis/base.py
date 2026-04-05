@@ -126,7 +126,6 @@ class BaseAnalyzer(ABC):
             "low": [float(q.low) for q in sorted_quotes],
             "close": [float(q.close) for q in sorted_quotes],
             "volume": [float(q.volume) for q in sorted_quotes],
-            "dates": [str(q.trade_date) for q in sorted_quotes],
         }
 
     def calculate_basic_stats(

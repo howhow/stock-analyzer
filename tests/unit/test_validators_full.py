@@ -56,9 +56,9 @@ class TestValidatorsFull:
     def test_is_valid_json(self):
         """测试JSON验证"""
         assert is_valid_json('{"key": "value"}') is True
-        assert is_valid_json('[1, 2, 3]') is True
+        assert is_valid_json("[1, 2, 3]") is True
         # 根据实际实现调整
-        result = is_valid_json('invalid json')
+        result = is_valid_json("invalid json")
         assert isinstance(result, bool)
 
     def test_is_valid_json_invalid(self):

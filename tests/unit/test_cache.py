@@ -21,6 +21,7 @@ class TestCacheManager:
         cache.set("key1", "value1", ttl=60)
         # 验证本地缓存已设置（set方法会启动async任务，需要等待）
         import asyncio
+
         await asyncio.sleep(0.1)
         assert "key1" in cache._local_cache or True  # 允许异步写入未完成
 
