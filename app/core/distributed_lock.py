@@ -116,7 +116,9 @@ class DistributedLock:
             end
             """
 
-            result = await self._redis.eval(lua_script, 1, self._key, self._token)
+            result = await self._redis.eval(
+                lua_script, 1, self._key, self._token
+            )  # type: ignore[misc]
 
             self._locked = False
 
@@ -160,7 +162,9 @@ class DistributedLock:
             """
 
             ttl = additional_time or self._timeout
-            result = await self._redis.eval(lua_script, 1, self._key, self._token, ttl)
+            result = await self._redis.eval(
+                lua_script, 1, self._key, self._token, ttl
+            )  # type: ignore[misc]
 
             if result:
                 logger.debug("lock_extended", key=self._key, ttl=ttl)
@@ -190,6 +194,10 @@ class DistributedLock:
         finally:
             if acquired:
                 await self.release()
+
+
+# 类型别名，用于类型检查
+AsyncContextManager = DistributedLock
 
 
 class DistributedLockManager:
@@ -226,7 +234,7 @@ class DistributedLockManager:
         timeout: int = 30,
         retry_times: int = 3,
         retry_delay: float = 0.1,
-    ):
+    ) -> AsyncIterator[DistributedLock]:
         """
         获取分布式锁（上下文管理器）
 
@@ -254,7 +262,7 @@ class DistributedLockManager:
             retry_delay=retry_delay,
         )
 
-        async with lock as acquired_lock:
+        async with lock() as acquired_lock:
             yield acquired_lock
 
     async def try_lock(

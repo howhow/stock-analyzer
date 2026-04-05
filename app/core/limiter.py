@@ -162,7 +162,7 @@ class SlidingWindowLimiter:
                 now,
                 max_requests,
                 window_seconds,
-            )
+            )  # type: ignore[misc]
 
             allowed = bool(result[0])
             remaining = int(result[1])
@@ -215,7 +215,7 @@ class RateLimiter:
     集成分级限流策略
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._limiter = SlidingWindowLimiter()
 
     async def check_limit(
@@ -345,7 +345,7 @@ async def check_rate_limit(
     }
 
 
-def rate_limit(endpoint: str = "analyze"):
+def rate_limit(endpoint: str = "analyze") -> Callable[[Request], dict[str, Any]]:
     """
     限流装饰器
 
@@ -361,13 +361,15 @@ def rate_limit(endpoint: str = "analyze"):
     ) -> dict[str, Any]:
         return await check_rate_limit(request, endpoint)
 
-    return rate_limit_checker
+    return rate_limit_checker  # type: ignore
 
 
 # ============ 中间件 ============
 
 
-async def rate_limit_middleware(request: Request, call_next: Callable):
+async def rate_limit_middleware(
+    request: Request, call_next: Callable[..., Any]
+) -> Any:
     """
     限流中间件
 

@@ -6,7 +6,7 @@
 
 import secrets
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Awaitable, Callable
 
 import bcrypt
 from cryptography.fernet import Fernet
@@ -206,7 +206,7 @@ class JWTManager:
         if extra_data:
             payload.update(extra_data)
 
-        return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+        return str(jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM))
 
     @staticmethod
     def create_refresh_token(user_id: str) -> str:
@@ -228,7 +228,7 @@ class JWTManager:
             "type": "refresh",
         }
 
-        return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+        return str(jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM))
 
     @staticmethod
     def decode_token(token: str) -> dict[str, Any]:
@@ -247,7 +247,7 @@ class JWTManager:
         """
         try:
             payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
-            return payload
+            return dict(payload)
         except jwt.ExpiredSignatureError as e:
             logger.warning("token_expired", error=str(e))
             raise TokenExpiredError("Token has expired")
@@ -408,7 +408,7 @@ async def get_current_user_optional(
     return api_key_user or jwt_user
 
 
-def require_role(required_role: str):
+def require_role(required_role: str) -> Callable[..., Awaitable[dict[str, Any]]]:
     """
     角色权限装饰器
 
