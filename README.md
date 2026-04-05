@@ -2,6 +2,11 @@
 
 股票分析与交易机会识别系统 - 全AI自主股票分析系统
 
+[![Coverage](https://img.shields.io/badge/coverage-81.08%25-brightgreen)](https://pytest.org)
+[![Tests](https://img.shields.io/badge/tests-536%20passed-brightgreen)](https://pytest.org)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://python.org)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 ## 项目概述
 
 基于多维度数据分析，识别长线(1年+)和短线(3个月内)交易机会的智能股票分析系统。
