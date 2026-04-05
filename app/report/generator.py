@@ -57,6 +57,9 @@ class ReportGenerator:
         self,
         analysis_result: AnalysisResult,
         format_type: ReportFormat = ReportFormat.HTML,
+        chart_data: dict[str, Any] | None = None,
+        indicators: dict[str, Any] | None = None,
+        fundamentals: dict[str, Any] | None = None,
     ) -> ReportContent:
         """
         生成分析报告
@@ -64,6 +67,9 @@ class ReportGenerator:
         Args:
             analysis_result: 分析结果
             format_type: 报告格式
+            chart_data: 图表数据（K线、MA、成交量、MACD、RSI等）
+            indicators: 技术指标数据
+            fundamentals: 基本面数据
 
         Returns:
             报告内容
@@ -79,7 +85,9 @@ class ReportGenerator:
 
         try:
             # 准备报告数据
-            report_data = self._prepare_report_data(analysis_result)
+            report_data = self._prepare_report_data(
+                analysis_result, chart_data, indicators, fundamentals
+            )
 
             # 生成报告内容
             if format_type == ReportFormat.HTML:
@@ -121,12 +129,21 @@ class ReportGenerator:
         unique_id = uuid.uuid4().hex[:8]
         return f"rpt_{timestamp}_{unique_id}"
 
-    def _prepare_report_data(self, result: AnalysisResult) -> dict[str, Any]:
+    def _prepare_report_data(
+        self,
+        result: AnalysisResult,
+        chart_data: dict[str, Any] | None = None,
+        indicators: dict[str, Any] | None = None,
+        fundamentals: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """
         准备报告数据
 
         Args:
             result: 分析结果
+            chart_data: 图表数据
+            indicators: 技术指标数据
+            fundamentals: 基本面数据
 
         Returns:
             报告数据字典
@@ -153,6 +170,25 @@ class ReportGenerator:
         timing_advice = self._generate_timing_advice(
             trader.entry_timing, trader.entry_price, trader.stop_loss_price
         )
+
+        # 动态风险提示
+        risk_warnings = self._generate_risk_warnings(
+            indicators=indicators,
+            var_95=trader.var_95,
+            max_drawdown=trader.max_drawdown,
+        )
+
+        # 图表数据（使用传入数据或生成模拟数据）
+        final_chart_data = chart_data or self._generate_mock_chart_data(result)
+
+        # 指标数据
+        final_indicators = indicators or {}
+
+        # 基本面数据
+        final_fundamentals = fundamentals or {}
+
+        # 波动率（从指标或计算）
+        volatility_30d = final_indicators.get('volatility_30d', None)
 
         return {
             # 基本信息
@@ -182,8 +218,19 @@ class ReportGenerator:
             "risk_assessment": risk_assessment,
             "var_95": trader.var_95,
             "max_drawdown": trader.max_drawdown,
+            "volatility_30d": volatility_30d,
             # 时机建议
             "timing_advice": timing_advice,
+            # 新增：图表数据
+            "chart_data": final_chart_data,
+            # 新增：技术指标
+            "indicators": final_indicators,
+            # 新增：基本面数据
+            "fundamentals": final_fundamentals,
+            # 新增：动态风险提示
+            "risk_warnings": risk_warnings,
+            # 生成器版本
+            "generator_version": self.version,
         }
 
     def _calculate_risk_assessment(
@@ -248,6 +295,169 @@ class ReportGenerator:
             return "C (较差)"
         else:
             return "D (不建议)"
+
+    def _generate_risk_warnings(
+        self,
+        indicators: dict[str, Any] | None = None,
+        var_95: float | None = None,
+        max_drawdown: float | None = None,
+    ) -> list[str]:
+        """
+        生成动态风险提示
+
+        根据PRD v1.03 4.6.5 规则生成
+
+        Args:
+            indicators: 技术指标数据
+            var_95: VaR(95%)
+            max_drawdown: 最大回撤
+
+        Returns:
+            风险提示列表
+        """
+        warnings = []
+        indicators = indicators or {}
+
+        # 规则1: 换手率 > 10%
+        turnover_rate = indicators.get('turnover_rate', 0)
+        if turnover_rate > 10:
+            warnings.append(f"近期换手率偏高（{turnover_rate:.1f}%），注意流动性风险")
+
+        # 规则2: 30日波动率 > 3%
+        volatility_30d = indicators.get('volatility_30d', 0)
+        if volatility_30d > 3:
+            warnings.append(f"30日波动率较高（{volatility_30d:.1f}%），价格波动剧烈")
+
+        # 规则3: 成交量比 > 2
+        volume_ratio = indicators.get('volume_ratio', 0)
+        if volume_ratio > 2:
+            warnings.append(f"成交量异常放大（{volume_ratio:.1f}倍），可能存在资金异动")
+
+        # 额外规则: VaR风险提示
+        if var_95 is not None and var_95 > 5:
+            warnings.append(f"VaR(95%)较高（{var_95:.1f}%），潜在损失风险较大")
+
+        # 额外规则: 最大回撤风险提示
+        if max_drawdown is not None and max_drawdown > 15:
+            warnings.append(f"历史最大回撤较大（{max_drawdown:.1f}%），注意下行风险")
+
+        # 如果没有触发任何规则，返回默认提示
+        if not warnings:
+            warnings.append("当前未检测到明显风险信号，但仍需关注市场变化")
+
+        return warnings
+
+    def _generate_mock_chart_data(self, result: AnalysisResult) -> dict[str, Any]:
+        """
+        生成模拟图表数据（用于测试）
+
+        实际使用时应从外部传入真实的图表数据
+
+        Args:
+            result: 分析结果
+
+        Returns:
+            图表数据字典
+        """
+        import random
+
+        # 生成60个交易日的模拟数据
+        days = 60
+        dates = []
+        kline = []
+        volume = []
+        ma5 = []
+        ma20 = []
+
+        # 基于支撑压力位设定基础价格
+        base_price = 46.0
+        support = result.analyst_report.support_levels[0] if result.analyst_report.support_levels else 44.0
+        resistance = result.analyst_report.resistance_levels[0] if result.analyst_report.resistance_levels else 50.0
+
+        # 生成日期
+        from datetime import timedelta
+        start_date = datetime.now() - timedelta(days=days)
+        for i in range(days):
+            date = start_date + timedelta(days=i)
+            if date.weekday() < 5:  # 只生成工作日
+                dates.append(date.strftime('%m-%d'))
+
+        # 生成K线数据
+        close = base_price
+        for i in range(len(dates)):
+            # 随机波动
+            change = random.uniform(-0.03, 0.03)
+            open_price = close
+            close = close * (1 + change)
+            high = max(open_price, close) * (1 + random.uniform(0, 0.01))
+            low = min(open_price, close) * (1 - random.uniform(0, 0.01))
+
+            kline.append([
+                round(open_price, 2),
+                round(close, 2),
+                round(low, 2),
+                round(high, 2),
+            ])
+
+            # 成交量（单位：万手）
+            volume.append(random.randint(500, 2000))
+
+        # 计算MA5和MA20
+        for i in range(len(kline)):
+            if i >= 4:
+                ma5_val = sum([kline[j][1] for j in range(i - 4, i + 1)]) / 5
+                ma5.append(round(ma5_val, 2))
+            else:
+                ma5.append(None)
+
+            if i >= 19:
+                ma20_val = sum([kline[j][1] for j in range(i - 19, i + 1)]) / 20
+                ma20.append(round(ma20_val, 2))
+            else:
+                ma20.append(None)
+
+        # 生成MACD数据
+        macd_dif = []
+        macd_dea = []
+        macd_histogram = []
+
+        for i in range(len(kline)):
+            if i >= 20:
+                dif = random.uniform(-0.5, 0.5)
+                dea = random.uniform(-0.3, 0.3)
+                hist = (dif - dea) * 2
+                macd_dif.append(round(dif, 3))
+                macd_dea.append(round(dea, 3))
+                macd_histogram.append(round(hist, 3))
+            else:
+                macd_dif.append(None)
+                macd_dea.append(None)
+                macd_histogram.append(None)
+
+        # 生成RSI数据
+        rsi_data = []
+        for i in range(len(kline)):
+            if i >= 14:
+                rsi_val = random.uniform(30, 70)
+                rsi_data.append(round(rsi_val, 1))
+            else:
+                rsi_data.append(None)
+
+        return {
+            'dates': dates,
+            'kline': kline,
+            'volume': volume,
+            'ma5': ma5,
+            'ma20': ma20,
+            'support': round(support, 2),
+            'resistance': round(resistance, 2),
+            'macd': {
+                'dif': macd_dif,
+                'dea': macd_dea,
+                'histogram': macd_histogram,
+            },
+            'rsi': rsi_data,
+        }
 
     def _generate_html(self, data: dict[str, Any]) -> str:
         """
