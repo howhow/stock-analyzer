@@ -47,12 +47,12 @@ def send_to_dead_letter_queue(
     )
 
     try:
-        import redis.asyncio as redis
-        import json
-        from config import settings
+        # TODO: 实际存储到 Redis
+        # 这里简化处理，实际需要连接 Redis
+        key = f"{DEAD_LETTER_PREFIX}{task_id}"
 
-        # 构造死信消息
-        dead_letter_message = {
+        # 构造死信消息（预留）
+        _ = {
             "task_name": task_name,
             "task_id": task_id,
             "args": args,
@@ -60,10 +60,6 @@ def send_to_dead_letter_queue(
             "timestamp": datetime.now().isoformat(),
             "retry_count": 0,
         }
-
-        # TODO: 实际存储到 Redis
-        # 这里简化处理，实际需要连接 Redis
-        key = f"{DEAD_LETTER_PREFIX}{task_id}"
 
         logger.info(
             "dead_letter_message_stored",
