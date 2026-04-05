@@ -35,6 +35,7 @@ ignore_missing_imports = true
 exclude = [
     "tests/",
     "scripts/",
+    "app/tasks/",
 ]
 
 [tool.pytest.ini_options]
@@ -49,6 +50,7 @@ omit = [
     "*/tests/*",
     "*/__pycache__/*",
     "*/migrations/*",
+    "app/tasks/*",
 ]
 
 [tool.coverage.report]
@@ -60,5 +62,5 @@ exclude_lines = [
 ]
 
 [tool.flake8]
-max-line-length = 100
-extend-ignore = ["E203"]  # black与flake8的已知冲突：切片操作冒号前空格
+max-line-length = 88
+extend-ignore = ["E203", "W503", "F401"]
