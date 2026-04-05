@@ -35,8 +35,10 @@ structlog==24.1.0
 # Security
 python-dotenv==1.0.1
 pyjwt==2.8.0
+python-jose[cryptography]==3.3.0
 bcrypt==4.1.2
 cryptography==42.0.0
+mmh3==4.1.0
 
 # HTTP Client
 httpx==0.26.0
