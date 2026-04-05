@@ -1,8 +1,8 @@
+import pytest
 """
 工具函数测试
 """
 
-import pytest
 from datetime import date
 
 from app.utils.validators import (

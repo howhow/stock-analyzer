@@ -121,13 +121,13 @@ class BaseAnalyzer(ABC):
         sorted_quotes = sorted(quotes, key=lambda x: x.trade_date)
 
         return {
-            "open": [q.open for q in sorted_quotes],  # type: ignore[misc]
-            "high": [q.high for q in sorted_quotes],  # type: ignore[misc]
-            "low": [q.low for q in sorted_quotes],  # type: ignore[misc]
-            "close": [q.close for q in sorted_quotes],  # type: ignore[misc]
-            "volume": [q.volume for q in sorted_quotes],  # type: ignore[misc]
+            "open": [float(q.open) for q in sorted_quotes],
+            "high": [float(q.high) for q in sorted_quotes],
+            "low": [float(q.low) for q in sorted_quotes],
+            "close": [float(q.close) for q in sorted_quotes],
+            "volume": [float(q.volume) for q in sorted_quotes],
             "dates": [str(q.trade_date) for q in sorted_quotes],
-        }
+        }  # type: ignore[misc]
 
     def calculate_basic_stats(
         self,

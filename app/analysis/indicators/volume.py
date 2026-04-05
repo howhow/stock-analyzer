@@ -4,7 +4,6 @@
 实现成交量相关指标
 """
 
-import numpy as np
 import pandas as pd
 
 from app.utils.logger import get_logger

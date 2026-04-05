@@ -1,8 +1,8 @@
+import pytest
 """
 评分系统单元测试
 """
 
-import pytest
 
 from app.analysis.scoring import (
     ScoringEngine,

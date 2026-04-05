@@ -1,10 +1,10 @@
+import pytest
 """
 数据预处理单元测试
 """
 
 from datetime import date, timedelta
 
-import pytest
 
 from app.data.preprocessor import DataPreprocessor
 from app.models.stock import DailyQuote
@@ -125,9 +125,7 @@ class TestDataPreprocessor:
             for i in range(5)
         ]
 
-        result = DataPreprocessor.validate_data_integrity(
-            quotes, expected_days=100
-        )
+        result = DataPreprocessor.validate_data_integrity(quotes, expected_days=100)
         # 5 < 100 * 0.9
         assert result["valid"] is False
         assert result["reason"] == "Insufficient data"

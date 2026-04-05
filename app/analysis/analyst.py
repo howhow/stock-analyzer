@@ -16,13 +16,10 @@ from app.analysis.fundamental import (
 )
 from app.analysis.indicators import (
     atr,
-    bollinger_bands,
     ema,
     golden_cross,
     macd,
     rsi,
-    sma,
-    support_resistance,
     trend_direction,
 )
 from app.models.stock import DailyQuote, FinancialData, StockInfo
@@ -160,8 +157,8 @@ class Analyst(BaseAnalyzer):
         close_series = pd.Series(close)
 
         # EMA趋势
-        ema5 = ema(close_series, 5)
-        ema20 = ema(close_series, 20)
+        _ = ema(close_series, 5)  # 计算5日EMA
+        _ = ema(close_series, 20)  # 计算20日EMA
         trend = trend_direction(close_series, 5, 20).iloc[-1]
 
         # 金叉死叉信号

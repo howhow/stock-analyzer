@@ -1,10 +1,10 @@
+import pytest
 """
 熔断器单元测试
 """
 
 import asyncio
 
-import pytest
 
 from app.core.circuit_breaker import (
     CircuitBreaker,

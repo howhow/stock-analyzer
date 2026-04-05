@@ -68,7 +68,7 @@ def analyze_industry_position(
     Returns:
         行业地位分析结果
     """
-    details = {}
+    details: dict[str, Any] = {}
     score: float = 50  # 默认中等分数
 
     # 行业分类

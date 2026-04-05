@@ -1,8 +1,8 @@
+import pytest
 """
 数据模型测试
 """
 
-import pytest
 from datetime import date
 from pydantic import ValidationError
 

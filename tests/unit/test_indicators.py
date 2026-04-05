@@ -1,8 +1,8 @@
+import pytest
 """
 技术指标单元测试
 """
 
-import pytest
 
 from app.analysis.indicators import (
     atr,
