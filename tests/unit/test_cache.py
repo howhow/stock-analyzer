@@ -19,9 +19,8 @@ class TestCacheManager:
         cache = CacheManager(redis_url="")
         # 同步设置
         cache.set("key1", "value1", ttl=60)
-        # 同步获取（本地缓存）
-        local_val = cache._local_cache.get("key1")
-        assert local_val is not None
+        # 验证本地缓存已设置
+        assert "key1" in cache._local_cache
 
     @pytest.mark.asyncio
     async def test_get_nonexistent(self):
