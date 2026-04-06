@@ -297,18 +297,30 @@ async def get_api_key_user(
 
     Raises:
         HTTPException: 认证失败
+    
+    ⚠️ 开发模式说明：
+    当前版本仅验证 API Key 格式，未实现数据库查询验证。
+    这意味着任何格式正确的 API Key 都能通过验证。
+    适用场景：仅用于开发和测试环境，不应用于生产环境。
+    
+    TODO: 生产环境需要实现以下功能：
+    1. 从数据库查询 API Key 是否存在
+    2. 验证 API Key 是否过期
+    3. 验证 API Key 的权限范围
+    4. 记录 API Key 使用日志到数据库
     """
     if api_key is None:
         return None
 
+    # ⚠️ 开发模式：仅验证格式，不验证真实性
     # TODO: 从数据库验证API Key
-    # 这里暂时使用简化逻辑
     if APIKeyManager.validate_api_key_format(api_key):
         # 记录API Key使用
         logger.info(
-            "api_key_auth",
+            "api_key_auth_dev_mode",
             api_key_prefix=api_key[:10],
             path=request.url.path,
+            warning="Development mode: API Key not validated against database",
         )
         return {
             "user_id": "api_user",

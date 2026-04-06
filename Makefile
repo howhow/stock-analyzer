@@ -38,7 +38,6 @@ clean:
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +
 	find . -type d -name ".mypy_cache" -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
-	find . -type f -name ".coverage" -delete
 
 db-init:
 	python scripts/init_db.py

@@ -62,6 +62,10 @@ class Settings(BaseSettings):
     cache_ttl_realtime: int = 300  # 5 minutes
     cache_ttl_financial: int = 86400  # 24 hours
 
+    # Analysis
+    analysis_days: int = 120  # 日K线数据抓取天数
+    analysis_min_days: int = 20  # 最少数据天数要求
+
     # Circuit Breaker
     circuit_breaker_threshold: int = 3
     circuit_breaker_timeout: int = 300  # 5 minutes

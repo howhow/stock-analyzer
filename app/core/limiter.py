@@ -171,9 +171,13 @@ class SlidingWindowLimiter:
             return allowed, remaining, reset_time
 
         except Exception as e:
-            logger.error("rate_limit_check_failed", error=str(e), key=key)
-            # 降级：允许请求
-            return True, max_requests, window_seconds
+            logger.error(
+                "rate_limit_check_failed_fallback_to_local",
+                error=str(e),
+                key=key,
+            )
+            # 安全降级：降级到本地限流，而不是完全放开
+            return self._check_with_local(key, max_requests, window_seconds)
 
     def _check_with_local(
         self,

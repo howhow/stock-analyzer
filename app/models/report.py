@@ -68,6 +68,9 @@ class ReportContent(BaseModel):
 
     # 分析结果
     analysis_data: dict[str, Any] = Field(..., description="分析数据")
+    
+    # 报告内容
+    content: str = Field(..., description="报告内容（HTML/JSON）")
 
     # 生成信息
     generated_at: datetime = Field(default_factory=datetime.now, description="生成时间")
