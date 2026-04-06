@@ -1,0 +1,17 @@
+# Prometheus 配置文件
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Stock Analyzer 应用监控
+  - job_name: 'stock-analyzer'
+    static_configs:
+      - targets: ['stock-analyzer:8000']
+    metrics_path: '/metrics'
+
+  # Prometheus 自身监控
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

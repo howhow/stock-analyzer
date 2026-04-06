@@ -56,6 +56,8 @@ class ReportGenerator:
     def generate(
         self,
         analysis_result: AnalysisResult,
+        stock_code: str | None = None,
+        stock_name: str | None = None,
         format_type: ReportFormat = ReportFormat.HTML,
         chart_data: dict[str, Any] | None = None,
         indicators: dict[str, Any] | None = None,
@@ -66,6 +68,8 @@ class ReportGenerator:
 
         Args:
             analysis_result: 分析结果
+            stock_code: 股票代码（兼容简单 AnalysisResult）
+            stock_name: 股票名称（兼容简单 AnalysisResult）
             format_type: 报告格式
             chart_data: 图表数据（K线、MA、成交量、MACD、RSI等）
             indicators: 技术指标数据
@@ -76,10 +80,15 @@ class ReportGenerator:
         """
         report_id = self._generate_report_id()
 
+        # 兼容简单 AnalysisResult（app/analysis/base.py）
+        # 如果传入的是简单 AnalysisResult，需要从参数获取 stock_code
+        actual_stock_code = stock_code or getattr(analysis_result, 'stock_code', 'UNKNOWN')
+        actual_stock_name = stock_name or getattr(analysis_result, 'stock_name', '未知')
+
         logger.info(
             "report_generation_started",
             report_id=report_id,
-            stock_code=analysis_result.stock_code,
+            stock_code=actual_stock_code,
             format=format_type.value,
         )
 
@@ -99,16 +108,17 @@ class ReportGenerator:
 
             report_content = ReportContent(
                 report_id=report_id,
-                stock_code=analysis_result.stock_code,
-                stock_name=analysis_result.stock_name,
+                stock_code=actual_stock_code,
+                stock_name=actual_stock_name,
                 analysis_data=report_data,
                 generator_version=self.version,
+                content=content,
             )
 
             logger.info(
                 "report_generation_completed",
                 report_id=report_id,
-                stock_code=analysis_result.stock_code,
+                stock_code=actual_stock_code,
                 content_length=len(content),
             )
 
@@ -118,7 +128,7 @@ class ReportGenerator:
             logger.error(
                 "report_generation_failed",
                 report_id=report_id,
-                stock_code=analysis_result.stock_code,
+                stock_code=actual_stock_code,
                 error=str(e),
             )
             raise
@@ -140,7 +150,7 @@ class ReportGenerator:
         准备报告数据
 
         Args:
-            result: 分析结果
+            result: 分析结果（支持简单 AnalysisResult）
             chart_data: 图表数据
             indicators: 技术指标数据
             fundamentals: 基本面数据
@@ -148,34 +158,40 @@ class ReportGenerator:
         Returns:
             报告数据字典
         """
-        analyst = result.analyst_report
-        trader = result.trader_signal
-
+        # 兼容简单的 AnalysisResult（app/analysis/base.py）
+        # 从 result.details 中获取数据
+        analyst_data = result.details.get("analyst", {})
+        trader_data = result.details.get("trader", {})
+        
         # 评分数据
         scores = {
-            "total": analyst.total_score,
-            "fundamental": analyst.fundamental_score,
-            "technical": analyst.technical_score,
-            "signal_strength": analyst.dimension_scores.signal_strength,
-            "opportunity_quality": analyst.dimension_scores.opportunity_quality,
-            "risk_level": analyst.dimension_scores.risk_level,
+            "total": result.scores.get("total", 0),
+            "fundamental": analyst_data.get("scores", {}).get("fundamental", 50),
+            "technical": analyst_data.get("scores", {}).get("technical", 50),
+            "signal_strength": trader_data.get("scores", {}).get("signal_strength", 2.5),
+            "opportunity_quality": trader_data.get("scores", {}).get("opportunity_quality", 2.5),
+            "risk_level": trader_data.get("scores", {}).get("risk_level", 3),
         }
 
         # 风险评估
         risk_assessment = self._calculate_risk_assessment(
-            analyst.dimension_scores.risk_level, trader.var_95, trader.max_drawdown
+            scores["risk_level"], 
+            trader_data.get("var_95", 0), 
+            trader_data.get("max_drawdown", 0)
         )
 
         # 时机建议
         timing_advice = self._generate_timing_advice(
-            trader.entry_timing, trader.entry_price, trader.stop_loss_price
+            trader_data.get("entry_timing", "观望"), 
+            trader_data.get("entry_price", 0), 
+            trader_data.get("stop_loss_price", 0)
         )
 
         # 动态风险提示
         risk_warnings = self._generate_risk_warnings(
             indicators=indicators,
-            var_95=trader.var_95,
-            max_drawdown=trader.max_drawdown,
+            var_95=trader_data.get("var_95", 0),
+            max_drawdown=trader_data.get("max_drawdown", 0),
         )
 
         # 图表数据（使用传入数据或生成模拟数据）
@@ -192,32 +208,32 @@ class ReportGenerator:
 
         return {
             # 基本信息
-            "stock_code": result.stock_code,
-            "stock_name": result.stock_name,
-            "analysis_id": result.analysis_id,
-            "analysis_type": result.analysis_type.value,
-            "mode": result.mode.value,
+            "stock_code": result.details.get("stock_code", "UNKNOWN"),
+            "stock_name": result.details.get("stock_name", "未知"),
+            "analysis_id": f"analysis_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "analysis_type": result.details.get("analysis_type", "long"),
+            "mode": "algorithm",
             "generated_at": datetime.now().isoformat(),
             # 评分
             "scores": scores,
-            "score_grade": self._get_score_grade(analyst.total_score),
+            "score_grade": self._get_score_grade(scores["total"]),
             # 分析结论
-            "recommendation": trader.recommendation.value,
-            "confidence": trader.confidence,
-            "wyckoff_phase": analyst.wyckoff_phase.value,
-            "mtf_alignment": trader.mtf_alignment.value,
-            "entry_timing": trader.entry_timing.value,
+            "recommendation": result.details.get("recommendation", "hold"),
+            "confidence": result.details.get("confidence", 50),
+            "wyckoff_phase": analyst_data.get("wyckoff_phase", "accumulation"),
+            "mtf_alignment": trader_data.get("mtf_alignment", "neutral"),
+            "entry_timing": trader_data.get("entry_timing", "观望"),
             # 价格信息
-            "support_levels": analyst.support_levels,
-            "resistance_levels": analyst.resistance_levels,
-            "entry_price": trader.entry_price,
-            "stop_loss_price": trader.stop_loss_price,
-            "target_price": trader.target_price,
-            "expected_return": trader.expected_return,
+            "support_levels": analyst_data.get("support_levels", []),
+            "resistance_levels": analyst_data.get("resistance_levels", []),
+            "entry_price": trader_data.get("entry_price", 0),
+            "stop_loss_price": trader_data.get("stop_loss_price", 0),
+            "target_price": trader_data.get("target_price", 0),
+            "expected_return": trader_data.get("expected_return", 0),
             # 风险评估
             "risk_assessment": risk_assessment,
-            "var_95": trader.var_95,
-            "max_drawdown": trader.max_drawdown,
+            "var_95": trader_data.get("var_95", 0),
+            "max_drawdown": trader_data.get("max_drawdown", 0),
             "volatility_30d": volatility_30d,
             # 时机建议
             "timing_advice": timing_advice,
@@ -371,8 +387,11 @@ class ReportGenerator:
 
         # 基于支撑压力位设定基础价格
         base_price = 46.0
-        support = result.analyst_report.support_levels[0] if result.analyst_report.support_levels else 44.0
-        resistance = result.analyst_report.resistance_levels[0] if result.analyst_report.resistance_levels else 50.0
+        analyst_data = result.details.get("analyst", {})
+        support_levels = analyst_data.get("support_levels", [44.0])
+        resistance_levels = analyst_data.get("resistance_levels", [50.0])
+        support = support_levels[0] if support_levels else 44.0
+        resistance = resistance_levels[0] if resistance_levels else 50.0
 
         # 生成日期
         from datetime import timedelta
