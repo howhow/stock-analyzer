@@ -37,8 +37,9 @@ class TestDataFetcherSuccessPaths:
         mock_cache.make_key = Mock(return_value="test_key")
 
         stock_info = StockInfo(
-            stock_code="000001.SZ",
+            code="000001.SZ",
             name="平安银行",
+            market="SZ",
             industry="银行"
         )
 
