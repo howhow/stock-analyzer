@@ -6,6 +6,8 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
+from app.models.stock import StockInfo
+
 # ============================================================
 # 国际化策略 - 统一使用中文
 # ============================================================
