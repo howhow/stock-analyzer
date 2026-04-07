@@ -253,3 +253,18 @@ class CacheManager:
         if self._redis_client:
             await self._redis_client.close()
             self._redis_client = None
+
+    async def _clear_expired(self) -> None:
+        """
+        清理本地缓存中的过期条目
+        """
+        async with self._local_lock:
+            current_time = datetime.now().timestamp()
+            expired_keys = [
+                key for key, (_, expire_at) in self._local_cache.items()
+                if expire_at and current_time > expire_at
+            ]
+            for key in expired_keys:
+                del self._local_cache[key]
+
+            logger.debug("expired_cache_cleared", count=len(expired_keys))
