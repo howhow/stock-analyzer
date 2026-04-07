@@ -35,8 +35,8 @@ from app.analysis.indicators.volume import (
     money_flow_index,
     obv,
     volume_ma,
-    volume_ratio,
     volume_price_trend,
+    volume_ratio,
 )
 
 __all__ = [

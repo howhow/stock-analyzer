@@ -1,14 +1,14 @@
 """Volatility Indicators完整测试 - 类型安全、防御性编程"""
 
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 
 from app.analysis.indicators.volatility import (
     atr,
     atr_percentage,
-    volatility,
     keltner_channels,
+    volatility,
     volatility_regime,
 )
 

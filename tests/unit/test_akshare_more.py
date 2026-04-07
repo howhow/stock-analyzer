@@ -2,9 +2,10 @@
 AKShareClient补充测试 - 提升覆盖率
 """
 
-import pytest
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pandas as pd
+import pytest
 
 from app.data.akshare_client import AKShareClient
 

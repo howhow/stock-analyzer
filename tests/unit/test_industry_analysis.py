@@ -3,8 +3,8 @@
 import pytest
 
 from app.analysis.fundamental.industry import (
-    get_industry_category,
     calculate_industry_score,
+    get_industry_category,
 )
 
 

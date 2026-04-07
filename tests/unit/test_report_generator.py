@@ -5,9 +5,9 @@
 import pytest
 
 from app.models.analysis import (
-    AnalystReport,
     AnalysisResult,
     AnalysisType,
+    AnalystReport,
     DimensionScores,
     EntryTiming,
     MTFAlignment,

@@ -1,8 +1,9 @@
 """Main App完整测试 - 类型安全、防御性编程"""
 
+from unittest.mock import Mock, patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import Mock, patch
 
 from app.main import app
 

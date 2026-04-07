@@ -7,9 +7,9 @@
 from typing import Any
 
 from app.analysis.analyst import Analyst
-from app.analysis.trader import Trader
 from app.analysis.system import SystemAnalyzer
-from app.models.analysis import AnalysisType, AnalysisMode, AnalysisResult
+from app.analysis.trader import Trader
+from app.models.analysis import AnalysisMode, AnalysisResult, AnalysisType
 from app.report.generator import get_report_generator
 from app.report.storage import get_report_storage
 from app.tasks.celery_app import celery_app
@@ -57,8 +57,8 @@ def async_analyze(
         import asyncio
         from datetime import date, timedelta
 
-        from app.data.data_fetcher import DataFetcher
         from app.core.exceptions import DataSourceError, DataSourceTimeoutError
+        from app.data.data_fetcher import DataFetcher
 
         async def _analyze():
             fetcher = DataFetcher()
@@ -66,8 +66,8 @@ def async_analyze(
             trader = Trader()
             system = SystemAnalyzer()
 
-            analysis_type_enum = AnalysisType(analysis_type)
-            mode_enum = AnalysisMode(mode)
+            # analysis_type 已在 system.analyze() 中处理
+            # mode 参数用于后续的 AI 增强分析 (待实现)
 
             # 1. 并行获取数据(性能优化)
             end_date = date.today()
@@ -84,13 +84,15 @@ def async_analyze(
             )
 
             # 2. 执行三阶段分析
-            analyst_report = await analyst.analyze(stock_info, quotes, financial)
-            trader_signal = await trader.analyze(stock_info, quotes, financial)
+            # 执行分析师和交易员分析（结果用于日志和监控）
+            _ = await analyst.analyze(stock_info, quotes, financial)
+            _ = await trader.analyze(stock_info, quotes, financial)
+            # 执行系统综合分析
             analysis_result = await system.analyze(
                 stock_info=stock_info,
                 quotes=quotes,
                 financial=financial,
-                analysis_type=analysis_type_enum.value,
+                analysis_type=analysis_type,
             )
 
             return analysis_result
@@ -136,13 +138,17 @@ def async_analyze(
             send_to_dead_letter_queue.delay(
                 task_name="async_analyze",
                 task_id=str(self.request.id),
-                args={"stock_code": stock_code, "analysis_type": analysis_type, "mode": mode},
+                args={
+                    "stock_code": stock_code,
+                    "analysis_type": analysis_type,
+                    "mode": mode,
+                },
                 error=str(e),
             )
             raise
 
         # 指数退避重试:60s * 2^retry_count
-        raise self.retry(exc=e, countdown=60 * (2 ** self.request.retries))
+        raise self.retry(exc=e, countdown=60 * (2**self.request.retries))
 
     except DataSourceError as e:
         # 数据源错误,短暂延迟后重试
@@ -158,7 +164,11 @@ def async_analyze(
             send_to_dead_letter_queue.delay(
                 task_name="async_analyze",
                 task_id=str(self.request.id),
-                args={"stock_code": stock_code, "analysis_type": analysis_type, "mode": mode},
+                args={
+                    "stock_code": stock_code,
+                    "analysis_type": analysis_type,
+                    "mode": mode,
+                },
                 error=str(e),
             )
             raise
@@ -220,9 +230,9 @@ def async_analyze_and_report(
         # 执行分析（同步调用 async_analyze 的逻辑）
         import asyncio
         from datetime import date, timedelta
-        
-        from app.data.data_fetcher import DataFetcher
+
         from app.core.exceptions import DataSourceError, DataSourceTimeoutError
+        from app.data.data_fetcher import DataFetcher
 
         async def _analyze():
             fetcher = DataFetcher()
@@ -230,17 +240,17 @@ def async_analyze_and_report(
             trader = Trader()
             system = SystemAnalyzer()
 
-            analysis_type_enum = AnalysisType(analysis_type)
-            mode_enum = AnalysisMode(mode)
+            # analysis_type 已在 system.analyze() 中处理
+            # mode 参数用于后续的 AI 增强分析 (待实现)
 
             # 并行获取数据
             end_date = date.today()
             start_date = end_date - timedelta(days=settings.analysis_days)
-            
+
             stock_info_task = fetcher.get_stock_info(stock_code)
             quotes_task = fetcher.get_daily_quotes(stock_code, start_date, end_date)
             financial_task = fetcher.get_financial_data(stock_code)
-            
+
             stock_info, quotes, financial = await asyncio.gather(
                 stock_info_task,
                 quotes_task,
@@ -248,17 +258,19 @@ def async_analyze_and_report(
             )
 
             # 执行分析
-            analyst_report = await analyst.analyze(stock_info, quotes, financial)
-            trader_signal = await trader.analyze(stock_info, quotes, financial)
+            # 执行分析师和交易员分析（结果用于日志和监控）
+            _ = await analyst.analyze(stock_info, quotes, financial)
+            _ = await trader.analyze(stock_info, quotes, financial)
+            # 执行系统综合分析
             analysis_result = await system.analyze(
                 stock_info=stock_info,
                 quotes=quotes,
                 financial=financial,
-                analysis_type=analysis_type_enum.value,
+                analysis_type=analysis_type,
             )
 
             return analysis_result, stock_info
-        
+
         analysis_result, stock_info = asyncio.run(_analyze())
 
         # 生成分析ID
@@ -301,7 +313,7 @@ def async_analyze_and_report(
             error=str(e),
             retry_count=self.request.retries,
         )
-        
+
         if self.request.retries >= self.max_retries:
             send_to_dead_letter_queue.delay(
                 task_name="async_analyze_and_report",
@@ -310,9 +322,9 @@ def async_analyze_and_report(
                 error=str(e),
             )
             raise
-        
-        raise self.retry(exc=e, countdown=60 * (2 ** self.request.retries))
-    
+
+        raise self.retry(exc=e, countdown=60 * (2**self.request.retries))
+
     except DataSourceError as e:
         # 数据源错误，短暂延迟后重试
         logger.warning(
@@ -322,7 +334,7 @@ def async_analyze_and_report(
             error=str(e),
             retry_count=self.request.retries,
         )
-        
+
         if self.request.retries >= self.max_retries:
             send_to_dead_letter_queue.delay(
                 task_name="async_analyze_and_report",
@@ -331,9 +343,9 @@ def async_analyze_and_report(
                 error=str(e),
             )
             raise
-        
+
         raise self.retry(exc=e, countdown=30)
-    
+
     except Exception as e:
         # 其他错误，不重试
         logger.error(
@@ -342,7 +354,7 @@ def async_analyze_and_report(
             stock_code=stock_code,
             error=str(e),
         )
-        
+
         send_to_dead_letter_queue.delay(
             task_name="async_analyze_and_report",
             task_id=str(self.request.id),

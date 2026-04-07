@@ -1,8 +1,9 @@
 """Data Fetcher完整测试"""
 
-import pytest
 from datetime import date
-from unittest.mock import Mock, MagicMock, patch, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
+import pytest
 
 from app.data.data_fetcher import DataFetcher
 

@@ -2,8 +2,9 @@
 BloomFilter补充测试 - 提升覆盖率
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 
 from app.core.bloom_filter import BloomFilter, LocalBloomFilter
 

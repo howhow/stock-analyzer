@@ -5,7 +5,7 @@
 """
 
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Awaitable, Callable
 
 import bcrypt
@@ -14,10 +14,7 @@ from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 
-from app.core.exceptions import (
-    InvalidTokenError,
-    TokenExpiredError,
-)
+from app.core.exceptions import InvalidTokenError, TokenExpiredError
 from app.utils.logger import get_logger
 from config import settings
 
@@ -193,13 +190,13 @@ class JWTManager:
         if expires_delta is None:
             expires_delta = timedelta(minutes=JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
 
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
 
         payload = {
             "sub": user_id,
             "role": role,
             "exp": expire,
-            "iat": datetime.utcnow(),
+            "iat": datetime.now(timezone.utc),
             "type": "access",
         }
 
@@ -219,12 +216,12 @@ class JWTManager:
         Returns:
             JWT刷新令牌
         """
-        expire = datetime.utcnow() + timedelta(days=JWT_REFRESH_TOKEN_EXPIRE_DAYS)
+        expire = datetime.now(timezone.utc) + timedelta(days=JWT_REFRESH_TOKEN_EXPIRE_DAYS)
 
         payload = {
             "sub": user_id,
             "exp": expire,
-            "iat": datetime.utcnow(),
+            "iat": datetime.now(timezone.utc),
             "type": "refresh",
         }
 
@@ -297,12 +294,12 @@ async def get_api_key_user(
 
     Raises:
         HTTPException: 认证失败
-    
+
     ⚠️ 开发模式说明：
     当前版本仅验证 API Key 格式，未实现数据库查询验证。
     这意味着任何格式正确的 API Key 都能通过验证。
     适用场景：仅用于开发和测试环境，不应用于生产环境。
-    
+
     TODO: 生产环境需要实现以下功能：
     1. 从数据库查询 API Key 是否存在
     2. 验证 API Key 是否过期

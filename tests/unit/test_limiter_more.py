@@ -2,12 +2,13 @@
 Limiter补充测试 - 提升覆盖率
 """
 
-import pytest
 from unittest.mock import AsyncMock
 
+import pytest
+
 from app.core.limiter import (
-    SlidingWindowLimiter,
     RateLimiter,
+    SlidingWindowLimiter,
     UserTier,
     get_rate_limiter,
 )

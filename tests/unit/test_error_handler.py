@@ -1,15 +1,16 @@
 """Error Handler完整测试 - 类型安全、防御性编程"""
 
+from unittest.mock import Mock
+
 import pytest
 from fastapi import FastAPI, Request, status
 from fastapi.testclient import TestClient
-from unittest.mock import Mock
 
 from app.core.error_handler import (
+    _get_status_code,
+    generic_exception_handler,
     register_exception_handlers,
     stock_analyzer_exception_handler,
-    generic_exception_handler,
-    _get_status_code,
 )
 from app.core.exceptions import (
     AnalysisError,

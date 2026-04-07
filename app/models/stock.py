@@ -13,33 +13,33 @@ from pydantic import BaseModel, BeforeValidator, Field, field_validator
 def validate_stock_code(v: str) -> str:
     """
     验证股票代码格式
-    
+
     支持格式: 600519.SH, 000001.SZ, 00700.HK
-    
+
     Args:
         v: 股票代码字符串
-    
+
     Returns:
         验证后的股票代码（大写）
-    
+
     Raises:
         ValueError: 格式无效
     """
     if not v:
         raise ValueError("stock code cannot be empty")
-    
+
     parts = v.split(".")
     if len(parts) != 2:
         raise ValueError(f"invalid stock code format: {v}")
-    
+
     code, market = parts
-    
+
     if not code.isdigit() or len(code) != 6:
         raise ValueError(f"invalid stock code: {code}")
-    
+
     if market.upper() not in ("SH", "SZ", "HK"):
         raise ValueError(f"invalid market: {market}")
-    
+
     return v.upper()
 
 

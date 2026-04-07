@@ -12,10 +12,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from app.models.analysis import AnalysisResult
-from app.models.report import (
-    ReportContent,
-    ReportFormat,
-)
+from app.models.report import ReportContent, ReportFormat
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -82,8 +79,10 @@ class ReportGenerator:
 
         # 兼容简单 AnalysisResult（app/analysis/base.py）
         # 如果传入的是简单 AnalysisResult，需要从参数获取 stock_code
-        actual_stock_code = stock_code or getattr(analysis_result, 'stock_code', 'UNKNOWN')
-        actual_stock_name = stock_name or getattr(analysis_result, 'stock_name', '未知')
+        actual_stock_code = stock_code or getattr(
+            analysis_result, "stock_code", "UNKNOWN"
+        )
+        actual_stock_name = stock_name or getattr(analysis_result, "stock_name", "未知")
 
         logger.info(
             "report_generation_started",
@@ -158,33 +157,76 @@ class ReportGenerator:
         Returns:
             报告数据字典
         """
-        # 兼容简单的 AnalysisResult（app/analysis/base.py）
-        # 从 result.details 中获取数据
-        analyst_data = result.details.get("analyst", {})
-        trader_data = result.details.get("trader", {})
+        # 兼容两种 AnalysisResult 格式
+        # 1. 简单版本（app/analysis/base.py）- 有 details 属性
+        # 2. 完整版本（app/models/analysis.py）- 有 analyst_report 和 trader_signal 属性
         
-        # 评分数据
-        scores = {
-            "total": result.scores.get("total", 0),
-            "fundamental": analyst_data.get("scores", {}).get("fundamental", 50),
-            "technical": analyst_data.get("scores", {}).get("technical", 50),
-            "signal_strength": trader_data.get("scores", {}).get("signal_strength", 2.5),
-            "opportunity_quality": trader_data.get("scores", {}).get("opportunity_quality", 2.5),
-            "risk_level": trader_data.get("scores", {}).get("risk_level", 3),
-        }
+        if hasattr(result, 'details'):
+            # 简单版本
+            analyst_data = result.details.get("analyst", {})
+            trader_data = result.details.get("trader", {})
+            scores = {
+                "total": result.scores.get("total", 0),
+                "fundamental": analyst_data.get("scores", {}).get("fundamental", 50),
+                "technical": analyst_data.get("scores", {}).get("technical", 50),
+                "signal_strength": trader_data.get("scores", {}).get(
+                    "signal_strength", 2.5
+                ),
+                "opportunity_quality": trader_data.get("scores", {}).get(
+                    "opportunity_quality", 2.5
+                ),
+                "risk_level": trader_data.get("scores", {}).get("risk_level", 3),
+            }
+            risk_assessment = self._calculate_risk_assessment(
+                scores["risk_level"],
+                trader_data.get("var_95", 0),
+                trader_data.get("max_drawdown", 0),
+            )
+            stock_code = result.details.get("stock_code", "UNKNOWN")
+            stock_name = result.details.get("stock_name", "未知")
+            analysis_type = result.details.get("analysis_type", "long")
+            recommendation = result.details.get("recommendation", "hold")
+            confidence = result.details.get("confidence", 50)
+        else:
+            # 完整版本（app/models/analysis.py）
+            analyst_report = result.analyst_report
+            trader_signal = result.trader_signal
+            
+            scores = {
+                "total": analyst_report.total_score,
+                "fundamental": analyst_report.fundamental_score,
+                "technical": analyst_report.technical_score,
+                "signal_strength": analyst_report.dimension_scores.signal_strength,
+                "opportunity_quality": analyst_report.dimension_scores.opportunity_quality,
+                "risk_level": analyst_report.dimension_scores.risk_level,
+            }
+            risk_assessment = self._calculate_risk_assessment(
+                scores["risk_level"],
+                trader_signal.var_95,
+                trader_signal.max_drawdown,
+            )
+            stock_code = result.stock_code
+            stock_name = result.stock_name or "未知"
+            analysis_type = result.analysis_type.value if hasattr(result.analysis_type, 'value') else str(result.analysis_type)
+            recommendation = trader_signal.recommendation.value if hasattr(trader_signal.recommendation, 'value') else str(trader_signal.recommendation)
+            confidence = trader_signal.confidence
+            
+            # 为后续代码准备 trader_data 字典
+            trader_data = {
+                "entry_timing": trader_signal.entry_timing.value if hasattr(trader_signal.entry_timing, 'value') else str(trader_signal.entry_timing),
+                "entry_price": trader_signal.entry_price,
+                "stop_loss_price": trader_signal.stop_loss_price,
+                "var_95": trader_signal.var_95,
+                "max_drawdown": trader_signal.max_drawdown,
+            }
+            analyst_data = analyst_data if 'analyst_data' in locals() else {}
 
-        # 风险评估
-        risk_assessment = self._calculate_risk_assessment(
-            scores["risk_level"], 
-            trader_data.get("var_95", 0), 
-            trader_data.get("max_drawdown", 0)
-        )
 
         # 时机建议
         timing_advice = self._generate_timing_advice(
-            trader_data.get("entry_timing", "观望"), 
-            trader_data.get("entry_price", 0), 
-            trader_data.get("stop_loss_price", 0)
+            trader_data.get("entry_timing", "观望"),
+            trader_data.get("entry_price", 0),
+            trader_data.get("stop_loss_price", 0),
         )
 
         # 动态风险提示
@@ -204,14 +246,14 @@ class ReportGenerator:
         final_fundamentals = fundamentals or {}
 
         # 波动率（从指标或计算）
-        volatility_30d = final_indicators.get('volatility_30d', None)
+        volatility_30d = final_indicators.get("volatility_30d", None)
 
         return {
             # 基本信息
-            "stock_code": result.details.get("stock_code", "UNKNOWN"),
-            "stock_name": result.details.get("stock_name", "未知"),
+            "stock_code": stock_code,
+            "stock_name": stock_name,
             "analysis_id": f"analysis_{datetime.now().strftime('%Y%m%d%H%M%S')}",
-            "analysis_type": result.details.get("analysis_type", "long"),
+            "analysis_type": analysis_type,
             "mode": "algorithm",
             "generated_at": datetime.now().isoformat(),
             # 评分
@@ -335,17 +377,17 @@ class ReportGenerator:
         indicators = indicators or {}
 
         # 规则1: 换手率 > 10%
-        turnover_rate = indicators.get('turnover_rate', 0)
+        turnover_rate = indicators.get("turnover_rate", 0)
         if turnover_rate > 10:
             warnings.append(f"近期换手率偏高（{turnover_rate:.1f}%），注意流动性风险")
 
         # 规则2: 30日波动率 > 3%
-        volatility_30d = indicators.get('volatility_30d', 0)
+        volatility_30d = indicators.get("volatility_30d", 0)
         if volatility_30d > 3:
             warnings.append(f"30日波动率较高（{volatility_30d:.1f}%），价格波动剧烈")
 
         # 规则3: 成交量比 > 2
-        volume_ratio = indicators.get('volume_ratio', 0)
+        volume_ratio = indicators.get("volume_ratio", 0)
         if volume_ratio > 2:
             warnings.append(f"成交量异常放大（{volume_ratio:.1f}倍），可能存在资金异动")
 
@@ -387,19 +429,29 @@ class ReportGenerator:
 
         # 基于支撑压力位设定基础价格
         base_price = 46.0
-        analyst_data = result.details.get("analyst", {})
-        support_levels = analyst_data.get("support_levels", [44.0])
-        resistance_levels = analyst_data.get("resistance_levels", [50.0])
+        
+        # 兼容两种 AnalysisResult 格式
+        if hasattr(result, 'details'):
+            # 简单版本
+            analyst_data = result.details.get("analyst", {})
+            support_levels = analyst_data.get("support_levels", [44.0])
+            resistance_levels = analyst_data.get("resistance_levels", [50.0])
+        else:
+            # 完整版本
+            support_levels = result.analyst_report.support_levels or [44.0]
+            resistance_levels = result.analyst_report.resistance_levels or [50.0]
+        
         support = support_levels[0] if support_levels else 44.0
         resistance = resistance_levels[0] if resistance_levels else 50.0
 
         # 生成日期
         from datetime import timedelta
+
         start_date = datetime.now() - timedelta(days=days)
         for i in range(days):
             date = start_date + timedelta(days=i)
             if date.weekday() < 5:  # 只生成工作日
-                dates.append(date.strftime('%m-%d'))
+                dates.append(date.strftime("%m-%d"))
 
         # 生成K线数据
         close = base_price
@@ -411,12 +463,14 @@ class ReportGenerator:
             high = max(open_price, close) * (1 + random.uniform(0, 0.01))
             low = min(open_price, close) * (1 - random.uniform(0, 0.01))
 
-            kline.append([
-                round(open_price, 2),
-                round(close, 2),
-                round(low, 2),
-                round(high, 2),
-            ])
+            kline.append(
+                [
+                    round(open_price, 2),
+                    round(close, 2),
+                    round(low, 2),
+                    round(high, 2),
+                ]
+            )
 
             # 成交量（单位：万手）
             volume.append(random.randint(500, 2000))
@@ -463,19 +517,19 @@ class ReportGenerator:
                 rsi_data.append(None)
 
         return {
-            'dates': dates,
-            'kline': kline,
-            'volume': volume,
-            'ma5': ma5,
-            'ma20': ma20,
-            'support': round(support, 2),
-            'resistance': round(resistance, 2),
-            'macd': {
-                'dif': macd_dif,
-                'dea': macd_dea,
-                'histogram': macd_histogram,
+            "dates": dates,
+            "kline": kline,
+            "volume": volume,
+            "ma5": ma5,
+            "ma20": ma20,
+            "support": round(support, 2),
+            "resistance": round(resistance, 2),
+            "macd": {
+                "dif": macd_dif,
+                "dea": macd_dea,
+                "histogram": macd_histogram,
             },
-            'rsi': rsi_data,
+            "rsi": rsi_data,
         }
 
     def _generate_html(self, data: dict[str, Any]) -> str:

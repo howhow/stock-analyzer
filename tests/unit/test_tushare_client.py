@@ -1,11 +1,12 @@
 """Tushare客户端测试"""
 
-import pytest
 from datetime import date
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
+
 from app.data.tushare_client import TushareClient
-from app.models.stock import DailyQuote, StockInfo, FinancialData
+from app.models.stock import DailyQuote, FinancialData, StockInfo
 
 
 class TestTushareClient:

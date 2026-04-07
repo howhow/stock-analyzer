@@ -7,11 +7,7 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
-from app.models.report import (
-    ReportFormat,
-    ReportStatus,
-    ReportStorageConfig,
-)
+from app.models.report import ReportFormat, ReportStatus, ReportStorageConfig
 from app.report.storage import ReportStorage, get_report_storage
 
 

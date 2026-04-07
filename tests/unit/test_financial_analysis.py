@@ -1,12 +1,13 @@
 """Financial Analysis完整测试 - 类型安全、防御性编程"""
 
-import pytest
 from datetime import date
 
+import pytest
+
 from app.analysis.fundamental.financial import (
+    analyze_growth,
     analyze_profitability,
     analyze_solvency,
-    analyze_growth,
     calculate_financial_score,
 )
 from app.models.stock import FinancialData

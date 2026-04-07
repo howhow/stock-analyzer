@@ -4,16 +4,15 @@
 集成安全认证和限流
 """
 
-from typing import Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any
+
+if TYPE_CHECKING:
+    from app.data.data_fetcher import DataFetcher
 
 from fastapi import Depends, Request
 
 from app.core.limiter import check_rate_limit
-from app.core.security import (
-    get_current_user,
-    get_current_user_optional,
-    require_role,
-)
+from app.core.security import get_current_user, get_current_user_optional, require_role
 
 # ============ 用户依赖 ============
 
@@ -58,19 +57,19 @@ async def get_db() -> None:
 async def get_data_fetcher(request: Request) -> "DataFetcher":
     """
     获取数据获取器实例（从 app.state）
-    
+
     Args:
         request: FastAPI 请求对象
-    
+
     Returns:
         DataFetcher 实例
     """
     from app.data.data_fetcher import DataFetcher
-    
+
     # 从 app.state 获取（线程安全）
     if hasattr(request.app.state, "data_fetcher"):
         return request.app.state.data_fetcher
-    
+
     # 降级：创建新实例
     return DataFetcher()
 

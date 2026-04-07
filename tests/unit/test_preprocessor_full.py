@@ -1,8 +1,9 @@
 """预处理器完整测试"""
 
-import pytest
+from unittest.mock import MagicMock, Mock
+
 import pandas as pd
-from unittest.mock import Mock, MagicMock
+import pytest
 
 from app.data.preprocessor import DataPreprocessor
 

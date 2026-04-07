@@ -21,10 +21,7 @@ from app.analysis.indicators import (
     sma,
     support_resistance,
 )
-from app.analysis.scoring import (
-    ScoringEngine,
-    score_to_rating,
-)
+from app.analysis.scoring import ScoringEngine, score_to_rating
 from app.analysis.system import SystemAnalyzer
 from app.analysis.trader import Trader
 
