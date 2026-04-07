@@ -236,24 +236,25 @@ class TestGetDailyQuotes:
     async def test_get_daily_quotes_no_cache(self, fetcher):
         """测试不使用缓存"""
         mock_cache = AsyncMock()
-        mock_cache.get = AsyncMock(
-            return_value=[
-                {
-                    "stock_code": "000001.SZ",
-                    "trade_date": "2024-01-01",
-                    "open": 10.0,
-                    "high": 11.0,
-                    "low": 9.0,
-                    "close": 10.5,
-                    "volume": 1000000,
-                    "amount": 10500000.0,
-                }
-            ]
-        )
+        mock_cache.get = AsyncMock(return_value=None)
+        mock_cache.set = AsyncMock()
 
         mock_tushare = AsyncMock()
         mock_tushare.name = "tushare"
-        mock_tushare.get_daily_quotes = AsyncMock(return_value=[])
+        mock_tushare.get_daily_quotes = AsyncMock(
+            return_value=[
+                DailyQuote(
+                    stock_code="000001.SZ",
+                    trade_date="2024-01-01",
+                    open=10.0,
+                    high=11.0,
+                    low=9.0,
+                    close=10.5,
+                    volume=1000000,
+                    amount=10500000.0,
+                )
+            ]
+        )
 
         fetcher.cache = mock_cache
         fetcher.sources = [mock_tushare]
