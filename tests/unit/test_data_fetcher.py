@@ -1,10 +1,11 @@
 """数据获取器测试 - 简化版"""
 
-import pytest
 from datetime import date
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.models.stock import DailyQuote, StockInfo, FinancialData
+import pytest
+
+from app.models.stock import DailyQuote, FinancialData, StockInfo
 
 
 class TestStockModels:

@@ -9,16 +9,16 @@ from datetime import date
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-from tests.fixtures.mock_data import (
-    MOCK_STOCK_INFO_DICT,
-    MOCK_DAILY_QUOTES_DICT,
-    create_stock_info_dict,
-    create_daily_quote_dict,
-)
 
 from app.data.base import DataSourceError
 from app.data.data_fetcher import DataFetcher
 from app.models.stock import DailyQuote, StockInfo
+from tests.fixtures.mock_data import (
+    MOCK_DAILY_QUOTES_DICT,
+    MOCK_STOCK_INFO_DICT,
+    create_daily_quote_dict,
+    create_stock_info_dict,
+)
 
 
 class TestDataFetcherInit:
@@ -68,7 +68,7 @@ class TestGetStockInfo:
                 "code": "000001.SZ",
                 "name": "平安银行",
                 "market": "SZ",
-                "industry": "银行"
+                "industry": "银行",
             }
         )
         fetcher.cache = mock_cache
@@ -90,12 +90,12 @@ class TestGetStockInfo:
         mock_tushare.name = "tushare"
         mock_tushare.get_stock_info = AsyncMock(
             return_value=StockInfo(
-                    code="000001.SZ",
-                    name="平安银行",
-                    market="SZ",
-                    industry="银行",
-                    list_date=None,
-                )
+                code="000001.SZ",
+                name="平安银行",
+                market="SZ",
+                industry="银行",
+                list_date=None,
+            )
         )
 
         fetcher.cache = mock_cache
@@ -122,12 +122,12 @@ class TestGetStockInfo:
         mock_akshare.name = "akshare"
         mock_akshare.get_stock_info = AsyncMock(
             return_value=StockInfo(
-                    code="000001.SZ",
-                    name="平安银行",
-                    market="SZ",
-                    industry="银行",
-                    list_date=None,
-                )
+                code="000001.SZ",
+                name="平安银行",
+                market="SZ",
+                industry="银行",
+                list_date=None,
+            )
         )
 
         fetcher.cache = mock_cache
@@ -208,7 +208,8 @@ class TestGetDailyQuotes:
         mock_tushare.name = "tushare"
         mock_tushare.get_daily_quotes = AsyncMock(
             return_value=[
-                DailyQuote(stock_code="000001.SZ",
+                DailyQuote(
+                    stock_code="000001.SZ",
                     trade_date="2024-01-01",
                     open=10.0,
                     high=11.0,

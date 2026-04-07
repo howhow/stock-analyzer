@@ -216,7 +216,9 @@ class JWTManager:
         Returns:
             JWT刷新令牌
         """
-        expire = datetime.now(timezone.utc) + timedelta(days=JWT_REFRESH_TOKEN_EXPIRE_DAYS)
+        expire = datetime.now(timezone.utc) + timedelta(
+            days=JWT_REFRESH_TOKEN_EXPIRE_DAYS
+        )
 
         payload = {
             "sub": user_id,

@@ -9,17 +9,17 @@ from datetime import date
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-from tests.fixtures.mock_data import (
-    MOCK_STOCK_INFO_DICT,
-    MOCK_DAILY_QUOTES_DICT,
-    create_stock_info_dict,
-    create_daily_quote_dict,
-)
 
 from app.data.base import DataSourceError
 from app.data.data_fetcher import DataFetcher
 from app.data.health_check import HealthStatus
 from app.models.stock import DailyQuote, FinancialData, IntradayQuote, StockInfo
+from tests.fixtures.mock_data import (
+    MOCK_DAILY_QUOTES_DICT,
+    MOCK_STOCK_INFO_DICT,
+    create_daily_quote_dict,
+    create_stock_info_dict,
+)
 
 
 class TestDataFetcherInit:
@@ -68,9 +68,9 @@ class TestGetStockInfo:
             return_value={
                 "code": "000001.SZ",
                 "name": "平安银行",
-            "market": "SZ",
+                "market": "SZ",
                 "industry": "银行",
-                            }
+            }
         )
         mock_cache.make_key = Mock(return_value="test_key")
         fetcher.cache = mock_cache
@@ -93,12 +93,12 @@ class TestGetStockInfo:
         mock_source.name = "test_source"
         mock_source.get_stock_info = AsyncMock(
             return_value=StockInfo(
-                    code="000001.SZ",
-                    name="平安银行",
-                    market="SZ",
-                    industry="银行",
-                    list_date=None,
-                )
+                code="000001.SZ",
+                name="平安银行",
+                market="SZ",
+                industry="银行",
+                list_date=None,
+            )
         )
 
         fetcher.cache = mock_cache
@@ -126,12 +126,12 @@ class TestGetStockInfo:
         mock_source2.name = "source2"
         mock_source2.get_stock_info = AsyncMock(
             return_value=StockInfo(
-                    code="000001.SZ",
-                    name="平安银行",
-                    market="SZ",
-                    industry="银行",
-                    list_date=None,
-                )
+                code="000001.SZ",
+                name="平安银行",
+                market="SZ",
+                industry="银行",
+                list_date=None,
+            )
         )
 
         fetcher.cache = mock_cache
@@ -215,7 +215,8 @@ class TestGetDailyQuotes:
         mock_source.name = "test_source"
         mock_source.get_daily_quotes = AsyncMock(
             return_value=[
-                DailyQuote(stock_code="000001.SZ",
+                DailyQuote(
+                    stock_code="000001.SZ",
                     trade_date="2024-01-01",
                     open=10.0,
                     high=11.0,
@@ -234,7 +235,8 @@ class TestGetDailyQuotes:
             "app.data.data_fetcher.DataPreprocessor.clean_daily_quotes"
         ) as mock_clean:
             mock_clean.return_value = [
-                DailyQuote(stock_code="000001.SZ",
+                DailyQuote(
+                    stock_code="000001.SZ",
                     trade_date="2024-01-01",
                     open=10.0,
                     high=11.0,
@@ -265,7 +267,8 @@ class TestGetDailyQuotes:
         mock_source.name = "test_source"
         mock_source.get_daily_quotes = AsyncMock(
             return_value=[
-                DailyQuote(stock_code="000001.SZ",
+                DailyQuote(
+                    stock_code="000001.SZ",
                     trade_date="2024-01-01",
                     open=10.0,
                     high=11.0,
@@ -284,7 +287,8 @@ class TestGetDailyQuotes:
             "app.data.data_fetcher.DataPreprocessor.clean_daily_quotes"
         ) as mock_clean:
             mock_clean.return_value = [
-                DailyQuote(stock_code="000001.SZ",
+                DailyQuote(
+                    stock_code="000001.SZ",
                     trade_date="2024-01-01",
                     open=10.0,
                     high=11.0,

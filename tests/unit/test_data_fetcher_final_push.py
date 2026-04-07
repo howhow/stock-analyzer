@@ -9,17 +9,17 @@ from datetime import date
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
-from tests.fixtures.mock_data import (
-    MOCK_STOCK_INFO_DICT,
-    MOCK_DAILY_QUOTES_DICT,
-    create_stock_info_dict,
-    create_daily_quote_dict,
-)
 from pydantic import BaseModel
 
 from app.data.data_fetcher import DataFetcher
 from app.data.health_check import HealthStatus
 from app.models.stock import DailyQuote, FinancialData, IntradayQuote, StockInfo
+from tests.fixtures.mock_data import (
+    MOCK_DAILY_QUOTES_DICT,
+    MOCK_STOCK_INFO_DICT,
+    create_daily_quote_dict,
+    create_stock_info_dict,
+)
 
 
 class TestCacheSetSuccess:
@@ -37,11 +37,7 @@ class TestCacheSetSuccess:
         mock_cache.make_key = Mock(return_value="test_key")
 
         # 模拟数据源返回成功
-        stock_info = StockInfo(
-            stock_code="000001.SZ",
-            name="平安银行",
-            industry="银行"
-        )
+        stock_info = StockInfo(stock_code="000001.SZ", name="平安银行", industry="银行")
 
         mock_source = AsyncMock()
         mock_source.name = "tushare"

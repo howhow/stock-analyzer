@@ -160,8 +160,8 @@ class ReportGenerator:
         # 兼容两种 AnalysisResult 格式
         # 1. 简单版本（app/analysis/base.py）- 有 details 属性
         # 2. 完整版本（app/models/analysis.py）- 有 analyst_report 和 trader_signal 属性
-        
-        if hasattr(result, 'details'):
+
+        if hasattr(result, "details"):
             # 简单版本
             analyst_data = result.details.get("analyst", {})
             trader_data = result.details.get("trader", {})
@@ -191,7 +191,7 @@ class ReportGenerator:
             # 完整版本（app/models/analysis.py）
             analyst_report = result.analyst_report
             trader_signal = result.trader_signal
-            
+
             scores = {
                 "total": analyst_report.total_score,
                 "fundamental": analyst_report.fundamental_score,
@@ -207,20 +207,31 @@ class ReportGenerator:
             )
             stock_code = result.stock_code
             stock_name = result.stock_name or "未知"
-            analysis_type = result.analysis_type.value if hasattr(result.analysis_type, 'value') else str(result.analysis_type)
-            recommendation = trader_signal.recommendation.value if hasattr(trader_signal.recommendation, 'value') else str(trader_signal.recommendation)
+            analysis_type = (
+                result.analysis_type.value
+                if hasattr(result.analysis_type, "value")
+                else str(result.analysis_type)
+            )
+            recommendation = (
+                trader_signal.recommendation.value
+                if hasattr(trader_signal.recommendation, "value")
+                else str(trader_signal.recommendation)
+            )
             confidence = trader_signal.confidence
-            
+
             # 为后续代码准备 trader_data 字典
             trader_data = {
-                "entry_timing": trader_signal.entry_timing.value if hasattr(trader_signal.entry_timing, 'value') else str(trader_signal.entry_timing),
+                "entry_timing": (
+                    trader_signal.entry_timing.value
+                    if hasattr(trader_signal.entry_timing, "value")
+                    else str(trader_signal.entry_timing)
+                ),
                 "entry_price": trader_signal.entry_price,
                 "stop_loss_price": trader_signal.stop_loss_price,
                 "var_95": trader_signal.var_95,
                 "max_drawdown": trader_signal.max_drawdown,
             }
-            analyst_data = analyst_data if 'analyst_data' in locals() else {}
-
+            analyst_data = analyst_data if "analyst_data" in locals() else {}
 
         # 时机建议
         timing_advice = self._generate_timing_advice(
@@ -429,9 +440,9 @@ class ReportGenerator:
 
         # 基于支撑压力位设定基础价格
         base_price = 46.0
-        
+
         # 兼容两种 AnalysisResult 格式
-        if hasattr(result, 'details'):
+        if hasattr(result, "details"):
             # 简单版本
             analyst_data = result.details.get("analyst", {})
             support_levels = analyst_data.get("support_levels", [44.0])
@@ -440,7 +451,7 @@ class ReportGenerator:
             # 完整版本
             support_levels = result.analyst_report.support_levels or [44.0]
             resistance_levels = result.analyst_report.resistance_levels or [50.0]
-        
+
         support = support_levels[0] if support_levels else 44.0
         resistance = resistance_levels[0] if resistance_levels else 50.0
 
