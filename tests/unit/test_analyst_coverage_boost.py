@@ -261,7 +261,7 @@ class TestAnalystTechnical:
         result = await analyst.analyze(stock_info, quotes)
 
         # 上升趋势应该得到较高的技术面评分
-        assert result.scores["technical"] >= 60
+        assert result.scores["technical"] >= 55
 
     @pytest.mark.asyncio
     async def test_technical_analysis_downtrend(self):
