@@ -419,7 +419,7 @@ class TestGetFinancialData:
         result = await fetcher.get_financial_data("000001.SZ")
 
         assert result is not None
-        assert result.code == "000001.SZ"
+        assert result.stock_code == "000001.SZ"
 
     @pytest.mark.asyncio
     async def test_get_financial_data_from_source(self, fetcher):
@@ -433,7 +433,7 @@ class TestGetFinancialData:
         mock_source.name = "test_source"
         mock_source.get_financial_data = AsyncMock(
             return_value=FinancialData(
-                code="000001.SZ",
+                stock_code="000001.SZ",
                 report_date="2024-03-31",
                 revenue=1000000000.0,
                 net_profit=100000000.0,
