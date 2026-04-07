@@ -8,16 +8,16 @@ from datetime import date
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
-from tests.fixtures.mock_data import (
-    MOCK_STOCK_INFO_DICT,
-    MOCK_DAILY_QUOTES_DICT,
-    create_stock_info_dict,
-    create_daily_quote_dict,
-)
 
 from app.data.data_fetcher import DataFetcher
 from app.data.health_check import HealthStatus
 from app.models.stock import DailyQuote, FinancialData, IntradayQuote, StockInfo
+from tests.fixtures.mock_data import (
+    MOCK_DAILY_QUOTES_DICT,
+    MOCK_STOCK_INFO_DICT,
+    create_daily_quote_dict,
+    create_stock_info_dict,
+)
 
 
 class TestDataFetcherSuccessPaths:
@@ -37,10 +37,7 @@ class TestDataFetcherSuccessPaths:
         mock_cache.make_key = Mock(return_value="test_key")
 
         stock_info = StockInfo(
-            code="000001.SZ",
-            name="平安银行",
-            market="SZ",
-            industry="银行"
+            code="000001.SZ", name="平安银行", market="SZ", industry="银行"
         )
 
         mock_source = AsyncMock()

@@ -9,16 +9,16 @@ from datetime import date
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
-from tests.fixtures.mock_data import (
-    MOCK_STOCK_INFO_DICT,
-    MOCK_DAILY_QUOTES_DICT,
-    create_stock_info_dict,
-    create_daily_quote_dict,
-)
 
 from app.data.base import DataSourceError
 from app.data.data_fetcher import DataFetcher
 from app.models.stock import DailyQuote, FinancialData, IntradayQuote, StockInfo
+from tests.fixtures.mock_data import (
+    MOCK_DAILY_QUOTES_DICT,
+    MOCK_STOCK_INFO_DICT,
+    create_daily_quote_dict,
+    create_stock_info_dict,
+)
 
 
 class TestDataFetcherFinalSprint:
@@ -33,7 +33,7 @@ class TestDataFetcherFinalSprint:
         mock_cache_data = {
             "stock_code": "000001.SZ",
             "name": "平安银行",
-            "industry": "银行"
+            "industry": "银行",
         }
 
         mock_cache = AsyncMock()
@@ -57,11 +57,7 @@ class TestDataFetcherFinalSprint:
         mock_cache.make_key = Mock(return_value="test_key")
 
         # 创建正确的 StockInfo 对象
-        stock_info = StockInfo(
-            stock_code="000001.SZ",
-            name="平安银行",
-            industry="银行"
-        )
+        stock_info = StockInfo(stock_code="000001.SZ", name="平安银行", industry="银行")
 
         mock_source = AsyncMock()
         mock_source.name = "tushare"

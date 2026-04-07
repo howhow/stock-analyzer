@@ -9,16 +9,16 @@ from datetime import date
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
-from tests.fixtures.mock_data import (
-    MOCK_STOCK_INFO_DICT,
-    MOCK_DAILY_QUOTES_DICT,
-    create_stock_info_dict,
-    create_daily_quote_dict,
-)
 
 from app.data.data_fetcher import DataFetcher
 from app.data.health_check import HealthStatus
 from app.models.stock import DailyQuote, FinancialData, IntradayQuote, StockInfo
+from tests.fixtures.mock_data import (
+    MOCK_DAILY_QUOTES_DICT,
+    MOCK_STOCK_INFO_DICT,
+    create_daily_quote_dict,
+    create_stock_info_dict,
+)
 
 
 class TestFinalPush:
@@ -36,12 +36,12 @@ class TestFinalPush:
 
         # 使用正确的字段名: code, name, market
         stock_info = StockInfo(
-                code="000001.SZ",
-                name="平安银行",
-                market="SZ",
-                industry="银行",
-                list_date=None,
-            )
+            code="000001.SZ",
+            name="平安银行",
+            market="SZ",
+            industry="银行",
+            list_date=None,
+        )
 
         mock_source = AsyncMock()
         mock_source.name = "tushare"

@@ -2,9 +2,9 @@
 Pytest 配置
 """
 
-import pytest
 from unittest.mock import AsyncMock, Mock, patch
 
+import pytest
 
 # ============================================================
 # 国际化策略 - 统一使用中文
@@ -58,9 +58,10 @@ async def async_client(app):
 @pytest.fixture(autouse=True)
 def mock_external_apis():
     """自动Mock所有外部API调用"""
-    from app.models.stock import DailyQuote, StockInfo
     from datetime import date, timedelta
-    
+
+    from app.models.stock import DailyQuote, StockInfo
+
     # 创建mock数据
     mock_stock_info = StockInfo(
         code="600519.SH",
@@ -69,7 +70,7 @@ def mock_external_apis():
         industry="白酒",
         list_date=None,
     )
-    
+
     mock_quotes = [
         DailyQuote(
             stock_code="600519.SH",
@@ -83,21 +84,23 @@ def mock_external_apis():
         )
         for i in range(10)
     ]
-    
-    with patch("app.data.tushare_client.TushareClient") as mock_ts, \
-         patch("app.data.akshare_client.AKShareClient") as mock_ak:
+
+    with (
+        patch("app.data.tushare_client.TushareClient") as mock_ts,
+        patch("app.data.akshare_client.AKShareClient") as mock_ak,
+    ):
         # Mock Tushare
         ts_instance = Mock()
         ts_instance.get_stock_info = AsyncMock(return_value=mock_stock_info)
         ts_instance.get_daily_quotes = AsyncMock(return_value=mock_quotes)
         mock_ts.return_value = ts_instance
-        
+
         # Mock AKShare
         ak_instance = Mock()
         ak_instance.get_stock_info = AsyncMock(return_value=mock_stock_info)
         ak_instance.get_daily_quotes = AsyncMock(return_value=mock_quotes)
         mock_ak.return_value = ak_instance
-        
+
         yield
 
 
@@ -110,7 +113,7 @@ def mock_external_apis():
 def mock_tushare():
     """Mock Tushare 客户端"""
     from app.models.stock import StockInfo
-    
+
     with patch("app.data.tushare_client.TushareClient") as mock:
         instance = Mock()
         instance.get_stock_info = AsyncMock(
@@ -130,7 +133,7 @@ def mock_tushare():
 def mock_akshare():
     """Mock AKShare 客户端"""
     from app.models.stock import StockInfo
-    
+
     with patch("app.data.akshare_client.AKShareClient") as mock:
         instance = Mock()
         instance.get_stock_info = AsyncMock(
@@ -150,7 +153,7 @@ def mock_akshare():
 def mock_data_fetcher(mock_tushare, mock_akshare):
     """Mock DataFetcher"""
     from app.data.data_fetcher import DataFetcher
-    
+
     with patch("app.data.data_fetcher.DataFetcher") as mock:
         instance = Mock(spec=DataFetcher)
         instance.get_stock_info = AsyncMock(

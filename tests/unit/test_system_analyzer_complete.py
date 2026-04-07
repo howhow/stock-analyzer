@@ -1,12 +1,13 @@
 """System Analyzer完整测试 - 异步优先、类型安全、防御性编程"""
 
-import pytest
-import pandas as pd
 from datetime import date
-from unittest.mock import Mock, AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
+
+import pandas as pd
+import pytest
 
 from app.analysis.system import SystemAnalyzer
-from app.models.stock import StockInfo, DailyQuote, FinancialData
+from app.models.stock import DailyQuote, FinancialData, StockInfo
 
 
 class TestSystemAnalyzerFull:

@@ -53,12 +53,12 @@ def test_analysis_request_code_normalization():
 def test_stock_info():
     """测试股票信息模型"""
     stock = StockInfo(
-            code="600519.SH",
-            name="贵州茅台",
-            market="SH",
-            industry="白酒",
-            list_date=None,
-        )
+        code="600519.SH",
+        name="贵州茅台",
+        market="SH",
+        industry="白酒",
+        list_date=None,
+    )
     assert stock.code == "600519.SH"
     assert stock.name == "贵州茅台"
 
