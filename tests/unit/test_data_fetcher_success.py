@@ -110,9 +110,13 @@ class TestDataFetcherSuccessPaths:
 
         intraday_quote = IntradayQuote(
             stock_code="000001.SZ",
-            time="09:30:00",
-            price=10.0,
+            trade_time="2024-01-01 09:30:00",
+            open=10.0,
+            high=10.5,
+            low=9.8,
+            close=10.2,
             volume=10000,
+            amount=100000.0,
         )
 
         mock_source = AsyncMock()
