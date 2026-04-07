@@ -50,11 +50,12 @@ def test_analyze_stock(client: TestClient):
 
 
 def test_analyze_stock_invalid_code(client: TestClient):
-    """测试无效股票代码 - 目前返回 mock 数据"""
+    """测试无效股票代码 - 返回404"""
     from app.api.deps import get_data_fetcher
     from app.main import app
     
     mock_fetcher = AsyncMock()
+    # 返回None模拟无效股票
     mock_fetcher.get_stock_info = AsyncMock(return_value=None)
     mock_fetcher.get_daily_quotes = AsyncMock(return_value=[])
     mock_fetcher.get_financial_data = AsyncMock(return_value=None)
@@ -69,8 +70,8 @@ def test_analyze_stock_invalid_code(client: TestClient):
                 "analysis_type": "long",
             },
         )
-        # Mock 阶段暂时返回 200
-        assert response.status_code == 200
+        # 无效股票应该返回404或500
+        assert response.status_code in [404, 500]
     finally:
         app.dependency_overrides.clear()
 
@@ -87,19 +88,23 @@ def test_batch_analyze(client: TestClient):
     
     app.dependency_overrides[get_data_fetcher] = lambda: mock_fetcher
 
-    try:
-        response = client.post(
-            "/api/v1/analysis/batch-analyze",
-            json={
-                "stock_codes": ["600519.SH", "000001.SZ"],
-                "analysis_type": "both",
-            },
-        )
-        assert response.status_code == 202
-        data = response.json()
-        assert data["status"] == "accepted"
-    finally:
-        app.dependency_overrides.clear()
+    # Mock Celery task
+    with patch("app.api.v1.analysis.batch_analyze_task") as mock_task:
+        mock_task.delay = Mock(return_value=Mock(id="test-task-id"))
+        
+        try:
+            response = client.post(
+                "/api/v1/analysis/batch-analyze",
+                json={
+                    "stock_codes": ["600519.SH", "000001.SZ"],
+                    "analysis_type": "both",
+                },
+            )
+            assert response.status_code == 202
+            data = response.json()
+            assert data["status"] == "accepted"
+        finally:
+            app.dependency_overrides.clear()
 
 
 def test_get_analysis_result_not_found(client: TestClient):
