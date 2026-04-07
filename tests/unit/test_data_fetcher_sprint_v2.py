@@ -31,8 +31,9 @@ class TestDataFetcherFinalSprint:
 
         # 模拟缓存命中
         mock_cache_data = {
-            "stock_code": "000001.SZ",
+            "code": "000001.SZ",
             "name": "平安银行",
+            "market": "SZ",
             "industry": "银行",
         }
 
@@ -44,7 +45,7 @@ class TestDataFetcherFinalSprint:
 
         result = await fetcher.get_stock_info("000001.SZ")
 
-        assert result.stock_code == "000001.SZ"
+        assert result.code == "000001.SZ"
 
     @pytest.mark.asyncio
     async def test_get_stock_info_from_source_success(self):
@@ -57,7 +58,7 @@ class TestDataFetcherFinalSprint:
         mock_cache.make_key = Mock(return_value="test_key")
 
         # 创建正确的 StockInfo 对象
-        stock_info = StockInfo(stock_code="000001.SZ", name="平安银行", industry="银行")
+        stock_info = StockInfo(code="000001.SZ", name="平安银行", market="SZ", industry="银行")
 
         mock_source = AsyncMock()
         mock_source.name = "tushare"
@@ -84,7 +85,7 @@ class TestDataFetcherFinalSprint:
         # 创建正确的 DailyQuote 对象
         daily_quote = DailyQuote(
             stock_code="000001.SZ",
-            trade_trade_date=date(2024, 1, 1),
+            trade_date=date(2024, 1, 1),
             open=10.0,
             high=11.0,
             low=9.0,
@@ -127,9 +128,13 @@ class TestDataFetcherFinalSprint:
         # 创建正确的 IntradayQuote 对象
         intraday_quote = IntradayQuote(
             stock_code="000001.SZ",
-            time="09:30:00",
-            price=10.0,
+            trade_time="2024-01-01 09:30:00",
+            open=10.0,
+            high=10.5,
+            low=9.8,
+            close=10.2,
             volume=10000,
+            amount=100000.0,
         )
 
         mock_source = AsyncMock()
