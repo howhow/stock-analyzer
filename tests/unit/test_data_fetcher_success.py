@@ -69,7 +69,7 @@ class TestDataFetcherSuccessPaths:
 
         daily_quote = DailyQuote(
             stock_code="000001.SZ",
-            trade_trade_date=date(2024, 1, 1),
+            trade_date=date(2024, 1, 1),
             open=10.0,
             high=11.0,
             low=9.0,
