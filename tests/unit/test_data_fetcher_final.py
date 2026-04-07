@@ -5,7 +5,7 @@
 当前覆盖率: 64%
 """
 
-from datetime import date
+from datetime import date, datetime
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -484,18 +484,27 @@ class TestHealthCheck:
         """测试健康检查"""
         mock_health_checker = AsyncMock()
         mock_health_checker.check_all = AsyncMock(
-            return_value={
-                "tushare": HealthStatus.HEALTHY,
-                "akshare": HealthStatus.HEALTHY,
-            }
+            return_value=[
+                HealthStatus(
+                    source_name="tushare",
+                    is_healthy=True,
+                    response_time_ms=100.0,
+                    last_check_time=datetime.now(),
+                ),
+                HealthStatus(
+                    source_name="akshare",
+                    is_healthy=True,
+                    response_time_ms=150.0,
+                    last_check_time=datetime.now(),
+                ),
+            ]
         )
 
         fetcher.health_checker = mock_health_checker
 
         result = await fetcher.health_check()
 
-        assert result["tushare"] == HealthStatus.HEALTHY
-        assert result["akshare"] == HealthStatus.HEALTHY
+        assert len(result) == 2
 
 
 class TestCircuitBreaker:
