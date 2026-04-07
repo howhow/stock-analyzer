@@ -100,10 +100,14 @@ class TestDataFetcherIntraday:
 
         # 创建正确的 IntradayQuote 对象
         intraday_quote = IntradayQuote(
-            code="000001.SZ",
-            time="09:30:00",
-            price=10.0,
+            stock_code="000001.SZ",
+            trade_time="2024-01-01 09:30:00",
+            open=10.0,
+            high=10.5,
+            low=9.8,
+            close=10.2,
             volume=10000,
+            amount=100000.0,
         )
 
         mock_source = AsyncMock()
@@ -135,7 +139,7 @@ class TestDataFetcherFinancial:
 
         # 创建正确的 FinancialData 对象
         financial_data = FinancialData(
-            code="000001.SZ",
+            stock_code="000001.SZ",
             report_date="2024-03-31",
             revenue=1000000000.0,
             net_profit=100000000.0,
@@ -151,7 +155,7 @@ class TestDataFetcherFinancial:
         result = await fetcher.get_financial_data("000001.SZ")
 
         assert result is not None
-        assert result.code == "000001.SZ"
+        assert result.stock_code == "000001.SZ"
         mock_cache.set.assert_called_once()
 
 
