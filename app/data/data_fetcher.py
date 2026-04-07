@@ -86,12 +86,15 @@ class DataFetcher:
             try:
                 info = await source.get_stock_info(stock_code)
 
-                # 写入缓存
-                await self.cache.set(
-                    cache_key,
-                    info.model_dump(),
-                    ttl=settings.cache_ttl_financial,
-                )
+                # 写入缓存（失败不影响返回）
+                try:
+                    await self.cache.set(
+                        cache_key,
+                        info.model_dump(),
+                        ttl=settings.cache_ttl_financial,
+                    )
+                except Exception as e:
+                    logger.warning("cache_set_failed", key=cache_key, error=str(e))
 
                 logger.info(
                     "stock_info_fetched",
