@@ -247,7 +247,7 @@ class TestRateLimitMiddleware:
     async def test_rate_limit_middleware_without_headers(self):
         """测试限流中间件 - 无限流信息"""
         request = Mock(spec=Request)
-        request.state = Mock()
+        request.state = Mock(spec=[])
         # 没有限流信息
 
         response = Mock()
