@@ -5,7 +5,7 @@
 未覆盖行: 90-102, 199, 231-244, 323
 """
 
-from datetime import date
+from datetime import date, datetime
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
@@ -37,7 +37,7 @@ class TestCacheSetSuccess:
         mock_cache.make_key = Mock(return_value="test_key")
 
         # 模拟数据源返回成功
-        stock_info = StockInfo(stock_code="000001.SZ", name="平安银行", industry="银行")
+        stock_info = StockInfo(code="000001.SZ", name="平安银行", market="SZ", industry="银行")
 
         mock_source = AsyncMock()
         mock_source.name = "tushare"
@@ -56,7 +56,7 @@ class TestCacheSetSuccess:
         assert mock_cache.set.called
         call_args = mock_cache.set.call_args
         assert call_args[0][0] == "test_key"
-        assert "stock_code" in call_args[0][1]
+        assert "code" in call_args[0][1]
 
 
 class TestDailyQuotesReturn:
@@ -74,7 +74,7 @@ class TestDailyQuotesReturn:
 
         daily_quote = DailyQuote(
             stock_code="000001.SZ",
-            trade_trade_date=date(2024, 1, 1),
+            trade_date=date(2024, 1, 1),
             open=10.0,
             high=11.0,
             low=9.0,
@@ -121,9 +121,13 @@ class TestIntradayQuotesCacheSet:
 
         intraday_quote = IntradayQuote(
             stock_code="000001.SZ",
-            time="09:30:00",
-            price=10.0,
+            trade_time="2024-01-01 09:30:00",
+            open=10.0,
+            high=10.5,
+            low=9.8,
+            close=10.2,
             volume=10000,
+            amount=100000.0,
         )
 
         mock_source = AsyncMock()
@@ -152,10 +156,20 @@ class TestHealthCheck:
 
         mock_health_checker = AsyncMock()
         mock_health_checker.check_all = AsyncMock(
-            return_value={
-                "tushare": HealthStatus.HEALTHY,
-                "akshare": HealthStatus.HEALTHY,
-            }
+            return_value=[
+                HealthStatus(
+                    source_name="tushare",
+                    is_healthy=True,
+                    response_time_ms=100.0,
+                    last_check_time=datetime.now(),
+                ),
+                HealthStatus(
+                    source_name="akshare",
+                    is_healthy=True,
+                    response_time_ms=150.0,
+                    last_check_time=datetime.now(),
+                ),
+            ]
         )
 
         fetcher.health_checker = mock_health_checker
@@ -163,8 +177,7 @@ class TestHealthCheck:
         result = await fetcher.health_check()
 
         # 验证结果 - 覆盖行 323
-        assert "tushare" in result
-        assert "akshare" in result
+        assert len(result) == 2
         mock_health_checker.check_all.assert_called_once()
 
 
