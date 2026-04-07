@@ -260,8 +260,8 @@ class ReportGenerator:
             "scores": scores,
             "score_grade": self._get_score_grade(scores["total"]),
             # 分析结论
-            "recommendation": result.details.get("recommendation", "hold"),
-            "confidence": result.details.get("confidence", 50),
+            "recommendation": recommendation,
+            "confidence": confidence,
             "wyckoff_phase": analyst_data.get("wyckoff_phase", "accumulation"),
             "mtf_alignment": trader_data.get("mtf_alignment", "neutral"),
             "entry_timing": trader_data.get("entry_timing", "观望"),
