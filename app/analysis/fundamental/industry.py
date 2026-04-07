@@ -55,6 +55,10 @@ def get_industry_category(industry_name: str | None) -> str:
         "能源": ["石油", "煤炭", "电力", "新能源", "光伏"],
     }
 
+    # 如果输入本身就是大类名称，直接返回
+    if industry_name in industry_map:
+        return industry_name
+
     for category, keywords in industry_map.items():
         for keyword in keywords:
             if keyword in industry_name:
