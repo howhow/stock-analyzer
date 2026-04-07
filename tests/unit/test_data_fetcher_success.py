@@ -178,8 +178,8 @@ class TestDataFetcherSuccessPaths:
         mock_health_checker = AsyncMock()
         mock_health_checker.check_all = AsyncMock(
             return_value={
-                "tushare": HealthStatus.HEALTHY,
-                "akshare": HealthStatus.HEALTHY,
+                "tushare": True,
+                "akshare": True,
             }
         )
 
@@ -188,8 +188,8 @@ class TestDataFetcherSuccessPaths:
         result = await fetcher.health_check()
 
         # 验证返回结果
-        assert result["tushare"] == HealthStatus.HEALTHY
-        assert result["akshare"] == HealthStatus.HEALTHY
+        assert result["tushare"] == True
+        assert result["akshare"] == True
 
         # 验证健康检查被调用
         mock_health_checker.check_all.assert_called_once()

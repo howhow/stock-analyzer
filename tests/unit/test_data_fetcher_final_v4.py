@@ -139,8 +139,8 @@ class TestFinalPush:
         mock_health_checker = AsyncMock()
         mock_health_checker.check_all = AsyncMock(
             return_value={
-                "tushare": HealthStatus.HEALTHY,
-                "akshare": HealthStatus.HEALTHY,
+                "tushare": True,
+                "akshare": True,
             }
         )
 
