@@ -1,8 +1,9 @@
 """AKShare Client完整测试 - 类型安全、异步优先"""
 
-import pytest
 from datetime import date
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
+import pytest
 
 from app.data.akshare_client import AKShareClient
 from app.data.base import DataSourceError

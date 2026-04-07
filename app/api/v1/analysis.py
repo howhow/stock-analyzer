@@ -57,19 +57,19 @@ async def analyze_stock(
 
         # 导入分析引擎
         from app.analysis.system import SystemAnalyzer
-        from app.core.exceptions import StockAnalyzerError, DataSourceError
+        from app.core.exceptions import DataSourceError, StockAnalyzerError
 
         try:
             # 1. 并行获取数据（性能优化：3x RTT → 1x RTT）
             end_date = date.today()
             start_date = end_date - timedelta(days=settings.analysis_days)
-            
+
             stock_info_task = fetcher.get_stock_info(request.stock_code)
             quotes_task = fetcher.get_daily_quotes(
                 request.stock_code, start_date, end_date
             )
             financial_task = fetcher.get_financial_data(request.stock_code)
-            
+
             # 等待所有数据
             stock_info, quotes, financial = await asyncio.gather(
                 stock_info_task,

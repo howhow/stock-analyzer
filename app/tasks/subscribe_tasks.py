@@ -7,8 +7,8 @@
 from datetime import datetime
 from typing import Any
 
-from app.tasks.celery_app import celery_app
 from app.tasks.analysis_tasks import async_analyze_and_report
+from app.tasks.celery_app import celery_app
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)

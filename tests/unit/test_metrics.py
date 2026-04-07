@@ -5,20 +5,20 @@
 import pytest
 
 from app.monitoring.metrics import (
-    get_metrics,
     get_content_type,
-    record_http_request,
+    get_metrics,
+    record_ai_call,
     record_analysis,
     record_cache_hit,
     record_cache_miss,
-    update_cache_metrics,
-    record_data_source_request,
-    update_data_source_availability,
-    update_circuit_breaker_state,
     record_celery_task,
-    record_report_generation,
+    record_data_source_request,
+    record_http_request,
     record_rate_limit,
-    record_ai_call,
+    record_report_generation,
+    update_cache_metrics,
+    update_circuit_breaker_state,
+    update_data_source_availability,
 )
 
 

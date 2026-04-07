@@ -53,6 +53,15 @@ class Settings(BaseSettings):
     tushare_timeout: int = 10
     tushare_max_retries: int = 3
 
+    @field_validator("tushare_token")
+    @classmethod
+    def disable_token_in_test(cls, v: str) -> str:
+        """测试环境禁用 Tushare Token"""
+        import os
+        if os.getenv("TESTING") == "true":
+            return ""  # 测试环境强制禁用
+        return v
+
     # AKShare
     akshare_timeout: int = 15
     akshare_max_retries: int = 3

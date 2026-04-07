@@ -1,16 +1,16 @@
 """Analysis模块完整测试"""
 
-import pytest
 from datetime import date
-from unittest.mock import Mock, MagicMock
+from unittest.mock import MagicMock, Mock
 
-from app.analysis.base import BaseAnalyzer, AnalysisResult
-from app.analysis.indicators import trend, volatility, volume
-from app.analysis.indicators import rsi, sma
+import pytest
+
+from app.analysis.analyst import Analyst
+from app.analysis.base import AnalysisResult, BaseAnalyzer
+from app.analysis.indicators import rsi, sma, trend, volatility, volume
 from app.analysis.scoring import ScoringEngine
 from app.analysis.system import SystemAnalyzer
 from app.analysis.trader import Trader
-from app.analysis.analyst import Analyst
 
 
 class TestAnalysisResult:

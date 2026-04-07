@@ -1,7 +1,9 @@
 """缓存模块完整测试"""
 
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, MagicMock, patch, AsyncMock
+
 from app.core.cache import CacheManager
 
 

@@ -105,6 +105,7 @@ def process_dead_letter_queue(self: Any) -> dict[str, Any]:
 
     try:
         import redis.asyncio as redis
+
         from config import settings
 
         # TODO: 实际从 Redis 获取死信消息

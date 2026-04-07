@@ -1,13 +1,14 @@
 """Validators完整测试"""
 
-import pytest
 from datetime import date, timedelta
 
+import pytest
+
 from app.utils.validators import (
-    validate_stock_code,
-    validate_date_range,
-    sanitize_input,
     is_valid_json,
+    sanitize_input,
+    validate_date_range,
+    validate_stock_code,
 )
 
 

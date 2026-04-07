@@ -40,7 +40,8 @@ jobs:
       - name: Run tests with coverage
         run: pytest tests/ -v --cov=app --cov-report=xml --cov-report=term-missing
         env:
-          TUSHARE_TOKEN: ${{ secrets.TUSHARE_TOKEN }}
+          TESTING: "true"
+          # TUSHARE_TOKEN: ${{ secrets.TUSHARE_TOKEN }}  # 已禁用，使用 Mock 数据
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4

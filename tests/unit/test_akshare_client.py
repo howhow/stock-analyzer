@@ -1,8 +1,9 @@
 """AKShare客户端测试"""
 
-import pytest
 from datetime import date
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from app.data.akshare_client import AKShareClient
 from app.models.stock import DailyQuote

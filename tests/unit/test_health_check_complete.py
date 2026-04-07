@@ -2,12 +2,13 @@
 Health Check 完整测试
 """
 
-import pytest
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock
 
-from app.data.health_check import HealthChecker, HealthStatus
+import pytest
+
 from app.data.base import BaseDataSource
+from app.data.health_check import HealthChecker, HealthStatus
 
 
 class MockDataSource(BaseDataSource):

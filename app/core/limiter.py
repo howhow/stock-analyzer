@@ -260,6 +260,7 @@ class RateLimiter:
         """
         role_mapping = {
             "admin": UserTier.ENTERPRISE,
+            "enterprise": UserTier.ENTERPRISE,  # 企业用户映射
             "pro": UserTier.PRO,
             "user": UserTier.FREE,
             "guest": UserTier.FREE,

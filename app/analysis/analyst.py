@@ -14,14 +14,7 @@ from app.analysis.fundamental import (
     calculate_industry_score,
     calculate_policy_score,
 )
-from app.analysis.indicators import (
-    atr,
-    ema,
-    golden_cross,
-    macd,
-    rsi,
-    trend_direction,
-)
+from app.analysis.indicators import atr, ema, golden_cross, macd, rsi, trend_direction
 from app.models.stock import DailyQuote, FinancialData, StockInfo
 from app.utils.logger import get_logger
 

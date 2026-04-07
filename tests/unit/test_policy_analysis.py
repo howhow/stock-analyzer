@@ -3,8 +3,8 @@
 import pytest
 
 from app.analysis.fundamental.policy import (
-    get_policy_sensitivity,
     calculate_policy_score,
+    get_policy_sensitivity,
 )
 
 

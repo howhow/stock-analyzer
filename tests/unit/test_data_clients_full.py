@@ -1,12 +1,13 @@
 """数据客户端完整测试"""
 
-import pytest
 from datetime import date
-from unittest.mock import Mock, MagicMock, patch, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
+import pytest
 
 from app.data.akshare_client import AKShareClient
-from app.data.tushare_client import TushareClient
 from app.data.preprocessor import DataPreprocessor
+from app.data.tushare_client import TushareClient
 
 
 class TestAKShareClientFull:

@@ -2,8 +2,9 @@
 Logger测试 - 补充覆盖率
 """
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 from app.utils.logger import get_logger
 

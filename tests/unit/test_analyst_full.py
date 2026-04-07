@@ -1,6 +1,7 @@
 """Analyst完整测试 - 简化版"""
 
 import pytest
+
 from app.analysis.analyst import Analyst
 
 

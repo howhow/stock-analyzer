@@ -1,9 +1,10 @@
 """Cache Manager完整测试 - 异步优先、类型安全"""
 
-import pytest
 import asyncio
 from datetime import datetime
-from unittest.mock import Mock, AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
 
 from app.core.cache import CacheManager
 

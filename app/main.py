@@ -47,12 +47,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # Shutdown
     logger.info("application_shutting_down")
-    
+
     # 清理资源
     if hasattr(app.state, "cache_manager"):
         await app.state.cache_manager.close()
         logger.info("cache_manager_closed")
-    
+
     if hasattr(app.state, "data_fetcher"):
         await app.state.data_fetcher.close()
         logger.info("data_fetcher_closed")

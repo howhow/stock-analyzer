@@ -4,12 +4,7 @@
 
 import pytest
 
-from app.core.limiter import (
-    RATE_LIMITS,
-    UserTier,
-    RateLimiter,
-    SlidingWindowLimiter,
-)
+from app.core.limiter import RATE_LIMITS, RateLimiter, SlidingWindowLimiter, UserTier
 
 
 class TestUserTier:

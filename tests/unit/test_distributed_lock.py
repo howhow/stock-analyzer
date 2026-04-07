@@ -2,8 +2,9 @@
 分布式锁测试
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from app.core.distributed_lock import DistributedLock, DistributedLockManager
 

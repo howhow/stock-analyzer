@@ -1,17 +1,17 @@
 """Trend Indicators完整测试 - 类型安全、防御性编程"""
 
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 
 from app.analysis.indicators.trend import (
-    sma,
-    ema,
-    macd,
     bollinger_bands,
-    trend_direction,
+    ema,
     golden_cross,
+    macd,
+    sma,
     support_resistance,
+    trend_direction,
 )
 
 

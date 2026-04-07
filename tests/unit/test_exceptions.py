@@ -3,15 +3,15 @@
 import pytest
 
 from app.core.exceptions import (
-    StockAnalyzerError,
+    AnalysisError,
+    AuthenticationError,
+    ConfigurationError,
     DataError,
     DataNotFoundError,
     DataSourceError,
     InvalidParameterError,
-    AuthenticationError,
     RateLimitError,
-    AnalysisError,
-    ConfigurationError,
+    StockAnalyzerError,
 )
 
 

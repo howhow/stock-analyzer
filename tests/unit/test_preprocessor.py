@@ -2,10 +2,11 @@
 Preprocessor测试 - 补充覆盖率
 """
 
-import pandas as pd
-import numpy as np
 from datetime import date
 from unittest.mock import MagicMock
+
+import numpy as np
+import pandas as pd
 
 from app.data.preprocessor import DataPreprocessor
 

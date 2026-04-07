@@ -4,8 +4,14 @@ Prometheus 监控指标
 定义和暴露业务监控指标
 """
 
-from prometheus_client import Counter, Histogram, Gauge, Info
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    Counter,
+    Gauge,
+    Histogram,
+    Info,
+    generate_latest,
+)
 
 # ============ 请求指标 ============
 

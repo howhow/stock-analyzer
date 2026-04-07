@@ -5,10 +5,7 @@ import pytest
 """
 
 
-from app.analysis.scoring import (
-    ScoringEngine,
-    score_to_rating,
-)
+from app.analysis.scoring import ScoringEngine, score_to_rating
 
 
 class TestScoringEngine:
