@@ -38,7 +38,7 @@ def execute_subscriptions(self: Any) -> dict[str, Any]:
     try:
         # TODO: 从数据库获取活跃订阅列表
         # 这里先返回模拟结果，实际需要连接数据库
-        subscriptions = []
+        subscriptions: list[dict[str, Any]] = []
 
         executed = 0
         failed = 0
