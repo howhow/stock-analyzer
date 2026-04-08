@@ -7,6 +7,7 @@ import pytest
 from unittest.mock import AsyncMock, Mock, patch
 
 from fastapi.testclient import TestClient
+
 from app.models.stock import StockInfo
 
 
@@ -14,7 +15,7 @@ def test_analyze_stock(client: TestClient):
     """测试单次分析接口"""
     from app.api.deps import get_data_fetcher
     from app.main import app
-    
+
     # Mock DataFetcher
     mock_fetcher = AsyncMock()
     mock_fetcher.get_stock_info = AsyncMock(
@@ -27,7 +28,7 @@ def test_analyze_stock(client: TestClient):
     )
     mock_fetcher.get_daily_quotes = AsyncMock(return_value=[])
     mock_fetcher.get_financial_data = AsyncMock(return_value=None)
-    
+
     # Override dependency
     app.dependency_overrides[get_data_fetcher] = lambda: mock_fetcher
 
@@ -53,13 +54,13 @@ def test_analyze_stock_invalid_code(client: TestClient):
     """测试无效股票代码 - 返回404"""
     from app.api.deps import get_data_fetcher
     from app.main import app
-    
+
     mock_fetcher = AsyncMock()
     # 返回None模拟无效股票
     mock_fetcher.get_stock_info = AsyncMock(return_value=None)
     mock_fetcher.get_daily_quotes = AsyncMock(return_value=[])
     mock_fetcher.get_financial_data = AsyncMock(return_value=None)
-    
+
     app.dependency_overrides[get_data_fetcher] = lambda: mock_fetcher
 
     try:
@@ -80,18 +81,18 @@ def test_batch_analyze(client: TestClient):
     """测试批量分析接口"""
     from app.api.deps import get_data_fetcher
     from app.main import app
-    
+
     mock_fetcher = AsyncMock()
     mock_fetcher.get_stock_info = AsyncMock(return_value=None)
     mock_fetcher.get_daily_quotes = AsyncMock(return_value=[])
     mock_fetcher.get_financial_data = AsyncMock(return_value=None)
-    
+
     app.dependency_overrides[get_data_fetcher] = lambda: mock_fetcher
 
-    # Mock Celery task
-    with patch("app.api.v1.analysis.batch_analyze_task") as mock_task:
+    # Mock Celery task - patch at the source module
+    with patch("app.tasks.analysis_tasks.batch_analyze") as mock_task:
         mock_task.delay = Mock(return_value=Mock(id="test-task-id"))
-        
+
         try:
             response = client.post(
                 "/api/v1/analysis/batch-analyze",

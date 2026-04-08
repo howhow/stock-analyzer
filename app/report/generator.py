@@ -196,8 +196,10 @@ class ReportGenerator:
                 "total": analyst_report.total_score,
                 "fundamental": analyst_report.fundamental_score,
                 "technical": analyst_report.technical_score,
-                "signal_strength": analyst_report.dimension_scores.signal_strength,
-                "opportunity_quality": analyst_report.dimension_scores.opportunity_quality,
+                "signal_strength": (analyst_report.dimension_scores.signal_strength),
+                "opportunity_quality": (
+                    analyst_report.dimension_scores.opportunity_quality
+                ),
                 "risk_level": analyst_report.dimension_scores.risk_level,
             }
             risk_assessment = self._calculate_risk_assessment(
