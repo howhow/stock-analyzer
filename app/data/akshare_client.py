@@ -274,9 +274,13 @@ class AKShareClient(BaseDataSource):
             data = result.iloc[0].to_dict()
             mapped = FieldMapper.map_akshare(data)
 
+            report_date = self._parse_date(mapped.get("report_date"))
+            if not report_date:
+                return None
+
             return FinancialData(
                 stock_code=stock_code,
-                report_date=self._parse_date(mapped.get("report_date")),
+                report_date=report_date,
                 revenue=mapped.get("revenue"),
                 net_profit=mapped.get("net_profit"),
                 total_assets=mapped.get("total_assets"),

@@ -1,8 +1,9 @@
+import pytest
+
 """
 基本面分析单元测试
 """
 
-import pytest
 
 from app.analysis.fundamental import (
     calculate_financial_score,
@@ -97,16 +98,16 @@ class TestPolicyAnalysis:
 
     def test_get_policy_sensitivity(self):
         """测试政策敏感度"""
-        # 科技行业 - 高敏感
+        # 科技行业 - 高敏感（必须包含"科技"关键词）
         assert get_policy_sensitivity("科技") == "高敏感"
         assert get_policy_sensitivity("医药") == "高敏感"
-        
+
         # 消费行业 - 低敏感
         assert get_policy_sensitivity("白酒") == "低敏感"
-        
+
         # 金融行业 - 中敏感
         assert get_policy_sensitivity("金融") == "中敏感"
-        
+
         # 未知行业
         assert get_policy_sensitivity(None) == "未知"
 

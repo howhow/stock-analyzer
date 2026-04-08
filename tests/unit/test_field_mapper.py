@@ -1,8 +1,9 @@
+import pytest
+
 """
 字段映射器单元测试
 """
 
-import pytest
 
 from app.data.field_mapper import FieldMapper
 

@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股票分析报告 - {{ stock_code }}</title>
+    
+    <!-- ECharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    
+    <style>
+        /* ========== CSS变量 - 专业金融配色 ========== */
+        :root {
+            /* 主色调 */
+            --primary-blue: #1890ff;
+            --primary-dark: #0050b3;
+            
+            /* 涨跌色（中国习惯：红涨绿跌） */
+            --bull-color: #ef5350;
+            --bear-color: #26a69a;
+            
+            /* 等级色 */
+            --grade-a: #52c41a;
+            --grade-b: #1890ff;
+            --grade-c: #faad14;
+            --grade-d: #ff4d4f;
+            
+            /* 风险色 */
+            --risk-low: #52c41a;
+            --risk-medium: #faad14;
+            --risk-high: #ff4d4f;
+            
+            /* 背景色 */
+            --bg-primary: #f0f2f5;
+            --bg-card: #ffffff;
+            --bg-header: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* ========== 卡片样式 ========== */
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* ========== 头部 ========== */
+        .header {
+            background: var(--bg-header);
+            color: white;
+            text-align: center;
+            padding: 32px 24px;
+        }
+        
+        .stock-code {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .stock-name {
+            font-size: 20px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+        
+        .meta-info {
+            font-size: 13px;
+            opacity: 0.7;
+        }
+        
+        /* ========== 评分网格 ========== */
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .score-item {
+            text-align: center;
+            padding: 20px 12px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+        
+        .score-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .score-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+        
+        .score-label {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+        
+        .score-grade {
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        /* ========== 投资建议 ========== */
+        .recommendation-box {
+            text-align: center;
+            padding: 32px;
+            border-radius: 12px;
+            margin: 16px 0;
+        }
+        
+        .recommendation-box.buy {
+            background: linear-gradient(135deg, #ef5350 0%, #e57373 100%);
+            color: white;
+        }
+        
+        .recommendation-box.hold {
+            background: linear-gradient(135deg, #faad14 0%, #ffc53d 100%);
+            color: white;
+        }
+        
+        .recommendation-box.sell {
+            background: linear-gradient(135deg, #26a69a 0%, #4db6ac 100%);
+            color: white;
+        }
+        
+        .recommendation-text {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .confidence-text {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        /* ========== 图表区域 ========== */
+        .chart-section {
+            margin-top: 16px;
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            background: #fafafa;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .chart-small {
+            height: 200px;
+        }
+        
+        /* ========== 折叠面板 ========== */
+        .collapse-panel {
+            margin-bottom: 12px;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .collapse-panel summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: #fafafa;
+            cursor: pointer;
+            list-style: none;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        
+        .collapse-panel summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        .collapse-panel summary:hover {
+            background: #f0f0f0;
+        }
+        
+        .collapse-panel[open] summary {
+            border-bottom: 1px solid #e8e8e8;
+        }
+        
+        .collapse-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .collapse-icon {
+            font-size: 18px;
+        }
+        
+        .collapse-badge {
+            background: var(--primary-blue);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+        
+        .collapse-arrow {
+            transition: transform 0.2s;
+        }
+        
+        .collapse-panel[open] .collapse-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .collapse-content {
+            padding: 20px;
+        }
+        
+        /* ========== 信息网格 ========== */
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #fafafa;
+            border-radius: 8px;
+        }
+        
+        .info-label {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .info-value {
+            font-weight: 500;
+            color: #1a1a1a;
+            font-size: 14px;
+        }
+        
+        /* ========== 价格区域 ========== */
+        .price-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 12px;
+        }
+        
+        .price-box {
+            text-align: center;
+            padding: 16px;
+            border-radius: 8px;
+        }
+        
+        .price-box.entry {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+        }
+        
+        .price-box.stop {
+            background: #fff2f0;
+            border: 1px solid #ffa39e;
+        }
+        
+        .price-box.target {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+        }
+        
+        .price-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .price-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .price-box.entry .price-value { color: #1890ff; }
+        .price-box.stop .price-value { color: #ff4d4f; }
+        .price-box.target .price-value { color: #52c41a; }
+        
+        /* ========== 风险提示专区 ========== */
+        .risk-section {
+            background: linear-gradient(135deg, #fff7e6 0%, #fff1b8 100%);
+            border: 1px solid #ffd591;
+        }
+        
+        .risk-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #d46b08;
+            margin-bottom: 12px;
+        }
+        
+        .risk-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 16px 0;
+        }
+        
+        .risk-list li {
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            color: #595959;
+            font-size: 14px;
+        }
+        
+        .risk-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #fa8c16;
+            font-weight: bold;
+        }
+        
+        .disclaimer {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 6px;
+            font-size: 12px;
+            color: #8c8c8c;
+            line-height: 1.6;
+        }
+        
+        /* ========== 页脚 ========== */
+        .footer {
+            text-align: center;
+            padding: 24px;
+            color: #999;
+        }
+        
+        .footer p {
+            margin: 4px 0;
+            font-size: 12px;
+        }
+        
+        /* ========== 响应式布局 ========== */
+        @media (max-width: 768px) {
+            .score-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .price-section {
+                grid-template-columns: 1fr;
+            }
+            .chart-row {
+                grid-template-columns: 1fr;
+            }
+            .chart-container {
+                height: 300px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .card {
+                padding: 16px;
+            }
+            .score-value {
+                font-size: 28px;
+            }
+            .recommendation-text {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="card header">
+            <div class="stock-code">{{ stock_code }}</div>
+            {% if stock_name %}
+            <div class="stock-name">{{ stock_name }}</div>
+            {% endif %}
+            <div class="meta-info">
+                生成时间: {{ generated_at }} | 分析类型: {{ analysis_type }}
+            </div>
+        </div>
+        
+        <!-- 评分 -->
+        <div class="card">
+            <h3 class="section-title">综合评分</h3>
+            <div class="score-grid">
+                <div class="score-item">
+                    <div class="score-value">{{ scores.total | round(1) }}</div>
+                    <div class="score-label">综合评分</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value">{{ scores.signal_strength | round(1) }}</div>
+                    <div class="score-label">信号强度</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value">{{ scores.opportunity_quality | round(1) }}</div>
+                    <div class="score-label">机会质量</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value">{{ scores.risk_level | round(1) }}</div>
+                    <div class="score-label">安全等级</div>
+                </div>
+            </div>
+            <div class="score-grade">{{ score_grade }}</div>
+        </div>
+        
+        <!-- 投资建议 -->
+        <div class="card">
+            <h3 class="section-title">投资建议</h3>
+            <div class="recommendation-box {% if '买入' in recommendation %}buy{% elif '持有' in recommendation %}hold{% else %}sell{% endif %}">
+                <div class="recommendation-text">{{ recommendation }}</div>
+                <div class="confidence-text">置信度: {{ confidence | round(0) }}%</div>
+            </div>
+        </div>
+        
+        <!-- 图表区域 -->
+        <div class="card">
+            <h3 class="section-title">技术图表</h3>
+            <div class="chart-section">
+                <!-- K线图 + 成交量 -->
+                <div id="chart-kline" class="chart-container"></div>
+                
+                <!-- MACD + RSI -->
+                <div class="chart-row">
+                    <div id="chart-macd" class="chart-container chart-small"></div>
+                    <div id="chart-rsi" class="chart-container chart-small"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 折叠面板 - 技术指标详情 -->
+        <details class="collapse-panel">
+            <summary>
+                <div class="collapse-header-left">
+                    <span class="collapse-icon">📊</span>
+                    <span>技术指标详情</span>
+                    <span class="collapse-badge">8项</span>
+                </div>
+                <span class="collapse-arrow">▼</span>
+            </summary>
+            <div class="collapse-content">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">MACD</span>
+                        <span class="info-value">{% if indicators.macd %}{{ indicators.macd | round(2) }}{% else %}--{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">RSI(14)</span>
+                        <span class="info-value">{% if indicators.rsi %}{{ indicators.rsi | round(1) }}{% else %}--{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">ATR(14)</span>
+                        <span class="info-value">{% if indicators.atr %}{{ indicators.atr | round(2) }}{% else %}--{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">布林带上轨</span>
+                        <span class="info-value">{% if indicators.bollinger_upper %}{{ indicators.bollinger_upper | round(2) }}{% else %}--{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">布林带下轨</span>
+                        <span class="info-value">{% if indicators.bollinger_lower %}{{ indicators.bollinger_lower | round(2) }}{% else %}--{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">MA5</span>
+                        <span class="info-value">{% if indicators.ma5 %}{{ indicators.ma5 | round(2) }}{% else %}--{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">MA20</span>
+                        <span class="info-value">{% if indicators.ma20 %}{{ indicators.ma20 | round(2) }}{% else %}--{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">成交量比</span>
+                        <span class="info-value">{% if indicators.volume_ratio %}{{ indicators.volume_ratio | round(2) }}{% else %}--{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+        </details>
+        
+        <!-- 折叠面板 - 风险评估详情 -->
+        <details class="collapse-panel">
+            <summary>
+                <div class="collapse-header-left">
+                    <span class="collapse-icon">⚠️</span>
+                    <span>风险评估详情</span>
+                    <span class="collapse-badge">3项</span>
+                </div>
+                <span class="collapse-arrow">▼</span>
+            </summary>
+            <div class="collapse-content">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">VaR(95%)</span>
+                        <span class="info-value">{% if var_95 %}{{ var_95 | round(2) }}%{% else %}--{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">最大回撤</span>
+                        <span class="info-value">{% if max_drawdown %}{{ max_drawdown | round(2) }}%{% else %}--{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">30日波动率</span>
+                        <span class="info-value">{% if volatility_30d %}{{ volatility_30d | round(2) }}%{% else %}--{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+        </details>
+        
+        <!-- 折叠面板 - 基本面数据 -->
+        <details class="collapse-panel">
+            <summary>
+                <div class="collapse-header-left">
+                    <span class="collapse-icon">📈</span>
+                    <span>基本面数据</span>
+                    <span class="collapse-badge">4项</span>
+                </div>
+                <span class="collapse-arrow">▼</span>
+            </summary>
+            <div class="collapse-content">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">营收同比增长</span>
+                        <span class="info-value">{% if fundamentals.revenue_growth %}{{ fundamentals.revenue_growth | round(1) }}%{% else %}--{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">净利润同比增长</span>
+                        <span class="info-value">{% if fundamentals.profit_growth %}{{ fundamentals.profit_growth | round(1) }}%{% else %}--{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">ROE</span>
+                        <span class="info-value">{% if fundamentals.roe %}{{ fundamentals.roe | round(1) }}%{% else %}--{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">PE(TTM)</span>
+                        <span class="info-value">{% if fundamentals.pe_ttm %}{{ fundamentals.pe_ttm | round(1) }}{% else %}--{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+        </details>
+        
+        <!-- 折叠面板 - 操作建议详情（默认展开） -->
+        <details class="collapse-panel" open>
+            <summary>
+                <div class="collapse-header-left">
+                    <span class="collapse-icon">💡</span>
+                    <span>操作建议详情</span>
+                </div>
+                <span class="collapse-arrow">▼</span>
+            </summary>
+            <div class="collapse-content">
+                <!-- 分析详情 -->
+                <div class="info-grid" style="margin-bottom: 16px;">
+                    <div class="info-item">
+                        <span class="info-label">威科夫阶段</span>
+                        <span class="info-value">{{ wyckoff_phase }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">多周期对齐</span>
+                        <span class="info-value">{{ mtf_alignment }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">入场时机</span>
+                        <span class="info-value">{{ entry_timing }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">风险评估</span>
+                        <span class="info-value">{{ risk_assessment }}</span>
+                    </div>
+                </div>
+                
+                <!-- 价格参考 -->
+                <h4 style="margin: 16px 0 12px 0; color: #666; font-size: 14px;">价格参考</h4>
+                <div class="price-section">
+                    {% if entry_price %}
+                    <div class="price-box entry">
+                        <div class="price-label">建议入场价</div>
+                        <div class="price-value">{{ entry_price | round(2) }}</div>
+                    </div>
+                    {% endif %}
+                    {% if stop_loss_price %}
+                    <div class="price-box stop">
+                        <div class="price-label">止损价</div>
+                        <div class="price-value">{{ stop_loss_price | round(2) }}</div>
+                    </div>
+                    {% endif %}
+                    {% if target_price %}
+                    <div class="price-box target">
+                        <div class="price-label">目标价</div>
+                        <div class="price-value">{{ target_price | round(2) }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="info-grid" style="margin-top: 16px;">
+                    <div class="info-item">
+                        <span class="info-label">支撑位</span>
+                        <span class="info-value">{% if support_levels %}{{ support_levels | map('round', 2) | join(', ') }}{% else %}--{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">压力位</span>
+                        <span class="info-value">{% if resistance_levels %}{{ resistance_levels | map('round', 2) | join(', ') }}{% else %}--{% endif %}</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 16px; padding: 16px; background: linear-gradient(135deg, #f6ffed 0%, #e6f7ff 100%); border-radius: 8px;">
+                    <div style="font-size: 14px; color: #1a1a1a; line-height: 1.6;">{{ timing_advice }}</div>
+                </div>
+            </div>
+        </details>
+        
+        <!-- 风险提示专区 -->
+        <div class="card risk-section">
+            <div class="risk-title">
+                ⚠️ 风险提示
+            </div>
+            <ul class="risk-list">
+                {% for risk in risk_warnings %}
+                <li>{{ risk }}</li>
+                {% endfor %}
+            </ul>
+            <div class="disclaimer">
+                <strong>免责声明：</strong>本报告仅供参考，不构成投资建议。股市有风险，投资需谨慎。
+                过去的表现不代表未来收益，请根据自身风险承受能力做出投资决策。
+                本报告基于公开数据分析生成，不保证数据的准确性和完整性。
+            </div>
+        </div>
+        
+        <!-- 页脚 -->
+        <div class="footer">
+            <p>股票分析报告 v{{ generator_version | default('1.0.0') }}</p>
+            <p>分析ID: {{ analysis_id }}</p>
+            <p>© 2026 Stock Analyzer. All rights reserved.</p>
+        </div>
+    </div>
+    
+    <!-- ECharts 图表配置 -->
+    <script>
+        // 图表数据（由后端注入）
+        const chartData = {{ chart_data | tojson | safe }};
+        
+        // K线图配置
+        function initKlineChart() {
+            const chart = echarts.init(document.getElementById('chart-kline'));
+            
+            const option = {
+                title: {
+                    text: 'K线图 + MA均线',
+                    left: 'center',
+                    textStyle: { fontSize: 14 }
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross' }
+                },
+                legend: {
+                    data: ['K线', 'MA5', 'MA20', '成交量'],
+                    bottom: 0
+                },
+                grid: [
+                    { left: '10%', right: '8%', height: '50%' },
+                    { left: '10%', right: '8%', top: '70%', height: '20%' }
+                ],
+                xAxis: [
+                    { 
+                        type: 'category', 
+                        data: chartData.dates,
+                        gridIndex: 0,
+                        axisLabel: { show: false }
+                    },
+                    { 
+                        type: 'category', 
+                        data: chartData.dates,
+                        gridIndex: 1
+                    }
+                ],
+                yAxis: [
+                    { scale: true, gridIndex: 0 },
+                    { scale: true, gridIndex: 1, splitNumber: 2 }
+                ],
+                series: [
+                    {
+                        name: 'K线',
+                        type: 'candlestick',
+                        data: chartData.kline,
+                        itemStyle: {
+                            color: '#ef5350',
+                            color0: '#26a69a',
+                            borderColor: '#ef5350',
+                            borderColor0: '#26a69a'
+                        },
+                        markLine: {
+                            symbol: ['none', 'none'],
+                            data: [
+                                { yAxis: chartData.support, name: '支撑位', lineStyle: { color: '#52c41a' } },
+                                { yAxis: chartData.resistance, name: '压力位', lineStyle: { color: '#ff4d4f' } }
+                            ]
+                        }
+                    },
+                    {
+                        name: 'MA5',
+                        type: 'line',
+                        data: chartData.ma5,
+                        smooth: true,
+                        lineStyle: { width: 1, color: '#1890ff' },
+                        symbol: 'none'
+                    },
+                    {
+                        name: 'MA20',
+                        type: 'line',
+                        data: chartData.ma20,
+                        smooth: true,
+                        lineStyle: { width: 1, color: '#722ed1' },
+                        symbol: 'none'
+                    },
+                    {
+                        name: '成交量',
+                        type: 'bar',
+                        xAxisIndex: 1,
+                        yAxisIndex: 1,
+                        data: chartData.volume,
+                        itemStyle: {
+                            color: function(params) {
+                                return chartData.kline[params.dataIndex][1] >= chartData.kline[params.dataIndex][0] 
+                                    ? '#ef5350' : '#26a69a';
+                            }
+                        }
+                    }
+                ]
+            };
+            
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+        
+        // MACD 图配置
+        function initMacdChart() {
+            const chart = echarts.init(document.getElementById('chart-macd'));
+            
+            const option = {
+                title: {
+                    text: 'MACD',
+                    left: 'center',
+                    textStyle: { fontSize: 12 }
+                },
+                tooltip: { trigger: 'axis' },
+                grid: { left: '10%', right: '5%', top: '20%', bottom: '15%' },
+                xAxis: { type: 'category', data: chartData.dates, axisLabel: { show: false } },
+                yAxis: { scale: true },
+                series: [
+                    {
+                        name: 'DIF',
+                        type: 'line',
+                        data: chartData.macd.dif,
+                        lineStyle: { width: 1, color: '#1890ff' },
+                        symbol: 'none'
+                    },
+                    {
+                        name: 'DEA',
+                        type: 'line',
+                        data: chartData.macd.dea,
+                        lineStyle: { width: 1, color: '#fa8c16' },
+                        symbol: 'none'
+                    },
+                    {
+                        name: 'MACD柱',
+                        type: 'bar',
+                        data: chartData.macd.histogram,
+                        itemStyle: {
+                            color: function(params) {
+                                return params.value >= 0 ? '#ef5350' : '#26a69a';
+                            }
+                        }
+                    }
+                ]
+            };
+            
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+        
+        // RSI 图配置
+        function initRsiChart() {
+            const chart = echarts.init(document.getElementById('chart-rsi'));
+            
+            const option = {
+                title: {
+                    text: 'RSI(14)',
+                    left: 'center',
+                    textStyle: { fontSize: 12 }
+                },
+                tooltip: { trigger: 'axis' },
+                grid: { left: '10%', right: '5%', top: '20%', bottom: '15%' },
+                xAxis: { type: 'category', data: chartData.dates, axisLabel: { show: false } },
+                yAxis: { 
+                    scale: true,
+                    min: 0,
+                    max: 100
+                },
+                series: [
+                    {
+                        name: 'RSI',
+                        type: 'line',
+                        data: chartData.rsi,
+                        lineStyle: { width: 1, color: '#722ed1' },
+                        symbol: 'none',
+                        markLine: {
+                            symbol: ['none', 'none'],
+                            data: [
+                                { yAxis: 70, name: '超买', lineStyle: { color: '#ff4d4f', type: 'dashed' } },
+                                { yAxis: 30, name: '超卖', lineStyle: { color: '#52c41a', type: 'dashed' } }
+                            ]
+                        }
+                    }
+                ]
+            };
+            
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+        
+        // 初始化所有图表
+        document.addEventListener('DOMContentLoaded', function() {
+            if (chartData.dates && chartData.dates.length > 0) {
+                initKlineChart();
+                initMacdChart();
+                initRsiChart();
+            }
+        });
+    </script>
+</body>
+</html>

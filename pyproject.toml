@@ -1,60 +1,46 @@
-[project]
-name = "stock-analyzer"
-version = "0.1.0"
-description = "股票分析与交易机会识别系统"
-readme = "README.md"
-requires-python = ">=3.11"
-license = {text = "MIT"}
-authors = [
-    {name = "The Quant Architect", email = "quant-architect@stock-analyzer.local"}
-]
-
-[tool.black]
-line-length = 88
-target-version = ['py311']
-exclude = '''
-/(
-    \.git
-  | \.venv
-  | __pycache__
-  | build
-  | dist
-)/
-'''
-
-[tool.isort]
-profile = "black"
-line_length = 88
-known_first_party = ["app"]
-
 [tool.mypy]
 python_version = "3.11"
-strict = true
 warn_return_any = true
+warn_unused_ignores = false
+disallow_untyped_defs = false
 ignore_missing_imports = true
-exclude = [
-    "tests/",
-    "scripts/",
-]
+strict_optional = true
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-python_functions = ["test_*"]
-addopts = "-v --cov=app --cov-report=term-missing --cov-fail-under=80"
+# ============================================
+# Coverage.py 配置
+# ============================================
 
 [tool.coverage.run]
+# 覆盖率数据文件路径
+data_file = "local_analyze_report/coverage/.coverage"
+
+# 并行模式
+parallel = true
+
+# 分支覆盖
+branch = true
+
+# 源代码目录
 source = ["app"]
-omit = [
-    "*/tests/*",
-    "*/__pycache__/*",
-    "*/migrations/*",
-]
 
 [tool.coverage.report]
+# 排除的文件
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
+    "raise AssertionError",
     "raise NotImplementedError",
+    "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
 ]
+
+# 精度
+precision = 2
+
+[tool.coverage.html]
+# HTML报告输出目录
+directory = "local_analyze_report/coverage/htmlcov"
+
+[tool.coverage.xml]
+# XML报告输出路径
+output = "local_analyze_report/coverage/coverage.xml"

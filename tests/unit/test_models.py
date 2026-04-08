@@ -1,17 +1,14 @@
+import pytest
+
 """
 数据模型测试
 """
 
-import pytest
 from datetime import date
+
 from pydantic import ValidationError
 
-from app.models import (
-    AnalysisRequest,
-    DimensionScores,
-    StockInfo,
-    DailyQuote,
-)
+from app.models import AnalysisRequest, DailyQuote, DimensionScores, StockInfo
 
 
 def test_dimension_scores_valid():
@@ -60,6 +57,7 @@ def test_stock_info():
         name="贵州茅台",
         market="SH",
         industry="白酒",
+        list_date=None,
     )
     assert stock.code == "600519.SH"
     assert stock.name == "贵州茅台"

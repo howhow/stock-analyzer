@@ -2,6 +2,15 @@
 政策影响分析
 
 实现政策对行业和个股的影响评估
+
+⚠️ 演示模式说明：
+当前版本的政策影响评分基于静态规则，没有接入真实政策数据源。
+评分数据来源：内部预设规则和权重，未接入政策新闻或事件数据。
+适用场景：仅用于系统演示和功能测试，不应用于实际投资决策。
+未来改进方向：
+- 接入政策新闻 API（财经新闻、政府公告）
+- 接入政策事件数据库
+- 实现 NLP 政策情感分析
 """
 
 from typing import Any
@@ -67,7 +76,7 @@ def analyze_policy_impact(
         政策影响分析结果
     """
     details = {}
-    score = 50  # 默认中性分数
+    score: float = 50  # 默认中性分数
 
     # 政策敏感度
     sensitivity = get_policy_sensitivity(industry_name)
@@ -78,8 +87,8 @@ def analyze_policy_impact(
         positive_count = sum(1 for e in policy_events if e.get("impact") == "positive")
         negative_count = sum(1 for e in policy_events if e.get("impact") == "negative")
 
-        details["positive_events"] = positive_count
-        details["negative_events"] = negative_count
+        details["positive_events"] = positive_count  # type: ignore[assignment]
+        details["negative_events"] = negative_count  # type: ignore[assignment]
 
         # 根据正负事件调整分数
         score += positive_count * 10

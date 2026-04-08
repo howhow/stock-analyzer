@@ -1,14 +1,15 @@
+import pytest
+
 """
 工具函数测试
 """
 
-import pytest
 from datetime import date
 
 from app.utils.validators import (
-    validate_stock_code,
-    validate_date_range,
     sanitize_input,
+    validate_date_range,
+    validate_stock_code,
 )
 
 

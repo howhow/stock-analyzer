@@ -149,7 +149,8 @@ class TushareClient(BaseDataSource):
                 quotes.append(
                     DailyQuote(
                         stock_code=data.get("stock_code", stock_code),
-                        trade_date=self._parse_date(data.get("trade_date")),
+                        trade_date=self._parse_date(data.get("trade_date"))
+                        or date.today(),
                         open=float(data.get("open", 0)),
                         close=float(data.get("close", 0)),
                         high=float(data.get("high", 0)),
@@ -159,6 +160,9 @@ class TushareClient(BaseDataSource):
                         turnover_rate=data.get("turnover_rate"),
                     )
                 )
+
+            # 按日期升序排序（Tushare返回倒序数据）
+            quotes.sort(key=lambda q: q.trade_date)
 
             return quotes
 
@@ -227,7 +231,7 @@ class TushareClient(BaseDataSource):
 
             return FinancialData(
                 stock_code=mapped.get("stock_code", stock_code),
-                report_date=self._parse_date(mapped.get("trade_date")),
+                report_date=self._parse_date(mapped.get("trade_date")) or date.today(),
                 pe_ratio=mapped.get("pe_ratio"),
                 pb_ratio=mapped.get("pb_ratio"),
             )

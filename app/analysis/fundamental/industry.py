@@ -2,6 +2,15 @@
 行业分析
 
 实现行业比较和评分
+
+⚠️ 演示模式说明：
+当前版本的行业景气度评分基于静态规则，不反映真实市场状况。
+评分数据来源：内部预设常量，未接入外部数据源。
+适用场景：仅用于系统演示和功能测试，不应用于实际投资决策。
+未来改进方向：
+- 接入行业指数数据（申万、中信行业指数）
+- 接入行业景气度数据（PMI、行业报告）
+- 接入专业数据源（Wind、同花顺 iFinD）
 """
 
 from typing import Any
@@ -39,12 +48,16 @@ def get_industry_category(industry_name: str | None) -> str:
     # 行业映射
     industry_map = {
         "科技": ["软件", "电子", "通信", "计算机", "半导体", "芯片"],
-        "消费": ["食品", "饮料", "家电", "零售", "服装", "白酒"],
+        "消费": ["食品", "饮料", "家电", "零售", "服装", "白酒", "家用电器"],
         "金融": ["银行", "保险", "证券", "信托"],
         "医药": ["医药", "生物", "医疗", "制药"],
         "制造": ["机械", "汽车", "化工", "建材", "钢铁"],
         "能源": ["石油", "煤炭", "电力", "新能源", "光伏"],
     }
+
+    # 如果输入本身就是大类名称，直接返回
+    if industry_name in industry_map:
+        return industry_name
 
     for category, keywords in industry_map.items():
         for keyword in keywords:
@@ -68,8 +81,8 @@ def analyze_industry_position(
     Returns:
         行业地位分析结果
     """
-    details = {}
-    score = 50  # 默认中等分数
+    details: dict[str, Any] = {}
+    score: float = 50  # 默认中等分数
 
     # 行业分类
     category = get_industry_category(industry_name)
@@ -93,13 +106,14 @@ def analyze_industry_position(
         details["position"] = "未知"
 
     # 行业景气度（简化版，实际应从外部数据获取）
+    # ⚠️ 演示模式：以下评分基于静态规则，不反映真实市场状况
     industry_prospects = {
-        "科技": 85,
-        "消费": 75,
-        "金融": 70,
-        "医药": 80,
-        "制造": 65,
-        "能源": 70,
+        "科技": 85,  # 演示数据，实际应从行业指数或景气度数据获取
+        "消费": 75,  # 演示数据
+        "金融": 70,  # 演示数据
+        "医药": 80,  # 演示数据
+        "制造": 65,  # 演示数据
+        "能源": 70,  # 演示数据
         "default": 60,
     }
     details["prospect_score"] = industry_prospects.get(category, 60)
