@@ -5,3 +5,42 @@ warn_unused_ignores = false
 disallow_untyped_defs = false
 ignore_missing_imports = true
 strict_optional = true
+
+# ============================================
+# Coverage.py 配置
+# ============================================
+
+[tool.coverage.run]
+# 覆盖率数据文件路径
+data_file = "local_analyze_report/coverage/.coverage"
+
+# 并行模式
+parallel = true
+
+# 分支覆盖
+branch = true
+
+# 源代码目录
+source = ["app"]
+
+[tool.coverage.report]
+# 排除的文件
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
+# 精度
+precision = 2
+
+[tool.coverage.html]
+# HTML报告输出目录
+directory = "local_analyze_report/coverage/htmlcov"
+
+[tool.coverage.xml]
+# XML报告输出路径
+output = "local_analyze_report/coverage/coverage.xml"
