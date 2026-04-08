@@ -161,6 +161,9 @@ class TushareClient(BaseDataSource):
                     )
                 )
 
+            # 按日期升序排序（Tushare返回倒序数据）
+            quotes.sort(key=lambda q: q.trade_date)
+
             return quotes
 
         except Exception as e:
