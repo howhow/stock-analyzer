@@ -11,7 +11,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import api_router
+from app.core.cache import CacheManager
 from app.core.error_handler import register_exception_handlers
+from app.data.data_fetcher import DataFetcher
 from app.utils.logger import get_logger
 from config import settings
 
@@ -34,15 +36,26 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         debug=settings.app_debug,
     )
 
-    # TODO: 初始化数据库连接池
-    # TODO: 初始化 Redis 连接
-    # TODO: 初始化数据源客户端
+    # 使用 app.state 存储资源（线程安全）
+    app.state.cache_manager = CacheManager()
+    logger.info("cache_manager_initialized")
+
+    app.state.data_fetcher = DataFetcher(cache=app.state.cache_manager)
+    logger.info("data_fetcher_initialized")
 
     yield
 
     # Shutdown
     logger.info("application_shutting_down")
-    # TODO: 清理资源
+
+    # 清理资源
+    if hasattr(app.state, "cache_manager"):
+        await app.state.cache_manager.close()
+        logger.info("cache_manager_closed")
+
+    if hasattr(app.state, "data_fetcher"):
+        await app.state.data_fetcher.close()
+        logger.info("data_fetcher_closed")
 
 
 def create_app() -> FastAPI:

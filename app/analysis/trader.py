@@ -9,11 +9,7 @@ from typing import Any
 import pandas as pd
 
 from app.analysis.base import AnalysisResult, BaseAnalyzer
-from app.analysis.indicators import (
-    golden_cross,
-    rsi,
-    support_resistance,
-)
+from app.analysis.indicators import golden_cross, rsi, support_resistance
 from app.analysis.scoring import ScoringEngine
 from app.models.stock import DailyQuote, FinancialData, StockInfo
 from app.utils.logger import get_logger

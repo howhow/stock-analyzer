@@ -14,17 +14,7 @@ from app.analysis.fundamental import (
     calculate_industry_score,
     calculate_policy_score,
 )
-from app.analysis.indicators import (
-    atr,
-    bollinger_bands,
-    ema,
-    golden_cross,
-    macd,
-    rsi,
-    sma,
-    support_resistance,
-    trend_direction,
-)
+from app.analysis.indicators import atr, ema, golden_cross, macd, rsi, trend_direction
 from app.models.stock import DailyQuote, FinancialData, StockInfo
 from app.utils.logger import get_logger
 
@@ -117,7 +107,9 @@ class Analyst(BaseAnalyzer):
         result.add_detail("policy", policy_result)
 
         # 基本面综合评分
-        return sum(scores) / len(scores) if scores else 50
+        return (  # type: ignore[no-any-return]
+            sum(scores) / len(scores) if scores else 50
+        )  # type: ignore[no-any-return]
 
     async def _analyze_technical(
         self,
@@ -160,8 +152,8 @@ class Analyst(BaseAnalyzer):
         close_series = pd.Series(close)
 
         # EMA趋势
-        ema5 = ema(close_series, 5)
-        ema20 = ema(close_series, 20)
+        _ = ema(close_series, 5)  # 计算5日EMA
+        _ = ema(close_series, 20)  # 计算20日EMA
         trend = trend_direction(close_series, 5, 20).iloc[-1]
 
         # 金叉死叉信号

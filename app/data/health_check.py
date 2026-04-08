@@ -150,7 +150,7 @@ class HealthChecker:
                         last_check_time=datetime.now(),
                         error_message=str(status_or_exc),
                     )
-                else:
+                elif isinstance(status_or_exc, HealthStatus):
                     results[source.name] = status_or_exc
 
         return results

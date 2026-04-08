@@ -1,0 +1,166 @@
+"""
+数据获取协调器最终冲刺测试
+
+目标: 覆盖所有未测试的行，达到 95%
+未覆盖行: 90-102, 199, 231-244, 290-302, 323
+"""
+
+from datetime import date
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
+import pytest
+from pydantic import ValidationError
+
+from app.data.base import DataSourceError
+from app.data.data_fetcher import DataFetcher
+from app.models.stock import DailyQuote, FinancialData, IntradayQuote, StockInfo
+from tests.fixtures.mock_data import (
+    MOCK_DAILY_QUOTES_DICT,
+    MOCK_STOCK_INFO_DICT,
+    create_daily_quote_dict,
+    create_stock_info_dict,
+)
+
+
+class TestDataFetcherCacheHit:
+    """测试缓存命中场景"""
+
+    @pytest.mark.asyncio
+    async def test_get_stock_info_cache_hit(self):
+        """测试股票信息缓存命中 - 覆盖行 90-102"""
+        fetcher = DataFetcher()
+
+        # 模拟缓存命中
+        mock_cache_data = {
+            "code": "000001.SZ",
+            "name": "平安银行",
+            "market": "SZ",
+            "industry": "银行",
+        }
+
+        mock_cache = AsyncMock()
+        mock_cache.get = AsyncMock(return_value=mock_cache_data)
+        mock_cache.make_key = Mock(return_value="stock_info:000001.SZ")
+
+        fetcher.cache = mock_cache
+
+        result = await fetcher.get_stock_info("000001.SZ")
+
+        assert result.code == "000001.SZ"
+        assert result.name == "平安银行"
+
+
+class TestDataFetcherSourceSuccess:
+    """测试数据源成功场景"""
+
+    @pytest.mark.asyncio
+    async def test_get_stock_info_source_success(self):
+        """测试股票信息从数据源获取成功 - 覆盖行 90-102"""
+        fetcher = DataFetcher()
+
+        mock_cache = AsyncMock()
+        mock_cache.get = AsyncMock(return_value=None)
+        mock_cache.set = AsyncMock()
+        mock_cache.make_key = Mock(return_value="stock_info:000001.SZ")
+
+        # 创建正确的 StockInfo 对象
+        stock_info = StockInfo(
+            code="000001.SZ",
+            name="平安银行",
+            market="SZ",
+            industry="银行",
+            list_date=None,
+        )
+
+        mock_source = AsyncMock()
+        mock_source.name = "tushare"
+        mock_source.get_stock_info = AsyncMock(return_value=stock_info)
+
+        fetcher.cache = mock_cache
+        fetcher.sources = [mock_source]
+
+        result = await fetcher.get_stock_info("000001.SZ")
+
+        assert result.code == "000001.SZ"
+        mock_cache.set.assert_called_once()
+
+
+class TestDataFetcherIntraday:
+    """测试分钟线行情"""
+
+    @pytest.mark.asyncio
+    async def test_get_intraday_quotes_source_success(self):
+        """测试分钟线行情从数据源获取成功 - 覆盖行 231-244"""
+        fetcher = DataFetcher()
+
+        mock_cache = AsyncMock()
+        mock_cache.get = AsyncMock(return_value=None)
+        mock_cache.set = AsyncMock()
+        mock_cache.make_key = Mock(return_value="intraday_quotes:000001.SZ")
+
+        # 创建正确的 IntradayQuote 对象
+        intraday_quote = IntradayQuote(
+            stock_code="000001.SZ",
+            trade_time="2024-01-01 09:30:00",
+            open=10.0,
+            high=10.5,
+            low=9.8,
+            close=10.2,
+            volume=10000,
+            amount=100000.0,
+        )
+
+        mock_source = AsyncMock()
+        mock_source.name = "tushare"
+        mock_source.get_intraday_quotes = AsyncMock(return_value=[intraday_quote])
+
+        fetcher.cache = mock_cache
+        fetcher.sources = [mock_source]
+
+        result = await fetcher.get_intraday_quotes("000001.SZ")
+
+        assert len(result) == 1
+        assert result[0].stock_code == "000001.SZ"
+        mock_cache.set.assert_called_once()
+
+
+class TestDataFetcherFinancial:
+    """测试财务数据"""
+
+    @pytest.mark.asyncio
+    async def test_get_financial_data_source_success(self):
+        """测试财务数据从数据源获取成功 - 覆盖行 290-302"""
+        fetcher = DataFetcher()
+
+        mock_cache = AsyncMock()
+        mock_cache.get = AsyncMock(return_value=None)
+        mock_cache.set = AsyncMock()
+        mock_cache.make_key = Mock(return_value="financial_data:000001.SZ")
+
+        # 创建正确的 FinancialData 对象
+        financial_data = FinancialData(
+            stock_code="000001.SZ",
+            report_date="2024-03-31",
+            revenue=1000000000.0,
+            net_profit=100000000.0,
+        )
+
+        mock_source = AsyncMock()
+        mock_source.name = "tushare"
+        mock_source.get_financial_data = AsyncMock(return_value=financial_data)
+
+        fetcher.cache = mock_cache
+        fetcher.sources = [mock_source]
+
+        result = await fetcher.get_financial_data("000001.SZ")
+
+        assert result is not None
+        assert result.stock_code == "000001.SZ"
+        mock_cache.set.assert_called_once()
+
+
+# 运行测试
+if __name__ == "__main__":
+    pytest.main(
+        [__file__, "-v", "--cov=app.data.data_fetcher", "--cov-report=term-missing"]
+    )

@@ -4,9 +4,6 @@
 实现移动平均线等趋势指标
 """
 
-from typing import Any
-
-import numpy as np
 import pandas as pd
 
 from app.utils.logger import get_logger
