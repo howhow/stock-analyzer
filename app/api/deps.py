@@ -75,6 +75,7 @@ async def get_data_fetcher(request: Request) -> "DataFetcher":
     return data_fetcher  # type: ignore[no-any-return]
 
 
+
 CacheClient = Annotated[object, Depends(get_cache)]
 DbSession = Annotated[object, Depends(get_db)]
 DataFetcherDep = Annotated["DataFetcher", Depends(get_data_fetcher)]
