@@ -82,7 +82,7 @@ class TestGetDataFetcher:
         """测试从 app.state 获取数据获取器"""
         # 创建真实的 DataFetcher 实例
         from app.data.data_fetcher import DataFetcher
-        
+
         real_fetcher = DataFetcher()
 
         request = Mock(spec=Request)
