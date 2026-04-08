@@ -494,18 +494,18 @@ class ReportGenerator:
                 ma5_val = sum([kline[j][1] for j in range(i - 4, i + 1)]) / 5
                 ma5.append(round(ma5_val, 2))
             else:
-                ma5.append(0.0)  # type: ignore[arg-type]
+                ma5.append(None)  # type: ignore[arg-type]
 
             if i >= 19:
                 ma20_val = sum([kline[j][1] for j in range(i - 19, i + 1)]) / 20
                 ma20.append(round(ma20_val, 2))
             else:
-                ma20.append(0.0)  # type: ignore[arg-type]
+                ma20.append(None)  # type: ignore[arg-type]
 
         # 生成MACD数据
-        macd_dif = []
-        macd_dea = []
-        macd_histogram = []
+        macd_dif: list[float | None] = []
+        macd_dea: list[float | None] = []
+        macd_histogram: list[float | None] = []
 
         for i in range(len(kline)):
             if i >= 20:
@@ -521,13 +521,13 @@ class ReportGenerator:
                 macd_histogram.append(None)
 
         # 生成RSI数据
-        rsi_data = []
+        rsi_data: list[float | None] = []
         for i in range(len(kline)):
             if i >= 14:
                 rsi_val = random.uniform(30, 70)
                 rsi_data.append(round(rsi_val, 1))
             else:
-                rsi_data.append(None)
+                rsi_data.append(None)  # type: ignore[arg-type]
 
         return {
             "dates": dates,

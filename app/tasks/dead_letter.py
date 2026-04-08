@@ -110,7 +110,7 @@ def process_dead_letter_queue(self: Any) -> dict[str, Any]:
 
         # TODO: 实际从 Redis 获取死信消息
         # 这里简化处理
-        dead_letter_messages = []
+        dead_letter_messages: list[dict[str, Any]] = []
 
         processed = 0
         retried = 0

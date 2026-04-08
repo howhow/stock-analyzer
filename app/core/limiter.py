@@ -162,7 +162,7 @@ class SlidingWindowLimiter:
                 now,
                 max_requests,
                 window_seconds,
-            )  # type: ignore[arg-type]
+            )
 
             allowed = bool(result[0])
             remaining = int(result[1])
