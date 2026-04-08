@@ -19,6 +19,8 @@ from typing import Any
 
 from app.data.data_fetcher import DataFetcher
 from app.analysis.system import SystemAnalyzer
+from app.analysis.indicators.trend import sma, macd
+from app.analysis.indicators.momentum import rsi
 from app.models.stock import StockInfo
 from app.report.generator import ReportGenerator
 from app.report.markdown_report import MarkdownReportGenerator
@@ -200,10 +202,36 @@ async def analyze_stock(args: argparse.Namespace) -> dict[str, Any] | None:
         if args.output in ["html", "both"]:
             print(f"\n📄 生成 HTML 报告...")
             html_generator = ReportGenerator()
+            
+            # 计算技术指标
+            closes = [q.close for q in quotes]
+            ma5_series = sma(closes, 5)
+            ma20_series = sma(closes, 20)
+            macd_data = macd(closes)
+            rsi_series = rsi(closes, 14)
+            
+            # 准备图表数据（真实数据）
+            chart_data = {
+                "dates": [q.trade_date.strftime("%m-%d") for q in quotes],
+                "kline": [[q.open, q.close, q.low, q.high] for q in quotes],
+                "volume": [q.volume / 10000 for q in quotes],  # 转换为万手
+                "support": result.details.get("support_levels", [quotes[-1].low])[0],
+                "resistance": result.details.get("resistance_levels", [quotes[-1].high])[0],
+                "ma5": ma5_series.tolist(),
+                "ma20": ma20_series.tolist(),
+                "macd": {
+                    "dif": macd_data["macd"].tolist(),
+                    "dea": macd_data["signal"].tolist(),
+                    "histogram": macd_data["histogram"].tolist(),
+                },
+                "rsi": rsi_series.tolist(),
+            }
+            
             html_report = html_generator.generate(
                 result,
                 stock_code=args.stock_code,
                 stock_name=stock_info.name,
+                chart_data=chart_data,
             )
             html_file = output_dir / f"{args.stock_code}_{date_str}.html"
             html_file.write_text(html_report.content, encoding="utf-8")
