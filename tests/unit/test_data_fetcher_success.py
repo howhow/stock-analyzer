@@ -188,8 +188,8 @@ class TestDataFetcherSuccessPaths:
         result = await fetcher.health_check()
 
         # 验证返回结果
-        assert result["tushare"] == True
-        assert result["akshare"] == True
+        assert result["tushare"] is True
+        assert result["akshare"] is True
 
         # 验证健康检查被调用
         mock_health_checker.check_all.assert_called_once()

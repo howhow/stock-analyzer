@@ -58,7 +58,9 @@ class TestDataFetcherFinalSprint:
         mock_cache.make_key = Mock(return_value="test_key")
 
         # 创建正确的 StockInfo 对象
-        stock_info = StockInfo(code="000001.SZ", name="平安银行", market="SZ", industry="银行")
+        stock_info = StockInfo(
+            code="000001.SZ", name="平安银行", market="SZ", industry="银行"
+        )
 
         mock_source = AsyncMock()
         mock_source.name = "tushare"

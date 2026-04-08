@@ -158,6 +158,15 @@ class TestRateLimiter:
 class TestCheckRateLimit:
     """check_rate_limit 函数测试"""
 
+    @pytest.fixture(autouse=True)
+    def reset_rate_limiter(self):
+        """每个测试前重置全局限流器"""
+        import app.core.limiter as limiter_module
+
+        limiter_module._rate_limiter = None
+        yield
+        limiter_module._rate_limiter = None
+
     @pytest.mark.asyncio
     async def test_check_rate_limit_anonymous_user(self):
         """测试匿名用户限流"""
@@ -203,6 +212,15 @@ class TestCheckRateLimit:
 
 class TestRateLimitDecorator:
     """限流装饰器测试"""
+
+    @pytest.fixture(autouse=True)
+    def reset_rate_limiter(self):
+        """每个测试前重置全局限流器"""
+        import app.core.limiter as limiter_module
+
+        limiter_module._rate_limiter = None
+        yield
+        limiter_module._rate_limiter = None
 
     @pytest.mark.asyncio
     async def test_rate_limit_decorator(self):
