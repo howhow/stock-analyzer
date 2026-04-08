@@ -118,7 +118,7 @@ class DistributedLock:
 
             result = await self._redis.eval(  # type: ignore[misc]
                 
-                lua_script, 1, self._key, self._token
+                lua_script, 1, self._key, self._token  # type: ignore[arg-type]
             )
 
             self._locked = False
@@ -165,7 +165,7 @@ class DistributedLock:
             ttl = additional_time or self._timeout
             result = await self._redis.eval(  # type: ignore[misc]
                 
-                lua_script, 1, self._key, self._token, ttl
+                lua_script, 1, self._key, self._token, ttl  # type: ignore[arg-type]
             )
 
             if result:

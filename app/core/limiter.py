@@ -158,11 +158,11 @@ class SlidingWindowLimiter:
                 
                 lua_script,
                 1,
-                key,
-                window_start,
-                now,
-                max_requests,
-                window_seconds,
+                key,  # type: ignore[arg-type]
+                window_start,  # type: ignore[arg-type]
+                now,  # type: ignore[arg-type]
+                max_requests,  # type: ignore[arg-type]
+                window_seconds,  # type: ignore[arg-type]
             )
 
             allowed = bool(result[0])
