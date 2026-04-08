@@ -6,8 +6,8 @@
 
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
-[![Test Coverage](https://img.shields.io/badge/coverage-99.6%25-brightgreen.svg)](tests/)
-[![Tests](https://img.shields.io/badge/tests-783%20passed-success.svg)](tests/)
+[![Test Coverage](https://img.shields.io/badge/coverage-80.93%25-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-716%20passed-success.svg)](tests/)
 
 </div>
 
@@ -24,7 +24,7 @@ Stock Analyzer 是一个**开源、生产级**的股票分析系统，专为个�
 - ✅ **双格式报告** - HTML（可视化图表）+ Markdown（AI友好）
 - ✅ **交互式图表** - ECharts K线图、MACD、RSI可视化
 - ✅ **模块化架构** - 清晰的分层设计，易于扩展
-- ✅ **高测试覆盖** - 99.6%测试通过率，82.56%代码覆盖率
+- ✅ **高测试覆盖** - 100%测试通过率，80.93%代码覆盖率
 - ✅ **生产就绪** - 熔断器、缓存、重试机制、健康检查
 
 ### 快速示例
@@ -58,7 +58,7 @@ python stock_analyzer.py 688981.SH --output html
 
 ```bash
 # 克隆项目
-git clone <repository-url>
+git clone https://github.com/howhow/stock-analyzer.git
 cd stock-analyzer
 
 # 创建虚拟环境
@@ -208,9 +208,9 @@ stock-analyzer/
 │   ├── integration/           # 集成测试
 │   └── regression/            # 回归测试
 ├── docs/                      # 文档
-│   ├── 用户使用手册.md         # 用户文档
+│   ├── USER_GUIDE.md         # 用户文档
 │   ├── CHANGELOG.md           # 更新日志
-│   └── modules/               # 模块文档（待补充）
+│   └── modules/               # 模块文档
 ├── scripts/                   # 工具脚本
 ├── config/                    # 配置文件
 ├── requirements.txt           # 生产依赖
@@ -301,10 +301,10 @@ brew install ta-lib
 
 | 指标 | 数值 |
 |------|------|
-| **总测试数** | 783 |
-| **通过率** | 99.6% (780 passed) |
-| **失败数** | 3 (环境依赖问题) |
-| **代码覆盖率** | 82.56% |
+| **总测试数** | 716 |
+| **通过率** | 100% (716 passed) |
+| **失败数** | 0 |
+| **代码覆盖率** | 80.93% |
 | **关键模块覆盖率** | 94%+ |
 
 ### 运行测试
