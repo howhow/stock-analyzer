@@ -80,17 +80,19 @@ class TestGetDataFetcher:
     @pytest.mark.asyncio
     async def test_get_data_fetcher_from_app_state(self):
         """测试从 app.state 获取数据获取器"""
-        # 创建模拟的 DataFetcher
-        mock_fetcher = Mock()
+        # 创建真实的 DataFetcher 实例
+        from app.data.data_fetcher import DataFetcher
+
+        real_fetcher = DataFetcher()
 
         request = Mock(spec=Request)
         request.app = Mock()
         request.app.state = Mock()
-        request.app.state.data_fetcher = mock_fetcher
+        request.app.state.data_fetcher = real_fetcher
 
         result = await get_data_fetcher(request)
 
-        assert result is mock_fetcher
+        assert result is real_fetcher
 
     @pytest.mark.asyncio
     async def test_get_data_fetcher_create_new(self):
@@ -98,13 +100,13 @@ class TestGetDataFetcher:
         request = Mock(spec=Request)
         request.app = Mock()
         request.app.state = Mock()
-        # 没有 data_fetcher 属性
+        request.app.state.data_fetcher = "invalid"  # 不是 DataFetcher 实例
 
         result = await get_data_fetcher(request)
 
         # 应该返回新的 DataFetcher 实例
         assert result is not None
-        assert hasattr(result, "fetch_stock_data")
+        assert hasattr(result, "get_stock_info")
 
 
 class TestRequireRole:

@@ -68,12 +68,12 @@ async def get_data_fetcher(request: Request) -> "DataFetcher":
 
     # 从 app.state 获取（线程安全）
     if hasattr(request.app.state, "data_fetcher"):
-        return request.app.state.data_fetcher
+        fetcher = request.app.state.data_fetcher
+        if isinstance(fetcher, DataFetcher):
+            return fetcher
 
     # 降级：创建新实例
-    data_fetcher = DataFetcher()
-    return data_fetcher  # type: ignore[no-any-return]
-
+    return DataFetcher()  # type: ignore[no-any-return]
 
 
 CacheClient = Annotated[object, Depends(get_cache)]

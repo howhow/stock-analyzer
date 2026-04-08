@@ -155,14 +155,13 @@ class SlidingWindowLimiter:
 
         try:
             result = await redis_client.eval(  # type: ignore[misc]
-                
                 lua_script,
                 1,
-                key,  # type: ignore[arg-type]
-                window_start,  # type: ignore[arg-type]
-                now,  # type: ignore[arg-type]
-                max_requests,  # type: ignore[arg-type]
-                window_seconds,  # type: ignore[arg-type]
+                key,  # type: ignore[arg-type]  # type: ignore[arg-type]
+                window_start,  # type: ignore[arg-type]  # type: ignore[arg-type]
+                now,  # type: ignore[arg-type]  # type: ignore[arg-type]
+                max_requests,  # type: ignore[arg-type]  # type: ignore[arg-type]
+                window_seconds,  # type: ignore[arg-type]  # type: ignore[arg-type]
             )
 
             allowed = bool(result[0])
