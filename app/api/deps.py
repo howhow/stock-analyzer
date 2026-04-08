@@ -71,7 +71,8 @@ async def get_data_fetcher(request: Request) -> "DataFetcher":
         return request.app.state.data_fetcher
 
     # 降级：创建新实例
-    return DataFetcher()  # type: ignore[no-any-return]
+    data_fetcher = DataFetcher()
+    return data_fetcher  # type: ignore[no-any-return]
 
 
 CacheClient = Annotated[object, Depends(get_cache)]

@@ -154,7 +154,8 @@ class SlidingWindowLimiter:
         """
 
         try:
-            result = await redis_client.eval(
+            result = await redis_client.eval(  # type: ignore[misc]
+                
                 lua_script,
                 1,
                 key,
