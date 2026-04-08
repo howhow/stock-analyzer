@@ -173,7 +173,7 @@ class CircuitBreaker:
         try:
             result = await func() if asyncio.iscoroutinefunction(func) else func()
             await self.record_success()
-            return result
+            return result  # type: ignore[no-any-return]
         except Exception:
             await self.record_failure()
             raise

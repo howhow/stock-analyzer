@@ -78,7 +78,7 @@ class SlidingWindowLimiter:
         """获取Redis客户端"""
         if self._redis is None:
             try:
-                self._redis = redis.from_url(
+                self._redis = redis.from_url(  # type: ignore[no-untyped-call]
                     settings.redis_url,
                     encoding="utf-8",
                     decode_responses=True,
@@ -162,7 +162,7 @@ class SlidingWindowLimiter:
                 now,
                 max_requests,
                 window_seconds,
-            )  # type: ignore[misc]
+            )  # type: ignore[arg-type]
 
             allowed = bool(result[0])
             remaining = int(result[1])

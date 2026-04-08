@@ -107,8 +107,8 @@ class ReportGenerator:
 
             report_content = ReportContent(
                 report_id=report_id,
-                stock_code=actual_stock_code,
-                stock_name=actual_stock_name,
+                stock_code=str(actual_stock_code),
+                stock_name=str(actual_stock_name),
                 analysis_data=report_data,
                 generator_version=self.version,
                 content=content,
@@ -166,7 +166,7 @@ class ReportGenerator:
             analyst_data = result.details.get("analyst", {})
             trader_data = result.details.get("trader", {})
             scores = {
-                "total": result.scores.get("total", 0),
+                "total": result.details.get("total_score", 0),
                 "fundamental": analyst_data.get("scores", {}).get("fundamental", 50),
                 "technical": analyst_data.get("scores", {}).get("technical", 50),
                 "signal_strength": trader_data.get("scores", {}).get(
@@ -494,13 +494,13 @@ class ReportGenerator:
                 ma5_val = sum([kline[j][1] for j in range(i - 4, i + 1)]) / 5
                 ma5.append(round(ma5_val, 2))
             else:
-                ma5.append(None)
+                ma5.append(0.0)  # type: ignore[arg-type]
 
             if i >= 19:
                 ma20_val = sum([kline[j][1] for j in range(i - 19, i + 1)]) / 20
                 ma20.append(round(ma20_val, 2))
             else:
-                ma20.append(None)
+                ma20.append(0.0)  # type: ignore[arg-type]
 
         # 生成MACD数据
         macd_dif = []

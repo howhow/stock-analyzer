@@ -133,7 +133,7 @@ class TushareClient(BaseDataSource):
 
         try:
             result = await self._call_tushare(
-                self.pro.daily,  # type: ignore[union-attr]
+                self.pro.daily,
                 ts_code=stock_code,
                 start_date=start_date.strftime("%Y%m%d"),
                 end_date=end_date.strftime("%Y%m%d"),
@@ -217,7 +217,7 @@ class TushareClient(BaseDataSource):
         try:
             # 获取最新财务数据
             result = await self._call_tushare(
-                self.pro.daily_basic,  # type: ignore[union-attr]
+                self.pro.daily_basic,
                 ts_code=stock_code,
                 fields="ts_code,trade_date,pe,pb,turnover_rate",
             )
@@ -255,7 +255,7 @@ class TushareClient(BaseDataSource):
         try:
             # 调用trade_calendar接口检查连接
             result = await self._call_tushare(
-                self.pro.trade_cal,  # type: ignore[union-attr]
+                self.pro.trade_cal,
                 exchange="SSE",
                 start_date=datetime.now().strftime("%Y%m%d"),
                 end_date=datetime.now().strftime("%Y%m%d"),

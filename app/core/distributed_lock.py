@@ -118,7 +118,7 @@ class DistributedLock:
 
             result = await self._redis.eval(
                 lua_script, 1, self._key, self._token
-            )  # type: ignore[misc]
+            )  # type: ignore[arg-type, misc]
 
             self._locked = False
 
@@ -164,7 +164,7 @@ class DistributedLock:
             ttl = additional_time or self._timeout
             result = await self._redis.eval(
                 lua_script, 1, self._key, self._token, ttl
-            )  # type: ignore[misc]
+            )  # type: ignore[arg-type, misc]
 
             if result:
                 logger.debug("lock_extended", key=self._key, ttl=ttl)
@@ -220,7 +220,7 @@ class DistributedLockManager:
     async def _get_redis(self) -> redis.Redis:
         """获取Redis客户端"""
         if self._redis is None:
-            self._redis = redis.from_url(
+            self._redis = redis.from_url(  # type: ignore[no-untyped-call]
                 self._redis_url,
                 encoding="utf-8",
                 decode_responses=True,
