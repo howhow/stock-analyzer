@@ -30,3 +30,10 @@ local_*/
 *.db
 *.sqlite
 logs/
+# 覆盖率测试数据
+.coverage
+coverage.xml
+htmlcov/
+
+# 临时脚本
+local_scripts/
