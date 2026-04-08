@@ -58,7 +58,7 @@ class TestGetCache:
         """测试获取缓存客户端"""
         result = await get_cache()
 
-        # 当前返回 None（待实现）
+        # 当前返回 None(待实现)
         assert result is None
 
 
@@ -70,7 +70,7 @@ class TestGetDb:
         """测试获取数据库会话"""
         result = await get_db()
 
-        # 当前返回 None（待实现）
+        # 当前返回 None(待实现)
         assert result is None
 
 
@@ -82,7 +82,7 @@ class TestGetDataFetcher:
         """测试从 app.state 获取数据获取器"""
         # 创建真实的 DataFetcher 实例
         from app.data.data_fetcher import DataFetcher
-
+        
         real_fetcher = DataFetcher()
 
         request = Mock(spec=Request)
@@ -93,10 +93,11 @@ class TestGetDataFetcher:
         result = await get_data_fetcher(request)
 
         assert result is real_fetcher
+        assert hasattr(result, "get_stock_info")
 
     @pytest.mark.asyncio
     async def test_get_data_fetcher_create_new(self):
-        """测试创建新的数据获取器（降级）"""
+        """测试创建新的数据获取器(降级)"""
         request = Mock(spec=Request)
         request.app = Mock()
         request.app.state = Mock()
