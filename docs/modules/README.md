@@ -67,7 +67,7 @@
 ## 🔗 相关文档
 
 - **README.md** - 项目说明
-- **docs/用户使用手册.md** - 用户手册
+- **docs/USER_GUIDE.md** - 用户手册
 - **ARCHITECTURE_REVIEW.md** - 架构审查
 - **docs/CHANGELOG.md** - 更新日志
 
