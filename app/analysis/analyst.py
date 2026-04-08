@@ -107,7 +107,9 @@ class Analyst(BaseAnalyzer):
         result.add_detail("policy", policy_result)
 
         # 基本面综合评分
-        return sum(scores) / len(scores) if scores else 50  # type: ignore[no-any-return]
+        return (  # type: ignore[no-any-return]
+            sum(scores) / len(scores) if scores else 50
+        )  # type: ignore[no-any-return]
 
     async def _analyze_technical(
         self,
