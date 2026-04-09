@@ -74,13 +74,9 @@ class TestOpenAIProvider:
             "usage": {"total_tokens": 100},
         }
 
-        with patch("aiohttp.ClientSession") as mock_session:
-            mock_session.return_value.__aenter__.return_value.post = AsyncMock(
-                return_value=MagicMock(
-                    status=200,
-                    json=AsyncMock(return_value=mock_response),
-                )
-            )
+        # Mock the _call_api method directly
+        with patch.object(provider, "_call_api", new_callable=AsyncMock) as mock_call:
+            mock_call.return_value = mock_response
 
             request = AIAnalysisRequest(prompt="测试提示")
             response = await provider.analyze(request)
@@ -91,9 +87,7 @@ class TestOpenAIProvider:
     @pytest.mark.asyncio
     async def test_test_connection(self, provider):
         """测试连接测试"""
-        with patch.object(
-            provider, "analyze", new_callable=AsyncMock
-        ) as mock_analyze:
+        with patch.object(provider, "analyze", new_callable=AsyncMock) as mock_analyze:
             mock_analyze.return_value = MagicMock(
                 model="gpt-4-turbo-preview",
                 latency_ms=100.0,
@@ -125,13 +119,9 @@ class TestAnthropicProvider:
             "usage": {"total_tokens": 100},
         }
 
-        with patch("aiohttp.ClientSession") as mock_session:
-            mock_session.return_value.__aenter__.return_value.post = AsyncMock(
-                return_value=MagicMock(
-                    status=200,
-                    json=AsyncMock(return_value=mock_response),
-                )
-            )
+        # Mock the _call_api method directly
+        with patch.object(provider, "_call_api", new_callable=AsyncMock) as mock_call:
+            mock_call.return_value = mock_response
 
             request = AIAnalysisRequest(prompt="测试提示")
             response = await provider.analyze(request)
@@ -142,9 +132,7 @@ class TestAnthropicProvider:
     @pytest.mark.asyncio
     async def test_test_connection(self, provider):
         """测试连接测试"""
-        with patch.object(
-            provider, "analyze", new_callable=AsyncMock
-        ) as mock_analyze:
+        with patch.object(provider, "analyze", new_callable=AsyncMock) as mock_analyze:
             mock_analyze.return_value = MagicMock(
                 model="claude-3-opus-20240229",
             )
