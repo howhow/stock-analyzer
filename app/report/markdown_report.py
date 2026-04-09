@@ -8,7 +8,7 @@ import json
 from datetime import date
 from typing import Any
 
-from app.analysis.base import AnalysisResult
+from app.analysis.base import AnalyzerResult
 from app.models.stock import DailyQuote
 from app.utils.logger import get_logger
 
@@ -20,7 +20,7 @@ class MarkdownReportGenerator:
 
     def generate(
         self,
-        result: AnalysisResult,
+        result: AnalyzerResult,
         stock_code: str | None = None,
         stock_name: str | None = None,
         quotes: list[DailyQuote] | None = None,
@@ -61,12 +61,12 @@ class MarkdownReportGenerator:
 
         return "\n\n".join(sections)
 
-    def _generate_header(self, result: AnalysisResult) -> str:
+    def _generate_header(self, result: AnalyzerResult) -> str:
         """生成报告标题"""
         stock_name = result.details.get("stock_name", "未知")
         return f"# 股票分析报告 - {stock_name}"
 
-    def _generate_basic_info(self, result: AnalysisResult) -> str:
+    def _generate_basic_info(self, result: AnalyzerResult) -> str:
         """生成基本信息"""
         stock_name = result.details.get("stock_name", "未知")
         analysis_type = result.details.get("analysis_type", "full")
@@ -97,7 +97,7 @@ class MarkdownReportGenerator:
 
         return "\n".join(lines)
 
-    def _generate_scores(self, result: AnalysisResult) -> str:
+    def _generate_scores(self, result: AnalyzerResult) -> str:
         """生成评分结果"""
         total_score = result.scores.get("total", 0)
 
@@ -131,7 +131,7 @@ class MarkdownReportGenerator:
 
         return "\n".join(lines)
 
-    def _generate_recommendation(self, result: AnalysisResult) -> str:
+    def _generate_recommendation(self, result: AnalyzerResult) -> str:
         """生成投资建议"""
         recommendation = result.details.get("recommendation", "无")
         confidence = result.details.get("confidence", 0)
@@ -158,7 +158,7 @@ class MarkdownReportGenerator:
 
     def _generate_key_indicators(
         self,
-        result: AnalysisResult,
+        result: AnalyzerResult,
         quotes: list[DailyQuote] | None,
         indicators: dict[str, Any] | None,
     ) -> str:
@@ -195,7 +195,7 @@ class MarkdownReportGenerator:
 
     def _generate_technical_analysis(
         self,
-        result: AnalysisResult,
+        result: AnalyzerResult,
         indicators: dict[str, Any] | None,
     ) -> str:
         """生成技术分析"""
@@ -224,7 +224,7 @@ class MarkdownReportGenerator:
 
         return "\n".join(lines)
 
-    def _generate_fundamental_analysis(self, result: AnalysisResult) -> str:
+    def _generate_fundamental_analysis(self, result: AnalyzerResult) -> str:
         """生成基本面分析"""
         lines = [
             "## 基本面分析",
@@ -245,7 +245,7 @@ class MarkdownReportGenerator:
 
         return "\n".join(lines)
 
-    def _generate_risks(self, result: AnalysisResult) -> str:
+    def _generate_risks(self, result: AnalyzerResult) -> str:
         """生成风险提示"""
         lines = ["## 风险提示", ""]
 
@@ -257,7 +257,7 @@ class MarkdownReportGenerator:
 
         return "\n".join(lines)
 
-    def _generate_opportunities(self, result: AnalysisResult) -> str:
+    def _generate_opportunities(self, result: AnalyzerResult) -> str:
         """生成投资机会"""
         lines = ["## 投资机会", ""]
 
@@ -276,7 +276,7 @@ class MarkdownReportGenerator:
 
         return "\n".join(lines)
 
-    def _generate_trading_advice(self, result: AnalysisResult) -> str:
+    def _generate_trading_advice(self, result: AnalyzerResult) -> str:
         """生成交易建议"""
         recommendation = result.details.get("recommendation", "无")
         confidence = result.details.get("confidence", 0)
@@ -292,7 +292,7 @@ class MarkdownReportGenerator:
 
         return "\n".join(lines)
 
-    def _generate_metadata(self, result: AnalysisResult) -> str:
+    def _generate_metadata(self, result: AnalyzerResult) -> str:
         """生成报告元数据"""
         stock_code = result.details.get("stock_code", "unknown")
         stock_name = result.details.get("stock_name", "未知")

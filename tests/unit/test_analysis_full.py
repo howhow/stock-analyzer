@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, Mock
 import pytest
 
 from app.analysis.analyst import Analyst
-from app.analysis.base import AnalysisResult, BaseAnalyzer
+from app.analysis.base import AnalyzerResult, BaseAnalyzer
 from app.analysis.indicators import rsi, sma, trend, volatility, volume
 from app.analysis.scoring import ScoringEngine
 from app.analysis.system import SystemAnalyzer
@@ -18,7 +18,7 @@ class TestAnalysisResult:
 
     def test_create(self):
         """测试创建分析结果"""
-        result = AnalysisResult(analyzer_name="test_analyzer")
+        result = AnalyzerResult(analyzer_name="test_analyzer")
         assert result.analyzer_name == "test_analyzer"
         result.add_score("trend", 75.5)
         assert result.scores["trend"] == 75.5

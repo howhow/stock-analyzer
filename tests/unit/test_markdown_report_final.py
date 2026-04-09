@@ -4,7 +4,7 @@ Markdown 报告生成器测试 - 简化版
 
 import pytest
 from app.report.markdown_report import MarkdownReportGenerator
-from app.analysis.base import AnalysisResult
+from app.analysis.base import AnalyzerResult
 
 
 class TestMarkdownReportGenerator:
@@ -18,7 +18,7 @@ class TestMarkdownReportGenerator:
     @pytest.fixture
     def sample_result(self):
         """示例分析结果"""
-        result = AnalysisResult("StockAnalyzer")
+        result = AnalyzerResult("StockAnalyzer")
         result.scores = {
             "total": 85.5,
             "fundamental": 80.0,
@@ -49,7 +49,7 @@ class TestMarkdownReportGenerator:
 
     def test_generate_with_scores(self, generator):
         """测试带评分的报告"""
-        result = AnalysisResult("StockAnalyzer")
+        result = AnalyzerResult("StockAnalyzer")
         result.scores = {"total": 75.0}
         result.details = {}
 
@@ -61,7 +61,7 @@ class TestMarkdownReportGenerator:
 
     def test_generate_with_details(self, generator):
         """测试带详情的报告"""
-        result = AnalysisResult("StockAnalyzer")
+        result = AnalyzerResult("StockAnalyzer")
         result.scores = {"total": 70.0}
         result.details = {"stock_name": "测试"}
 
@@ -73,7 +73,7 @@ class TestMarkdownReportGenerator:
 
     def test_generate_with_signals(self, generator):
         """测试带信号的报告"""
-        result = AnalysisResult("StockAnalyzer")
+        result = AnalyzerResult("StockAnalyzer")
         result.scores = {"total": 80.0}
         result.details = {}
         result.signals = ["买入信号", "上涨趋势"]

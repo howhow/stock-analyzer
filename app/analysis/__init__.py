@@ -5,7 +5,7 @@
 """
 
 from app.analysis.analyst import Analyst
-from app.analysis.base import AnalysisResult, BaseAnalyzer
+from app.analysis.base import AnalyzerResult, BaseAnalyzer
 from app.analysis.fundamental import (
     calculate_financial_score,
     calculate_industry_score,
@@ -28,7 +28,7 @@ from app.analysis.trader import Trader
 __all__ = [
     # 分析器
     "BaseAnalyzer",
-    "AnalysisResult",
+    "AnalyzerResult",
     "Analyst",
     "Trader",
     "SystemAnalyzer",

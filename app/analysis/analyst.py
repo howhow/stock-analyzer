@@ -8,7 +8,7 @@ from typing import Any
 
 import pandas as pd
 
-from app.analysis.base import AnalysisResult, BaseAnalyzer
+from app.analysis.base import AnalyzerResult, BaseAnalyzer
 from app.analysis.fundamental import (
     calculate_financial_score,
     calculate_industry_score,
@@ -40,7 +40,7 @@ class Analyst(BaseAnalyzer):
         quotes: list[DailyQuote],
         financial: FinancialData | None = None,
         **kwargs: Any,
-    ) -> AnalysisResult:
+    ) -> AnalyzerResult:
         """
         执行完整分析
 
@@ -53,7 +53,7 @@ class Analyst(BaseAnalyzer):
         Returns:
             分析结果
         """
-        result = AnalysisResult(self.name)
+        result = AnalyzerResult(self.name)
 
         # 数据验证
         if not self.validate_data(quotes, min_days=20):
@@ -83,7 +83,7 @@ class Analyst(BaseAnalyzer):
         self,
         stock_info: StockInfo,
         financial: FinancialData | None,
-        result: AnalysisResult,
+        result: AnalyzerResult,
     ) -> float:
         """基本面分析"""
         scores = []
@@ -114,7 +114,7 @@ class Analyst(BaseAnalyzer):
     async def _analyze_technical(
         self,
         prices: dict[str, list[float]],
-        result: AnalysisResult,
+        result: AnalyzerResult,
     ) -> float:
         """技术面分析"""
         close = prices["close"]
@@ -146,7 +146,7 @@ class Analyst(BaseAnalyzer):
     def _analyze_trend(
         self,
         close: list[float],
-        result: AnalysisResult,
+        result: AnalyzerResult,
     ) -> float:
         """趋势分析"""
         close_series = pd.Series(close)
@@ -204,7 +204,7 @@ class Analyst(BaseAnalyzer):
     def _analyze_momentum(
         self,
         close: list[float],
-        result: AnalysisResult,
+        result: AnalyzerResult,
     ) -> float:
         """动量分析"""
         close_series = pd.Series(close)
@@ -235,7 +235,7 @@ class Analyst(BaseAnalyzer):
         high: list[float],
         low: list[float],
         close: list[float],
-        result: AnalysisResult,
+        result: AnalyzerResult,
     ) -> float:
         """波动率分析"""
         high_series = pd.Series(high)
@@ -270,7 +270,7 @@ class Analyst(BaseAnalyzer):
         self,
         close: list[float],
         volume: list[float],
-        result: AnalysisResult,
+        result: AnalyzerResult,
     ) -> float:
         """成交量分析"""
         close_series = pd.Series(close)
