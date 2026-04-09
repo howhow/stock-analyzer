@@ -5,19 +5,23 @@
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from app.models.stock import DailyQuote, FinancialData, StockInfo
 from app.utils.logger import get_logger
 
+if TYPE_CHECKING:
+    from app.models.analysis import AnalysisResult
+
 logger = get_logger(__name__)
 
 
-class AnalysisResult:
+class AnalyzerResult:
     """
-    分析结果容器
+    分析器结果容器（内部使用）
 
-    存储单次分析的结果
+    存储单次分析的结果，用于Analyst/Trader/SystemAnalyzer内部
+    最终转换为models.analysis.AnalysisResult用于API响应
     """
 
     def __init__(self, analyzer_name: str):
@@ -53,6 +57,74 @@ class AnalysisResult:
             "warnings": self.warnings,
         }
 
+    def to_analysis_result(
+        self,
+        stock_code: str,
+        stock_name: str | None = None,
+        analysis_type: str = "both",
+    ) -> "AnalysisResult":
+        """
+        转换为API响应模型（AnalysisResult）
+
+        Args:
+            stock_code: 股票代码
+            stock_name: 股票名称
+            analysis_type: 分析类型
+
+        Returns:
+            Pydantic AnalysisResult模型
+        """
+        from app.models.analysis import (
+            AnalysisResult,
+            AnalysisType,
+            AnalystReport,
+            DimensionScores,
+            TraderSignal,
+            Recommendation,
+            MTFAlignment,
+            EntryTiming,
+        )
+        import uuid
+        from datetime import datetime
+
+        # 提取评分
+        scores = self.scores
+        details = self.details
+
+        # 构建分析师报告
+        analyst_report = AnalystReport(
+            stock_code=stock_code,
+            stock_name=stock_name,
+            analysis_type=AnalysisType(analysis_type),
+            fundamental_score=scores.get("fundamental", 50.0) / 20.0,  # 转换为1-5
+            technical_score=scores.get("technical", 50.0) / 20.0,
+            dimension_scores=DimensionScores(
+                signal_strength=scores.get("signal_strength", 3.0),
+                opportunity_quality=scores.get("opportunity_quality", 3.0),
+                risk_level=scores.get("risk_level", 3.0),
+            ),
+            total_score=scores.get("total", 50.0) / 20.0,
+        )
+
+        # 构建交易员信号
+        trader_signal = TraderSignal(
+            stock_code=stock_code,
+            confidence=details.get("confidence", 50.0),
+            mtf_alignment=MTFAlignment.NEUTRAL,  # 默认中性
+            entry_timing=EntryTiming.WAIT,  # 默认等待
+            recommendation=Recommendation(details.get("recommendation", "持有")),
+        )
+
+        # 构建最终结果
+        return AnalysisResult(
+            analysis_id=str(uuid.uuid4()),
+            stock_code=stock_code,
+            stock_name=stock_name,
+            analysis_type=AnalysisType(analysis_type),
+            analyst_report=analyst_report,
+            trader_signal=trader_signal,
+        )
+
 
 class BaseAnalyzer(ABC):
     """
@@ -72,7 +144,7 @@ class BaseAnalyzer(ABC):
         quotes: list[DailyQuote],
         financial: FinancialData | None = None,
         **kwargs: Any,
-    ) -> AnalysisResult:
+    ) -> AnalyzerResult:
         """
         执行分析
 
@@ -83,7 +155,7 @@ class BaseAnalyzer(ABC):
             **kwargs: 其他参数
 
         Returns:
-            分析结果
+            分析器结果（内部容器）
         """
         pass
 

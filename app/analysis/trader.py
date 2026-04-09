@@ -8,7 +8,7 @@ from typing import Any
 
 import pandas as pd
 
-from app.analysis.base import AnalysisResult, BaseAnalyzer
+from app.analysis.base import AnalyzerResult, BaseAnalyzer
 from app.analysis.indicators import golden_cross, rsi, support_resistance
 from app.analysis.scoring import ScoringEngine
 from app.models.stock import DailyQuote, FinancialData, StockInfo
@@ -36,7 +36,7 @@ class Trader(BaseAnalyzer):
         quotes: list[DailyQuote],
         financial: FinancialData | None = None,
         **kwargs: Any,
-    ) -> AnalysisResult:
+    ) -> AnalyzerResult:
         """
         执行交易分析
 
@@ -49,7 +49,7 @@ class Trader(BaseAnalyzer):
         Returns:
             分析结果
         """
-        result = AnalysisResult(self.name)
+        result = AnalyzerResult(self.name)
 
         # 数据验证
         if not self.validate_data(quotes, min_days=20):
@@ -99,7 +99,7 @@ class Trader(BaseAnalyzer):
         close: pd.Series,
         high: pd.Series,
         low: pd.Series,
-        result: AnalysisResult,
+        result: AnalyzerResult,
     ) -> float:
         """计算信号强度"""
         # 趋势信号
@@ -137,7 +137,7 @@ class Trader(BaseAnalyzer):
         close: pd.Series,
         high: pd.Series,
         low: pd.Series,
-        result: AnalysisResult,
+        result: AnalyzerResult,
     ) -> float:
         """计算机会质量"""
         # 支撑阻力位
@@ -176,7 +176,7 @@ class Trader(BaseAnalyzer):
         high: pd.Series,
         low: pd.Series,
         financial: FinancialData | None,
-        result: AnalysisResult,
+        result: AnalyzerResult,
     ) -> float:
         """计算风险等级"""
         # 波动率

@@ -7,7 +7,7 @@
 from typing import Any
 
 from app.analysis.analyst import Analyst
-from app.analysis.base import AnalysisResult, BaseAnalyzer
+from app.analysis.base import AnalyzerResult, BaseAnalyzer
 from app.analysis.scoring import ScoringEngine
 from app.analysis.trader import Trader
 from app.models.stock import DailyQuote, FinancialData, StockInfo
@@ -38,7 +38,7 @@ class SystemAnalyzer(BaseAnalyzer):
         financial: FinancialData | None = None,
         analysis_type: str = "long",
         **kwargs: Any,
-    ) -> AnalysisResult:
+    ) -> AnalyzerResult:
         """
         执行系统级分析
 
@@ -52,7 +52,7 @@ class SystemAnalyzer(BaseAnalyzer):
         Returns:
             分析结果
         """
-        result = AnalysisResult(self.name)
+        result = AnalyzerResult(self.name)
 
         # 数据验证
         if not self.validate_data(quotes, min_days=20):
@@ -101,8 +101,8 @@ class SystemAnalyzer(BaseAnalyzer):
 
     def _calculate_long_term_score(
         self,
-        analyst_result: AnalysisResult,
-        trader_result: AnalysisResult,
+        analyst_result: AnalyzerResult,
+        trader_result: AnalyzerResult,
     ) -> float:
         """计算长线评分"""
         # 获取各维度分数
@@ -132,8 +132,8 @@ class SystemAnalyzer(BaseAnalyzer):
 
     def _calculate_short_term_score(
         self,
-        analyst_result: AnalysisResult,
-        trader_result: AnalysisResult,
+        analyst_result: AnalyzerResult,
+        trader_result: AnalyzerResult,
     ) -> float:
         """计算短线评分"""
         # 短线更看重交易员的分析
