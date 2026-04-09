@@ -9,6 +9,46 @@ import pytest
 from app.models.stock import StockInfo
 
 # ============================================================
+# Redis清理fixture
+# ============================================================
+
+
+@pytest.fixture(autouse=True)
+def reset_redis():
+    """每个测试前清空Redis"""
+    import redis
+
+    try:
+        client = redis.from_url("redis://localhost:6379/0")
+        client.flushdb()
+    except Exception:
+        pass
+    yield
+    try:
+        client.flushdb()
+    except Exception:
+        pass
+
+
+@pytest.fixture(autouse=True, scope="module")
+def reset_global_limiter():
+    """每个测试模块重置全局限流器"""
+    try:
+        import app.core.limiter as limiter_module
+
+        limiter_module._rate_limiter = None
+    except Exception:
+        pass
+    yield
+    try:
+        import app.core.limiter as limiter_module
+
+        limiter_module._rate_limiter = None
+    except Exception:
+        pass
+
+
+# ============================================================
 # 国际化策略 - 统一使用中文
 # ============================================================
 
