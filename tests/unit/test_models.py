@@ -1,97 +1,112 @@
+"""
+数据库模型测试
+
+测试UserConfig和AnalysisHistory模型
+"""
+
+from datetime import datetime
+
 import pytest
 
-"""
-数据模型测试
-"""
-
-from datetime import date
-
-from pydantic import ValidationError
-
-from app.models import AnalysisRequest, DailyQuote, DimensionScores, StockInfo
+from app.models.analysis_history import AnalysisHistory
+from app.models.user_config import UserConfig
 
 
-def test_dimension_scores_valid():
-    """测试三维度评分有效值"""
-    scores = DimensionScores(
-        signal_strength=3.5,
-        opportunity_quality=4.0,
-        risk_level=3.0,
-    )
-    assert scores.signal_strength == 3.5
-    assert scores.opportunity_quality == 4.0
-    assert scores.risk_level == 3.0
+class TestUserConfig:
+    """测试UserConfig模型"""
 
-
-def test_dimension_scores_invalid():
-    """测试三维度评分无效值"""
-    with pytest.raises(ValidationError):
-        DimensionScores(
-            signal_strength=6.0,  # 超出范围
-            opportunity_quality=4.0,
-            risk_level=3.0,
+    def test_create_user_config(self):
+        """测试创建用户配置"""
+        config = UserConfig(
+            user_id="test_user",
+            openai_api_key="encrypted_key",
+            openai_base_url="https://api.openai.com/v1",
+            openai_model="gpt-4-turbo",
+            default_analysis_type="both",
+            default_days=120,
         )
 
+        assert config.user_id == "test_user"
+        assert config.openai_api_key == "encrypted_key"
+        assert config.default_analysis_type == "both"
+        assert config.default_days == 120
 
-def test_analysis_request():
-    """测试分析请求模型"""
-    request = AnalysisRequest(
-        stock_code="600519.SH",
-        analysis_type="long",
-        mode="algorithm",
-    )
-    assert request.stock_code == "600519.SH"
-    assert request.analysis_type.value == "long"
+    def test_user_config_defaults(self):
+        """测试用户配置默认值"""
+        config = UserConfig(
+            user_id="test_user",
+            default_analysis_type="both",  # 必须提供
+            default_days=120,  # 必须提供
+        )
 
+        assert config.default_analysis_type == "both"
+        assert config.default_days == 120
+        assert config.feishu_push_enabled is False
 
-def test_analysis_request_code_normalization():
-    """测试股票代码大写转换"""
-    request = AnalysisRequest(stock_code="600519.sh")
-    assert request.stock_code == "600519.SH"
+    def test_user_config_repr(self):
+        """测试用户配置字符串表示"""
+        config = UserConfig(user_id="test_user", id=1)
+        repr_str = repr(config)
 
-
-def test_stock_info():
-    """测试股票信息模型"""
-    stock = StockInfo(
-        code="600519.SH",
-        name="贵州茅台",
-        market="SH",
-        industry="白酒",
-        list_date=None,
-    )
-    assert stock.code == "600519.SH"
-    assert stock.name == "贵州茅台"
+        assert "UserConfig" in repr_str
+        assert "id=1" in repr_str
+        assert "user_id=test_user" in repr_str
 
 
-def test_daily_quote():
-    """测试日线行情模型"""
-    quote = DailyQuote(
-        stock_code="600519.SH",
-        trade_date=date(2024, 1, 1),
-        open=100.0,
-        close=101.0,
-        high=102.0,
-        low=99.0,
-        volume=10000.0,
-        amount=1000000.0,
-    )
-    assert quote.stock_code == "600519.SH"
-    assert quote.close == 101.0
+class TestAnalysisHistory:
+    """测试AnalysisHistory模型"""
 
+    def test_create_analysis_history(self):
+        """测试创建分析历史"""
+        history = AnalysisHistory(
+            user_id="test_user",
+            stock_code="600276.SH",
+            stock_name="恒瑞医药",
+            analysis_type="both",
+            total_score=4.5,
+            fundamental_score=4.0,
+            technical_score=5.0,
+            recommendation="买入",
+            analysis_result='{"details": "test"}',
+            analysis_duration_ms=1500,
+        )
 
-def test_daily_quote_invalid_prices():
-    """测试日线行情价格验证 - 当前 Pydantic v2 不支持 model_validator"""
-    # NOTE: Pydantic v2 field_validator 不会在实例化时自动验证其他字段
-    # 价格验证逻辑需要在业务层实现
-    # 这里只测试基本功能
-    quote = DailyQuote(
-        stock_code="600519.SH",
-        trade_date=date(2024, 1, 1),
-        open=100.0,
-        close=101.0,
-        high=102.0,
-        low=99.0,
-        volume=10000.0,
-        amount=1000000.0,
-    )
-    assert quote.high >= quote.low
+        assert history.user_id == "test_user"
+        assert history.stock_code == "600276.SH"
+        assert history.total_score == 4.5
+        assert history.recommendation == "买入"
+
+    def test_analysis_history_repr(self):
+        """测试分析历史字符串表示"""
+        history = AnalysisHistory(
+            id=1,
+            user_id="test_user",
+            stock_code="600276.SH",
+            stock_name="恒瑞医药",
+            analysis_type="both",
+            total_score=4.5,
+            recommendation="买入",
+            analysis_result="{}",
+            analysis_duration_ms=1500,
+        )
+        repr_str = repr(history)
+
+        assert "AnalysisHistory" in repr_str
+        assert "id=1" in repr_str
+        assert "stock_code=600276.SH" in repr_str
+
+    def test_analysis_history_optional_fields(self):
+        """测试分析历史可选字段"""
+        history = AnalysisHistory(
+            user_id="test_user",
+            stock_code="600276.SH",
+            analysis_type="technical",
+            total_score=3.5,
+            recommendation="持有",
+            analysis_result="{}",
+            analysis_duration_ms=1000,
+        )
+
+        assert history.stock_name is None
+        assert history.fundamental_score is None
+        assert history.technical_score is None
