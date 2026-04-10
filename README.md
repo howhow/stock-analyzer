@@ -61,7 +61,7 @@ python stock_analyzer.py 688981.SH --output html
 
 ```bash
 # 克隆项目
-git clone https://github.com/your-username/stock-analyzer.git
+git clone https://github.com/howhow/stock-analyzer.git
 cd stock-analyzer
 
 # 创建虚拟环境
