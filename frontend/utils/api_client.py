@@ -5,12 +5,15 @@ API 客户端
 """
 
 import asyncio
+import logging
 from typing import Any
 
 import httpx
 import streamlit as st
 
 from config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class APIError(Exception):
@@ -85,12 +88,20 @@ class APIClient:
                 last_error = APIError(
                     f"请求超时 (attempt {attempt + 1}/{self.max_retries}): {e}"
                 )
+                logger.warning(
+                    f"API request timeout (attempt {attempt + 1}/{self.max_retries}): "
+                    f"{method} {url} - {e}"
+                )
                 if attempt < self.max_retries - 1:
                     await asyncio.sleep(self.retry_delay * (attempt + 1))
 
             except httpx.HTTPStatusError as e:
                 # 4xx 错误不重试
                 if 400 <= e.response.status_code < 500:
+                    logger.error(
+                        f"API client error: {method} {url} - "
+                        f"{e.response.status_code}"
+                    )
                     raise APIError(
                         f"客户端错误: {e.response.status_code} - " f"{e.response.text}",
                         status_code=e.response.status_code,
@@ -101,11 +112,19 @@ class APIClient:
                     f"{self.max_retries}): {e.response.status_code}",
                     status_code=e.response.status_code,
                 )
+                logger.warning(
+                    f"API server error (attempt {attempt + 1}/{self.max_retries}): "
+                    f"{method} {url} - {e.response.status_code}"
+                )
                 if attempt < self.max_retries - 1:
                     await asyncio.sleep(self.retry_delay * (attempt + 1))
 
             except httpx.RequestError as e:
                 last_error = APIError(f"网络错误: {e}")
+                logger.warning(
+                    f"API network error (attempt {attempt + 1}/{self.max_retries}): "
+                    f"{method} {url} - {e}"
+                )
                 if attempt < self.max_retries - 1:
                     await asyncio.sleep(self.retry_delay * (attempt + 1))
 
