@@ -103,3 +103,44 @@ class TestGenerateEncryptionKey:
         key1 = generate_encryption_key()
         key2 = generate_encryption_key()
         assert key1 != key2
+
+
+class TestEncryptionManagerAdvanced:
+    """测试加密管理器高级功能"""
+
+    def test_init_with_derived_key_short_password(self):
+        """测试使用短密码（需要派生密钥）初始化"""
+        # 短于44字符的密码会触发密钥派生
+        manager = EncryptionManager("short-password")
+        assert manager is not None
+
+    def test_init_with_fernet_key_directly(self):
+        """测试使用标准Fernet密钥（44字符）直接初始化"""
+        key = generate_encryption_key()  # 44字符的标准Fernet密钥
+        manager = EncryptionManager(key)
+        assert manager is not None
+
+    def test_encrypt_with_unicode(self):
+        """测试加密Unicode字符串"""
+        key = generate_encryption_key()
+        manager = EncryptionManager(key)
+
+        plaintext = "API密钥测试-中文"
+        encrypted = manager.encrypt(plaintext)
+        decrypted = manager.decrypt(encrypted)
+
+        assert decrypted == plaintext
+
+    def test_decrypt_with_wrong_key_fails(self):
+        """测试使用错误密钥解密会失败"""
+        key1 = generate_encryption_key()
+        key2 = generate_encryption_key()
+        manager1 = EncryptionManager(key1)
+        manager2 = EncryptionManager(key2)
+
+        plaintext = "secret-data"
+        encrypted = manager1.encrypt(plaintext)
+
+        # 使用不同密钥解密应该失败
+        with pytest.raises(EncryptionError):
+            manager2.decrypt(encrypted)

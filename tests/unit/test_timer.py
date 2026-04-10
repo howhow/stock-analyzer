@@ -44,3 +44,16 @@ class TestTimer:
         except RuntimeError:
             # 或者抛出RuntimeError也是预期行为
             pass
+
+    def test_timer_elapsed_property(self):
+        """测试elapsed属性"""
+        timer_instance = Timer()
+        # 未启动时elapsed应该为0
+        assert timer_instance.elapsed == 0
+
+        timer_instance.start()
+        time.sleep(0.01)
+        timer_instance.stop()
+
+        # stop后elapsed应该>0
+        assert timer_instance.elapsed > 0
