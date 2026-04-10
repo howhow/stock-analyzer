@@ -144,3 +144,115 @@ class TestEncryptionManagerAdvanced:
         # 使用不同密钥解密应该失败
         with pytest.raises(EncryptionError):
             manager2.decrypt(encrypted)
+
+
+class TestEncryptionRandomSalt:
+    """测试随机 salt 功能"""
+
+    def test_random_salt_each_encryption(self) -> None:
+        """测试每次加密使用不同的 salt"""
+        key = generate_encryption_key()
+        manager = EncryptionManager(key)
+
+        plaintext = "test-api-key"
+        encrypted1 = manager.encrypt(plaintext)
+        encrypted2 = manager.encrypt(plaintext)
+
+        # 相同明文，不同加密结果（因为随机 salt）
+        assert encrypted1 != encrypted2
+
+    def test_decrypt_with_random_salt(self) -> None:
+        """测试解密随机 salt 加密的数据"""
+        key = generate_encryption_key()
+        manager = EncryptionManager(key)
+
+        plaintext = "my-secret-key-12345"
+        encrypted = manager.encrypt(plaintext)
+        decrypted = manager.decrypt(encrypted)
+
+        assert decrypted == plaintext
+
+    def test_encrypted_data_format(self) -> None:
+        """测试加密数据格式包含版本"""
+        key = generate_encryption_key()
+        manager = EncryptionManager(key)
+
+        plaintext = "test-key"
+        encrypted = manager.encrypt(plaintext)
+
+        # 格式应该是 v2:base64_salt:base64_encrypted
+        assert encrypted.startswith("v2:")
+        parts = encrypted.split(":")
+        assert len(parts) == 3
+
+
+class TestEncryptionBackwardCompatibility:
+    """测试向后兼容性"""
+
+    def test_decrypt_legacy_format(self) -> None:
+        """测试解密旧格式数据（固定 salt）"""
+        from cryptography.fernet import Fernet
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+        import base64
+
+        password = "test-password"
+        plaintext = "legacy-api-key"
+
+        # 使用旧方法加密（固定 salt）
+        salt = b"stock_analyzer_encryption_salt_v1"
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=100000,
+        )
+        key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
+        fernet = Fernet(key)
+        legacy_encrypted = fernet.encrypt(plaintext.encode()).decode()
+
+        # 使用新方法解密（应该能解密旧格式）
+        manager = EncryptionManager(password)
+        decrypted = manager.decrypt(legacy_encrypted)
+
+        assert decrypted == plaintext
+
+    def test_decrypt_new_format(self) -> None:
+        """测试解密新格式数据"""
+        key = generate_encryption_key()
+        manager = EncryptionManager(key)
+
+        plaintext = "new-format-key"
+        encrypted = manager.encrypt(plaintext)
+        decrypted = manager.decrypt(encrypted)
+
+        assert decrypted == plaintext
+
+    def test_mixed_format_decryption(self) -> None:
+        """测试混合格式解密"""
+        from cryptography.fernet import Fernet
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+        import base64
+
+        password = "test-password"
+        manager = EncryptionManager(password)
+
+        # 旧格式加密
+        salt = b"stock_analyzer_encryption_salt_v1"
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=100000,
+        )
+        key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
+        fernet = Fernet(key)
+        legacy_encrypted = fernet.encrypt(b"legacy-key").decode()
+
+        # 新格式加密
+        new_encrypted = manager.encrypt("new-key")
+
+        # 都能解密
+        assert manager.decrypt(legacy_encrypted) == "legacy-key"
+        assert manager.decrypt(new_encrypted) == "new-key"
