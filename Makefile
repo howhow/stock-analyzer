@@ -1,4 +1,4 @@
-.PHONY: help venv install dev test test-unit test-integration lint format clean docker docker-prod stress-test db-init db-migrate check-deps frontend frontend-dev
+.PHONY: help venv install dev test test-unit test-integration lint format clean docker docker-prod docker-stop docker-logs docker-clean stress-test db-init db-migrate check-deps frontend frontend-dev
 
 # ============================================
 # 配置变量
@@ -27,9 +27,12 @@ help:
 	@echo "  make format      格式化代码"
 	@echo "  make clean       清理缓存文件"
 	@echo ""
-	@echo "【Docker - 未完成】"
-	@echo "  make docker      开发环境容器 (TODO)"
-	@echo "  make docker-prod 生产环境容器 (TODO)"
+	@echo "【Docker 部署]"
+	@echo "  make docker       启动开发环境容器"
+	@echo "  make docker-prod  启动生产环境容器"
+	@echo "  make docker-stop  停止容器"
+	@echo "  make docker-logs  查看日志"
+	@echo "  make docker-clean 清理容器和镜像"
 	@echo ""
 	@echo "【其他】"
 	@echo "  make stress-test 压力测试"
@@ -183,17 +186,28 @@ clean-all: clean
 	@echo "✅ 虚拟环境已删除，请重新 make venv && make install"
 
 # ============================================
-# Docker (TODO - 未完成)
+# Docker 部署
 # ============================================
 docker:
-	@echo "⚠️  Docker 功能开发中，暂不可用"
-	@echo "预计完成时间: TBD"
-	# docker-compose -f docker/docker-compose.yml up --build
+	@echo "🚀 启动 Docker 开发环境..."
+	@echo "🌐 后端: http://localhost:8000"
+	@echo "🌐 前端: http://localhost:8501"
+	cd docker && docker-compose up --build
 
 docker-prod:
-	@echo "⚠️  Docker 功能开发中，暂不可用"
-	@echo "预计完成时间: TBD"
-	# docker-compose -f docker/docker-compose.prod.yml up --build
+	@echo "🚀 启动 Docker 生产环境..."
+	cd docker && docker-compose -f docker-compose.prod.yml up -d
+
+docker-stop:
+	@echo "🛑 停止 Docker 容器..."
+	cd docker && docker-compose down
+
+docker-logs:
+	cd docker && docker-compose logs -f
+
+docker-clean:
+	@echo "🧹 清理 Docker 资源..."
+	cd docker && docker-compose down -v --rmi local
 
 # ============================================
 # 其他工具
