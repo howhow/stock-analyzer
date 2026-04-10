@@ -67,7 +67,7 @@ async def fetch_stock_info(stock_code: str) -> dict[str, Any]:
 def main() -> None:
     """主函数"""
     # 渲染侧边栏
-    sidebar_config = render_sidebar()
+    render_sidebar()
 
     # 页面标题
     st.title("📊 股票分析")
@@ -127,7 +127,7 @@ def main() -> None:
                 st.session_state.analysis_result = result
                 st.session_state.last_analyzed_code = stock_code
 
-                st.success(f"✅ 分析完成！")
+                st.success("✅ 分析完成！")
 
             except Exception as e:
                 st.error(f"分析失败: {e}")

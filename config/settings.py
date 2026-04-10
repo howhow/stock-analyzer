@@ -102,6 +102,11 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     log_format: Literal["json", "text"] = "json"
 
+    # Frontend API Client
+    api_timeout: int = 30  # API 请求超时时间（秒）
+    api_max_retries: int = 3  # API 请求最大重试次数
+    api_retry_delay: float = 1.0  # 重试延迟（秒）
+
     @field_validator("app_secret_key")
     @classmethod
     def validate_secret_key(cls, v: str) -> str:
