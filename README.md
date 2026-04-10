@@ -280,6 +280,86 @@ brew install ta-lib
 
 ---
 
+## 🐳 Docker 部署
+
+### 快速启动
+
+```bash
+# 克隆项目
+git clone https://github.com/howhow/stock-analyzer.git
+cd stock-analyzer
+
+# 复制环境变量配置
+cp .env.example .env
+# 编辑 .env，填入你的 TUSHARE_TOKEN 和其他配置
+
+# 启动开发环境
+make docker
+
+# 或生产环境
+make docker-prod
+```
+
+### 访问地址
+
+| 服务 | 地址 |
+|------|------|
+| 后端 API | http://localhost:8000 |
+| 前端界面 | http://localhost:8501 |
+| API 文档 | http://localhost:8000/docs |
+| PostgreSQL | localhost:5432 |
+| Redis | localhost:6379 |
+
+### Docker 命令
+
+```bash
+# 启动服务
+make docker
+
+# 生产环境启动
+make docker-prod
+
+# 停止服务
+make docker-stop
+
+# 查看日志
+make docker-logs
+
+# 清理资源
+make docker-clean
+```
+
+### 服务架构
+
+```
+┌─────────────┐     ┌─────────────┐
+│  Frontend   │────▶│   Backend   │
+│ (Streamlit) │     │  (FastAPI)  │
+│  :8501      │     │   :8000     │
+└─────────────┘     └──────┬──────┘
+                           │
+              ┌────────────┼────────────┐
+              │            │            │
+              ▼            ▼            ▼
+        ┌─────────┐  ┌─────────┐  ┌─────────┐
+        │PostgreSQL│  │  Redis  │  │ Celery  │
+        │  :5432   │  │  :6379  │  │ Worker  │
+        └─────────┘  └─────────┘  └─────────┘
+```
+
+### 环境变量配置
+
+| 变量 | 必需 | 说明 |
+|------|------|------|
+| TUSHARE_TOKEN | ✅ | Tushare API Token |
+| POSTGRES_PASSWORD | ✅ | PostgreSQL 密码 |
+| ENCRYPTION_KEY | ✅ | API Key 加密密钥 |
+| APP_SECRET_KEY | ✅ | 应用安全密钥 |
+| OPENAI_API_KEY | ❌ | OpenAI API Key（AI 分析）|
+| ANTHROPIC_API_KEY | ❌ | Anthropic API Key（AI 分析）|
+
+---
+
 ## 🛠️ Makefile 命令
 
 | 命令 | 说明 |
