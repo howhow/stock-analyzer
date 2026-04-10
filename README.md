@@ -282,20 +282,34 @@ brew install ta-lib
 
 ---
 
-## 🐳 Docker 部署
+## 🐳 Docker 部署（预览）
 
-### 快速启动
+> ⚠️ **预览状态**: Docker 部署为预览功能，建议优先使用本地部署方式。我们已提供完整配置，但尚未在所有环境验证。
+
+### 前置条件
+
+| 工具 | 版本要求 | 检查命令 |
+|------|----------|----------|
+| Docker | 20.10+ | `docker --version` |
+| Docker Compose | 2.0+ | `docker-compose --version` |
+
+**安装 Docker**:
+- macOS: [Docker Desktop](https://docs.docker.com/desktop/install/mac-install/)
+- Windows: [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/)
+- Linux: [Docker Engine](https://docs.docker.com/engine/install/)
+
+### 首次部署
 
 ```bash
-# 克隆项目
-git clone https://github.com/your-username/stock-analyzer.git
+# 1. 克隆项目
+git clone https://github.com/howhow/stock-analyzer.git
 cd stock-analyzer
 
-# 复制环境变量配置
+# 2. 配置环境变量
 cp .env.example .env
-# 编辑 .env，填入你的 TUSHARE_TOKEN 和其他配置
+# 编辑 .env，填写 TUSHARE_TOKEN、POSTGRES_PASSWORD 等
 
-# 启动开发环境
+# 3. 启动开发环境
 make docker
 
 # 或生产环境
