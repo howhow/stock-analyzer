@@ -38,12 +38,17 @@ async def get_analysis_histories(
         历史记录列表
     """
     client = get_api_client()
-    params = {"limit": limit}
+    params: dict[str, str | int] = {"limit": limit}
     if stock_code:
         params["stock_code"] = stock_code
 
     try:
-        return await client.get(f"/api/v1/analysis/history/{user_id}", params=params)
+        result = await client.get(f"/api/v1/analysis/history/{user_id}", params=params)
+        # API 返回可能是 dict 包装的 list 或直接是 list
+        if isinstance(result, list):
+            return result
+        histories: list[dict[str, Any]] = result.get("histories", [])
+        return histories
     except Exception:
         return []
 
