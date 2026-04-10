@@ -5,6 +5,57 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.1.0] - 2026-04-11
+
+### Added
+
+#### Web 前端
+- feat(frontend): Streamlit 多页面应用框架
+- feat(frontend): 主页、分析、配置、历史四个页面
+- feat(frontend): K线图、MACD、RSI、雷达图、仪表盘图表组件
+- feat(frontend): 异步 HTTP API 客户端
+- feat(frontend): 侧边栏股票搜索与选择
+
+#### AI 增强分析
+- feat(ai): OpenAI 协议适配器 - 支持所有 OpenAI 兼容 API
+- feat(ai): Anthropic 协议适配器 - 支持 Claude 系列模型
+- feat(ai): AI 分析增强模式 - 基本面/技术面/综合分析
+
+#### 测试覆盖率提升
+- test: OpenAI Provider 覆盖率 60.27% → 100%
+- test: Anthropic Provider 覆盖率 62.96% → 96.30%
+- test: API Config 覆盖率 37.01% → 97.64%
+- test: AKShare Client 覆盖率 39.30% → 84.08%
+- test: Database 覆盖率 52.94% → 100%
+- test: 总覆盖率 80.03% → 86.71%
+
+### Changed
+
+#### 架构优化
+- refactor: Mock 策略优化 - Mock 外部依赖，测试内部逻辑
+- refactor: FastAPI 依赖注入测试 - dependency_overrides
+- refactor: 第三方库 Mock 方案
+
+#### 文档与工具
+- docs: 更新 README.md 为 v1.1
+- docs: 添加前端使用说明
+- chore: run_frontend.sh → run_frontend.py (Python 统一管理)
+
+### Fixed
+
+- fix: OpenAI Provider 测试覆盖率不足
+- fix: Anthropic Provider 测试覆盖率不足
+- fix: API Config 依赖注入测试问题
+- fix: AKShare Client 网络依赖测试问题
+- fix: Series.fillna 废弃警告
+
+### Security
+
+- feat(core): 安全模块增强
+- feat(core): API Key 加密存储
+
+---
+
 ## [0.2.0] - 2026-04-06
 
 ### Added
