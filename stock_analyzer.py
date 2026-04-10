@@ -17,6 +17,9 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+import pandas as pd
+
 from app.data.data_fetcher import DataFetcher
 from app.analysis.system import SystemAnalyzer
 from app.analysis.indicators.trend import sma, macd
@@ -227,11 +230,79 @@ async def analyze_stock(args: argparse.Namespace) -> dict[str, Any] | None:
                 "rsi": rsi_series.tolist(),
             }
             
+            # 准备技术指标详情数据
+            from app.analysis.indicators.volatility import atr
+            from app.analysis.indicators.trend import ema
+            
+            returns = np.diff(closes) / np.array(closes[:-1])
+            
+            # 获取最新指标值
+            ma5_val = ma5_series.iloc[-1] if len(ma5_series) > 0 else None
+            ma20_val = ma20_series.iloc[-1] if len(ma20_series) > 0 else None
+            macd_dif_val = macd_data["macd"].iloc[-1] if len(macd_data["macd"]) > 0 else None
+            macd_dea_val = macd_data["signal"].iloc[-1] if len(macd_data["signal"]) > 0 else None
+            macd_hist_val = macd_data["histogram"].iloc[-1] if len(macd_data["histogram"]) > 0 else None
+            rsi_val = rsi_series.iloc[-1] if len(rsi_series) > 0 else None
+            
+            # 计算ATR
+            highs = [q.high for q in quotes]
+            lows = [q.low for q in quotes]
+            atr_series = atr(highs, lows, closes, period=14)
+            atr_val = atr_series.iloc[-1] if len(atr_series) > 0 and not np.isnan(atr_series.iloc[-1]) else None
+            
+            # 计算布林带
+            close_series = pd.Series(closes)
+            ma20 = close_series.rolling(window=20).mean()
+            std20 = close_series.rolling(window=20).std()
+            bollinger_upper = ma20.iloc[-1] + 2 * std20.iloc[-1] if not np.isnan(ma20.iloc[-1]) else None
+            bollinger_lower = ma20.iloc[-1] - 2 * std20.iloc[-1] if not np.isnan(ma20.iloc[-1]) else None
+            
+            # 计算波动率
+            volatility_30d = float(np.std(returns) * np.sqrt(252) * 100) if len(returns) > 0 else None
+            
+            # 计算简化 VaR (95%) 和 最大回撤
+            var_95 = float(np.percentile(returns, 5) * 100 * np.sqrt(20)) if len(returns) > 0 else None  # 20日 VaR
+            cum_returns = np.cumprod(1 + returns)
+            running_max = np.maximum.accumulate(cum_returns)
+            drawdowns = (cum_returns - running_max) / running_max
+            max_drawdown = float(np.min(drawdowns) * 100) if len(drawdowns) > 0 else None
+            
+            indicators = {
+                "ma5": round(float(ma5_val), 2) if ma5_val is not None and not np.isnan(ma5_val) else None,
+                "ma20": round(float(ma20_val), 2) if ma20_val is not None and not np.isnan(ma20_val) else None,
+                "macd": round(float(macd_dif_val), 4) if macd_dif_val is not None and not np.isnan(macd_dif_val) else None,
+                "macd_signal": round(float(macd_dea_val), 4) if macd_dea_val is not None and not np.isnan(macd_dea_val) else None,
+                "macd_hist": round(float(macd_hist_val), 4) if macd_hist_val is not None and not np.isnan(macd_hist_val) else None,
+                "rsi": round(float(rsi_val), 2) if rsi_val is not None and not np.isnan(rsi_val) else None,
+                "volatility_30d": volatility_30d,
+                "volume_ratio": round(quotes[-1].volume / np.mean([q.volume for q in quotes[-5:]]), 2) if len(quotes) >= 5 else None,
+                "turnover_rate": None,  # 需要流通股本数据
+                "atr": round(float(atr_val), 2) if atr_val is not None else None,
+                "bollinger_upper": round(float(bollinger_upper), 2) if bollinger_upper is not None else None,
+                "bollinger_lower": round(float(bollinger_lower), 2) if bollinger_lower is not None else None,
+                "var_95": var_95,
+                "max_drawdown": max_drawdown,
+            }
+            
+            # 准备基本面数据
+            fundamentals = None
+            if financial:
+                fundamentals = {
+                    "revenue": financial.revenue,
+                    "net_profit": financial.net_profit,
+                    "pe_ratio": getattr(financial, 'pe_ratio', None),
+                    "pb_ratio": getattr(financial, 'pb_ratio', None),
+                    "roe": getattr(financial, 'roe', None),
+                    "report_date": str(financial.report_date) if hasattr(financial, 'report_date') else None,
+                }
+            
             html_report = html_generator.generate(
                 result,
                 stock_code=args.stock_code,
                 stock_name=stock_info.name,
                 chart_data=chart_data,
+                indicators=indicators,
+                fundamentals=fundamentals,
             )
             html_file = output_dir / f"{args.stock_code}_{date_str}.html"
             html_file.write_text(html_report.content, encoding="utf-8")

@@ -2,7 +2,7 @@
 
 > **模块路径**: `app/utils/`  
 > **功能**: 工具函数与日志  
-> **版本**: v1.0.0
+> **版本**: v1.1.0
 
 ---
 
@@ -49,7 +49,7 @@ logger.info(
 
 ```json
 {
-  "timestamp": "2026-04-08T10:00:00Z",
+  "timestamp": "2026-04-11T10:00:00Z",
   "level": "INFO",
   "logger": "app.analysis.system",
   "event": "analysis_completed",
@@ -92,7 +92,7 @@ tushare_data = {
 mapped_data = FieldMapper.map_tushare(tushare_data)
 # {
 #     "stock_code": "600276.SH",
-#     "trade_date": "2026-04-08",
+#     "trade_date": "2026-04-11",
 #     "close": 57.45,
 # }
 
@@ -131,7 +131,7 @@ from app.utils.date_utils import parse_date, format_date
 date = parse_date("20260408")  # date(2026, 4, 8)
 
 # 格式化日期
-date_str = format_date(date, "%Y-%m-%d")  # "2026-04-08"
+date_str = format_date(date, "%Y-%m-%d")  # "2026-04-11"
 ```
 
 ### 数据验证
@@ -196,4 +196,4 @@ print(Counter(events))
 
 ---
 
-*文档版本: v1.0 | 最后更新: 2026-04-08*
+*文档版本: v1.1.0 | 最后更新: 2026-04-11*

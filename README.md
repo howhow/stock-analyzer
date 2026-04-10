@@ -61,7 +61,7 @@ python stock_analyzer.py 688981.SH --output html
 
 ```bash
 # 克隆项目
-git clone https://github.com/howhow/stock-analyzer.git
+git clone https://github.com/your-username/stock-analyzer.git
 cd stock-analyzer
 
 # 创建虚拟环境
@@ -288,7 +288,7 @@ brew install ta-lib
 
 ```bash
 # 克隆项目
-git clone https://github.com/howhow/stock-analyzer.git
+git clone https://github.com/your-username/stock-analyzer.git
 cd stock-analyzer
 
 # 复制环境变量配置
@@ -469,6 +469,48 @@ open htmlcov/index.html
 
 ---
 
+## ⚠️ 已知问题
+
+### 数据源问题
+
+#### AKShare 数据获取不稳定
+
+**问题描述**：AKShare 调用东方财富数据接口时可能失败，原因：
+- 东方财富对爬虫和 API 调用管控严格
+- 频繁访问会触发反爬机制
+- 网络波动导致连接中断
+
+**影响范围**：
+- 股票基本信息获取失败
+- 财务数据获取失败
+
+**解决方案**：
+1. **推荐**：使用 Tushare Pro（需要积分权限）
+2. 降低 AKShare 调用频率
+3. 等待一段时间后重试
+
+**错误示例**：
+```
+akshare_get_stock_info_failed: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+```
+
+**系统行为**：
+- Tushare 失败 → 自动降级到 AKShare
+- AKShare 失败 → 返回空数据，系统继续运行
+- 财务数据获取失败 → 自动退化为纯技术面分析
+
+### Tushare 权限问题
+
+**问题描述**：免费版 Tushare Token 权限有限：
+- 每分钟最多访问 1 次接口
+- 部分财务数据需要更高级别积分
+
+**解决方案**：
+- 升级 Tushare 积分等级
+- 使用 AKShare 作为备用数据源
+
+---
+
 ## 📄 License
 
 本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件
@@ -486,9 +528,8 @@ open htmlcov/index.html
 
 ## 📞 联系方式
 
-- **架构师**: Agent-Arch
-- **产品负责人**: How
 - **GitHub Issues**: 提交 Bug 报告或功能建议
+- **Pull Requests**: 欢迎贡献代码
 
 ---
 

@@ -2,7 +2,7 @@
 
 > **模块路径**: `app/models/`  
 > **功能**: 数据模型定义  
-> **版本**: v1.0.0
+> **版本**: v1.1.0
 
 ---
 
@@ -205,7 +205,7 @@ from pydantic import ValidationError
 try:
     quote = DailyQuote(
         stock_code="600276.SH",
-        trade_date="2026-04-08",  # 类型错误
+        trade_date="2026-04-11",  # 类型错误
         open=57.0,
         close=57.45,
     )
@@ -248,4 +248,4 @@ quote = DailyQuote.model_validate(data)
 
 ---
 
-*文档版本: v1.0 | 最后更新: 2026-04-08*
+*文档版本: v1.1.0 | 最后更新: 2026-04-11*
