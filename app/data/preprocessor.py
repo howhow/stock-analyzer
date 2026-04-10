@@ -89,9 +89,9 @@ class DataPreprocessor:
         for col in numeric_cols:
             if df[col].isna().any():
                 if method == "ffill":
-                    df[col] = df[col].fillna(method="ffill").fillna(method="bfill")
+                    df[col] = df[col].ffill().bfill()
                 elif method == "bfill":
-                    df[col] = df[col].fillna(method="bfill").fillna(method="ffill")
+                    df[col] = df[col].bfill().ffill()
                 elif method == "interpolate":
                     df[col] = df[col].interpolate(method="linear")
 
