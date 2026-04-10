@@ -54,3 +54,50 @@ def test_sanitize_input():
     assert sanitize_input("  test  ") == "test"
     assert sanitize_input("a" * 2000, max_length=100) == "a" * 100
     assert sanitize_input("test\x00\x01") == "test"
+
+
+def test_sanitize_input_empty():
+    """测试空输入"""
+    assert sanitize_input("") == ""
+    assert sanitize_input(None) == ""
+
+
+def test_is_valid_json():
+    """测试JSON有效性检查"""
+    from app.utils.validators import is_valid_json
+
+    assert is_valid_json({"key": "value"}) is True
+    assert is_valid_json([1, 2, 3]) is True
+    assert is_valid_json("string") is True
+    assert is_valid_json(123) is True
+
+
+def test_is_valid_json_invalid():
+    """测试无效JSON"""
+    from app.utils.validators import is_valid_json
+
+    # 包含无法序列化的对象
+    class Unserializable:
+        pass
+
+    assert is_valid_json(Unserializable()) is False
+
+
+def test_validate_date_range_defaults():
+    """测试日期范围默认值"""
+    # 测试 end_date 默认为今天
+    start, end = validate_date_range(date(2023, 1, 1), None)
+    assert start == date(2023, 1, 1)
+    assert end == date.today()
+
+    # 测试 start_date 默认为一年前
+    start, end = validate_date_range(None, date(2024, 6, 15))
+    assert start == date(2023, 6, 15)
+    assert end == date(2024, 6, 15)
+
+
+def test_validate_date_range_string():
+    """测试字符串日期转换"""
+    start, end = validate_date_range("2024-01-01", "2024-12-31")
+    assert start == date(2024, 1, 1)
+    assert end == date(2024, 12, 31)

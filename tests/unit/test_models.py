@@ -32,11 +32,16 @@ class TestUserConfig:
         assert config.default_days == 120
 
     def test_user_config_defaults(self):
-        """测试用户配置默认值"""
+        """测试用户配置默认值
+
+        注意：SQLAlchemy 的 default 是数据库层面的默认值，
+        Python 对象创建时需要显式传递可选字段。
+        """
         config = UserConfig(
             user_id="test_user",
             default_analysis_type="both",  # 必须提供
             default_days=120,  # 必须提供
+            feishu_push_enabled=False,  # SQLAlchemy 不会自动填充 default
         )
 
         assert config.default_analysis_type == "both"
