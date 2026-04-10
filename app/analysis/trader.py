@@ -167,6 +167,10 @@ class Trader(BaseAnalyzer):
                 "trend_direction": int(trend_direction),
             },
         )
+        
+        # 添加支撑阻力位到顶层details（供报告生成器使用）
+        result.add_detail("support_levels", [float(sr["support"])])
+        result.add_detail("resistance_levels", [float(sr["resistance"])])
 
         return quality
 

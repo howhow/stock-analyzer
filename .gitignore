@@ -1,39 +1,40 @@
-# Python 字节码
+# Python
 __pycache__/
 *.py[cod]
-*$py.class
+*.so
 
-# 虚拟环境
-.env
-.venv
+# Virtual environments
 venv/
 ENV/
-env.bak/
-venv.bak/
+env/
+.venv
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
 
-# 操作系统
+# Testing
+.pytest_cache/
+
+# 项目特定
+local_*/
+
+# 环境变量
+.env
+.env.local
+
+# OS
 .DS_Store
 Thumbs.db
 
-# 项目特定
+# Frontend
+node_modules/
+frontend/dist/
+frontend/.streamlit/
 
-# 本地文件夹（以 local_ 开头）
-local_*/
-
-# 数据库
-*.db
-*.sqlite
-logs/
-# 覆盖率测试数据
-.coverage
-coverage.xml
-htmlcov/
-
-# 临时脚本
-local_scripts/
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
