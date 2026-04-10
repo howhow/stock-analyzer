@@ -53,7 +53,8 @@ class APIClient:
                 timeout=30.0,
             )
             response.raise_for_status()
-            return response.json()
+            result: dict[str, Any] = response.json()
+            return result
 
     async def post(self, endpoint: str, data: dict[str, Any]) -> dict[str, Any]:
         """
@@ -74,7 +75,8 @@ class APIClient:
                 timeout=30.0,
             )
             response.raise_for_status()
-            return response.json()
+            result: dict[str, Any] = response.json()
+            return result
 
     async def put(self, endpoint: str, data: dict[str, Any]) -> dict[str, Any]:
         """
@@ -95,7 +97,8 @@ class APIClient:
                 timeout=30.0,
             )
             response.raise_for_status()
-            return response.json()
+            result: dict[str, Any] = response.json()
+            return result
 
     async def delete(self, endpoint: str) -> dict[str, Any]:
         """
@@ -114,7 +117,8 @@ class APIClient:
                 timeout=30.0,
             )
             response.raise_for_status()
-            return response.json()
+            result: dict[str, Any] = response.json()
+            return result
 
 
 # 全局客户端实例
