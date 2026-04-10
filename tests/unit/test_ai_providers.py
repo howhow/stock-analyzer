@@ -9,7 +9,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from app.ai.base import AIAnalysisRequest
-from app.ai.exceptions import AIAPIError, AIRateLimitError, AITimeoutError, AIConfigError
+from app.ai.exceptions import (
+    AIAPIError,
+    AIRateLimitError,
+    AITimeoutError,
+    AIConfigError,
+)
 from app.ai.providers.anthropic_provider import AnthropicProvider
 from app.ai.providers.factory import AIProviderFactory, AIProviderType
 from app.ai.providers.openai_provider import OpenAIProvider
