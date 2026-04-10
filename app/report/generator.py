@@ -158,15 +158,15 @@ class ReportGenerator:
             报告数据字典
         """
         # 兼容两种 AnalysisResult 格式
-        # 1. 简单版本（app/analysis/base.py）- 有 details 属性
-        # 2. 完整版本（app/models/analysis.py）- 有 analyst_report 和 trader_signal 属性
+        # 1. AnalyzerResult（app/analysis/base.py）- 内部使用
+        # 2. AnalysisResult（app/models/analysis.py）- API 响应
 
         if hasattr(result, "details"):
-            # 简单版本
-            analyst_data = result.details.get("analyst", {})
-            trader_data = result.details.get("trader", {})
+            # AnalyzerResult 内部格式
+            analyst_data = result.details.get("analyst", {})  # type: ignore
+            trader_data = result.details.get("trader", {})  # type: ignore
             scores = {
-                "total": result.details.get("total_score", 0),
+                "total": result.details.get("total_score", 0),  # type: ignore
                 "fundamental": analyst_data.get("scores", {}).get("fundamental", 50),
                 "technical": analyst_data.get("scores", {}).get("technical", 50),
                 "signal_strength": trader_data.get("scores", {}).get(
@@ -445,14 +445,18 @@ class ReportGenerator:
 
         # 兼容两种 AnalysisResult 格式
         if hasattr(result, "details"):
-            # 简单版本
-            analyst_data = result.details.get("analyst", {})
+            # AnalyzerResult 内部格式
+            analyst_data = result.details.get("analyst", {})  # type: ignore
             support_levels = analyst_data.get("support_levels", [44.0])
             resistance_levels = analyst_data.get("resistance_levels", [50.0])
         else:
-            # 完整版本
-            support_levels = result.analyst_report.support_levels or [44.0]
-            resistance_levels = result.analyst_report.resistance_levels or [50.0]
+            # AnalysisResult API 响应格式
+            support_levels = result.analyst_report.support_levels or [
+                44.0
+            ]  # type: ignore
+            resistance_levels = result.analyst_report.resistance_levels or [
+                50.0
+            ]  # type: ignore
 
         support = support_levels[0] if support_levels else 44.0
         resistance = resistance_levels[0] if resistance_levels else 50.0
