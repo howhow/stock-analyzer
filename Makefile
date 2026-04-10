@@ -1,4 +1,4 @@
-.PHONY: help venv install dev test test-unit test-integration lint format clean docker docker-prod stress-test db-init db-migrate check-deps
+.PHONY: help venv install dev test test-unit test-integration lint format clean docker docker-prod stress-test db-init db-migrate check-deps frontend frontend-dev
 
 # ============================================
 # 配置变量
@@ -19,7 +19,9 @@ help:
 	@echo "  make install     安装所有依赖"
 	@echo ""
 	@echo "【日常开发】"
-	@echo "  make dev         启动开发服务器"
+	@echo "  make dev         启动开发服务器（后端）"
+	@echo "  make frontend    启动前端服务"
+	@echo "  make frontend-dev 同时启动前后端（需要两个终端）"
 	@echo "  make test        运行所有测试 + 覆盖率"
 	@echo "  make lint        代码检查"
 	@echo "  make format      格式化代码"
@@ -120,6 +122,26 @@ venv-check:
 # ============================================
 dev: venv-check
 	$(PYTHON) -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# 前端服务
+frontend: venv-check
+	@if ! $(PYTHON) -c "import streamlit" 2>/dev/null; then \
+		echo "📦 安装前端依赖..."; \
+		$(PIP) install streamlit plotly -q; \
+	fi
+	@echo "🚀 启动前端服务..."
+	@echo "🌐 访问地址: http://localhost:8501"
+	cd frontend && $(PYTHON) -m streamlit run app.py --server.port 8501 --server.address 0.0.0.0
+
+# 同时启动前后端（需要两个终端）
+frontend-dev: venv-check
+	@echo "🚀 启动前后端服务..."
+	@echo "🌐 后端: http://localhost:8000"
+	@echo "🌐 前端: http://localhost:8501"
+	@echo ""
+	@echo "请分别在两个终端运行:"
+	@echo "  终端1: make dev"
+	@echo "  终端2: make frontend"
 
 # ============================================
 # 测试
