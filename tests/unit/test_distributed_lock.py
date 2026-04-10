@@ -169,3 +169,109 @@ class TestDistributedLockWithRedis:
         # 延长时间
         result = await lock.extend(60)
         assert result is True
+
+
+class TestDistributedLockErrors:
+    """分布式锁错误处理测试"""
+
+    @pytest.mark.asyncio
+    async def test_acquire_redis_error(self) -> None:
+        """测试Redis错误时获取锁"""
+        mock_redis = AsyncMock()
+        mock_redis.set = AsyncMock(side_effect=Exception("Connection error"))
+
+        lock = DistributedLock(
+            redis_client=mock_redis,
+            key="test_lock",
+            retry_times=2,
+        )
+
+        acquired = await lock.acquire()
+        assert acquired is False
+
+    @pytest.mark.asyncio
+    async def test_acquire_retry_logic(self) -> None:
+        """测试获取锁重试逻辑"""
+        mock_redis = AsyncMock()
+        # 第一次失败，第二次成功
+        mock_redis.set = AsyncMock(side_effect=[None, True])
+
+        lock = DistributedLock(
+            redis_client=mock_redis,
+            key="test_lock",
+            retry_times=3,
+            retry_delay=0.01,
+        )
+
+        acquired = await lock.acquire()
+        assert acquired is True
+        assert mock_redis.set.call_count == 2
+
+    @pytest.mark.asyncio
+    async def test_release_redis_error(self) -> None:
+        """测试Redis错误时释放锁"""
+        mock_redis = AsyncMock()
+        mock_redis.set = AsyncMock(return_value=True)
+        mock_redis.eval = AsyncMock(side_effect=Exception("Connection error"))
+
+        lock = DistributedLock(
+            redis_client=mock_redis,
+            key="test_lock",
+            retry_times=1,
+        )
+
+        await lock.acquire()
+        result = await lock.release()
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_extend_without_lock(self) -> None:
+        """测试未获取锁时延长"""
+        mock_redis = AsyncMock()
+
+        lock = DistributedLock(
+            redis_client=mock_redis,
+            key="test_lock",
+        )
+
+        result = await lock.extend(60)
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_extend_redis_error(self) -> None:
+        """测试Redis错误时延长锁"""
+        mock_redis = AsyncMock()
+        mock_redis.set = AsyncMock(return_value=True)
+        mock_redis.eval = AsyncMock(side_effect=Exception("Connection error"))
+
+        lock = DistributedLock(
+            redis_client=mock_redis,
+            key="test_lock",
+            retry_times=1,
+        )
+
+        await lock.acquire()
+        result = await lock.extend(60)
+        assert result is False
+
+
+class TestDistributedLockManagerAdvanced:
+    """分布式锁管理器高级测试"""
+
+    @pytest.mark.asyncio
+    async def test_get_redis_creates_connection(self) -> None:
+        """测试获取Redis连接"""
+        manager = DistributedLockManager(redis_url="redis://localhost:6379")
+        redis_client = await manager._get_redis()
+
+        assert redis_client is not None
+
+    @pytest.mark.asyncio
+    async def test_context_manager_usage(self) -> None:
+        """测试上下文管理器用法"""
+        manager = DistributedLockManager(redis_url="redis://localhost:6379")
+
+        # 测试 lock 方法可以创建上下文管理器
+        async with manager.lock("test_resource"):
+            # lock 可能为 None（如果 Redis 不可用）
+            pass
