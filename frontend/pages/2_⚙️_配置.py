@@ -89,11 +89,6 @@ def main() -> None:
         )
 
     with col2:
-        default_openai_model = (
-            current_config.get("openai_model", "gpt-4-turbo")
-            if current_config
-            else "gpt-4-turbo"
-        )
         openai_model = st.selectbox(
             "OpenAI Model",
             options=[
@@ -142,11 +137,6 @@ def main() -> None:
         )
 
     with col2:
-        default_anthropic_model = (
-            current_config.get("anthropic_model", "claude-3-opus-20240229")
-            if current_config
-            else "claude-3-opus-20240229"
-        )
         anthropic_model = st.selectbox(
             "Anthropic Model",
             options=[
