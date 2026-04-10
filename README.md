@@ -6,8 +6,8 @@
 
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
-[![Test Coverage](https://img.shields.io/badge/coverage-80.93%25-brightgreen.svg)](tests/)
-[![Tests](https://img.shields.io/badge/tests-716%20passed-success.svg)](tests/)
+[![Test Coverage](https://img.shields.io/badge/coverage-86.71%25-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-901%20passed-success.svg)](tests/)
 
 </div>
 
@@ -25,7 +25,9 @@
 - ✅ **双格式报告** - HTML（可视化图表）+ Markdown（AI友好）
 - ✅ **交互式图表** - ECharts K线图、MACD、RSI可视化
 - ✅ **模块化架构** - 清晰的分层设计，易于扩展
-- ✅ **高测试覆盖** - 100%测试通过率，80.93%代码覆盖率
+- ✅ **高测试覆盖** - 100%测试通过率，86.71%代码覆盖率
+- ✅ **Web 前端** - Streamlit 交互式界面
+- ✅ **AI 增强** - OpenAI/Claude 多模型支持
 - ✅ **生产就绪** - 熔断器、缓存、重试机制、健康检查
 
 ### 快速示例
@@ -433,12 +435,13 @@ open htmlcov/index.html
 - ✅ 交互式图表
 - ✅ 高测试覆盖率
 
-### v1.1.0 (计划中)
+### v1.1.0 (当前版本)
 
-- 🔲 Web API 服务
-- 🔲 批量分析功能
-- 🔲 自定义指标配置
-- 🔲 策略回测模块
+- ✅ Web 前端（Streamlit）
+- ✅ AI 增强分析（OpenAI/Claude）
+- ✅ 测试覆盖率提升至 86.71%
+- ✅ 用户配置 API
+- ✅ 安全模块增强
 
 ### v2.0.0 (未来)
 
