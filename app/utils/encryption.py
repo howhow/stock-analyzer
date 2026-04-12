@@ -237,9 +237,9 @@ def get_encryption_manager() -> EncryptionManager:
     if _encryption_manager is None:
         from app.core.config import settings
 
-        if not settings.ENCRYPTION_KEY:
-            raise EncryptionError("ENCRYPTION_KEY not configured in environment")
+        if not settings.encryption_key:
+            raise EncryptionError("encryption_key not configured in environment")
 
-        _encryption_manager = EncryptionManager(settings.ENCRYPTION_KEY)
+        _encryption_manager = EncryptionManager(settings.encryption_key)
 
     return _encryption_manager

@@ -14,8 +14,8 @@ from app.core.config import settings
 
 # 创建异步引擎
 engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.APP_ENV == "development",
+    settings.database_url,
+    echo=settings.app_env == "development",
     future=True,
 )
 

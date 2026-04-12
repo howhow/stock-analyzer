@@ -164,20 +164,29 @@ class ReportGenerator:
         if hasattr(result, "details"):
             # AnalyzerResult 内部格式
             analyst_data = result.details.get("analyst", {})  # type: ignore
-            trader_data = result.details.get("trader", {}).get("details", {})  # type: ignore
+            trader_data = result.details.get("trader", {}).get(
+                "details", {}
+            )  # type: ignore
             # 修复：同时从 scores 和 details 获取评分
             scores = {
-                "total": result.scores.get("total", result.details.get("total_score", 0)),  # type: ignore
-                "fundamental": analyst_data.get("scores", {}).get("fundamental",
-                               result.scores.get("fundamental", 50)),
-                "technical": analyst_data.get("scores", {}).get("technical",
-                              result.scores.get("technical", 50)),
-                "signal_strength": trader_data.get("scores", {}).get("signal_strength",
-                                    result.scores.get("signal_strength", 2.5)),
-                "opportunity_quality": trader_data.get("scores", {}).get("opportunity_quality",
-                                        result.scores.get("opportunity_quality", 2.5)),
-                "risk_level": trader_data.get("scores", {}).get("risk_level",
-                               result.scores.get("risk_level", 3)),
+                "total": result.scores.get(
+                    "total", result.details.get("total_score", 0)
+                ),
+                "fundamental": analyst_data.get("scores", {}).get(
+                    "fundamental", result.scores.get("fundamental", 50)
+                ),
+                "technical": analyst_data.get("scores", {}).get(
+                    "technical", result.scores.get("technical", 50)
+                ),
+                "signal_strength": trader_data.get("scores", {}).get(
+                    "signal_strength", result.scores.get("signal_strength", 2.5)
+                ),
+                "opportunity_quality": trader_data.get("scores", {}).get(
+                    "opportunity_quality", result.scores.get("opportunity_quality", 2.5)
+                ),
+                "risk_level": trader_data.get("scores", {}).get(
+                    "risk_level", result.scores.get("risk_level", 3)
+                ),
             }
             risk_assessment = self._calculate_risk_assessment(
                 scores["risk_level"],
@@ -248,10 +257,12 @@ class ReportGenerator:
 
         # 波动率（从指标或计算）
         volatility_30d = final_indicators.get("volatility_30d") or 0
-        
+
         # VaR 和最大回撤（优先从 trader_data，其次从 indicators）
         var_95_value = trader_data.get("var_95") or final_indicators.get("var_95") or 0
-        max_drawdown_value = trader_data.get("max_drawdown") or final_indicators.get("max_drawdown") or 0
+        max_drawdown_value = (
+            trader_data.get("max_drawdown") or final_indicators.get("max_drawdown") or 0
+        )
 
         # 时机建议
         timing_advice = self._generate_timing_advice(
@@ -285,8 +296,10 @@ class ReportGenerator:
             "mtf_alignment": trader_data.get("mtf_alignment", "neutral"),
             "entry_timing": trader_data.get("entry_timing", "观望"),
             # 价格信息
-            "support_levels": trader_data.get("support_levels", []) or analyst_data.get("support_levels", []),
-            "resistance_levels": trader_data.get("resistance_levels", []) or analyst_data.get("resistance_levels", []),
+            "support_levels": trader_data.get("support_levels", [])
+            or analyst_data.get("support_levels", []),
+            "resistance_levels": trader_data.get("resistance_levels", [])
+            or analyst_data.get("resistance_levels", []),
             "entry_price": trader_data.get("entry_price", 0),
             "stop_loss_price": trader_data.get("stop_loss_price", 0),
             "target_price": trader_data.get("target_price", 0),

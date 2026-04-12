@@ -13,47 +13,47 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        case_sensitive=True,
+        case_sensitive=False,  # 不区分大小写
         extra="ignore",  # 忽略未定义的环境变量
     )
 
     # 应用配置
-    APP_NAME: str = "Stock Analyzer"
-    APP_VERSION: str = "1.1.0"
-    APP_ENV: str = "development"
-    APP_SECRET_KEY: str = "change-me-in-production"
+    app_name: str = "Stock Analyzer"
+    app_version: str = "1.1.0"
+    app_env: str = "development"
+    app_secret_key: str = "change-me-in-production"
 
     # 数据库配置
-    DATABASE_URL: str = (
+    database_url: str = (
         "postgresql+asyncpg://stockanalyzer:stockanalyzer123@"
         "localhost:5432/stock_analyzer"
     )
 
     # Redis配置
-    REDIS_URL: str = "redis://localhost:6379/0"
+    redis_url: str = "redis://localhost:6379/0"
 
     # 数据源配置
-    TUSHARE_TOKEN: str = ""
+    tushare_token: str = ""
 
     # 分析配置
-    ANALYSIS_DAYS: int = 120
-    ANALYSIS_MIN_DAYS: int = 20
+    analysis_days: int = 120
+    analysis_min_days: int = 20
 
     # 加密配置
-    ENCRYPTION_KEY: str = ""
+    encryption_key: str = ""
 
     # OpenAI配置
-    OPENAI_API_KEY: str = ""
-    OPENAI_BASE_URL: str = "https://api.openai.com/v1"
-    OPENAI_MODEL: str = "gpt-4-turbo-preview"
+    openai_api_key: str = ""
+    openai_base_url: str = "https://api.openai.com/v1"
+    openai_model: str = "gpt-4-turbo-preview"
 
     # Anthropic配置
-    ANTHROPIC_API_KEY: str = ""
-    ANTHROPIC_MODEL: str = "claude-3-opus-20240229"
+    anthropic_api_key: str = ""
+    anthropic_model: str = "claude-3-opus-20240229"
 
     # 飞书配置
-    FEISHU_WEBHOOK_URL: str = ""
-    FEISHU_PUSH_ENABLED: bool = False
+    feishu_webhook_url: str = ""
+    feishu_push_enabled: bool = False
 
 
 # 创建全局配置实例
