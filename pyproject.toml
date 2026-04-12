@@ -21,7 +21,12 @@ parallel = true
 branch = true
 
 # 源代码目录
-source = ["app"]
+source = ["app", "framework"]
+
+# 排除 Protocol 接口（接口契约，非可执行代码）
+omit = [
+    "framework/interfaces/*.py",
+]
 
 [tool.coverage.report]
 # 排除的文件
