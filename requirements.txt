@@ -28,7 +28,7 @@ TA-Lib>=0.6.0
 tushare==1.4.29
 akshare>=1.18.0
 
-# AI Providers
+# AI Providers (httpx for async HTTP)
 httpx==0.26.0
 
 # Report Generation
@@ -44,6 +44,3 @@ pyjwt==2.8.0
 bcrypt==4.1.2
 cryptography==42.0.0
 mmh3==4.1.0
-
-# HTTP Client
-httpx==0.26.0
