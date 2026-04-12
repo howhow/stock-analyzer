@@ -37,7 +37,7 @@ def sma(data: list[float] | pd.Series, period: int) -> pd.Series:
 
     # TA-Lib 需要 numpy array 且类型为 float64
     data_array = np.asarray(data.values, dtype=np.float64)
-    ma_values = talib.MA(data_array, timeperiod=period, matype=0)
+    ma_values = talib.MA(data_array, timeperiod=period, matype=0)  # type: ignore[arg-type]
 
     return pd.Series(ma_values, index=data.index)
 
@@ -129,7 +129,7 @@ def bollinger_bands(
         timeperiod=period,
         nbdevup=std_dev,
         nbdevdn=std_dev,
-        matype=0,
+        matype=0,  # type: ignore[arg-type]
     )
 
     return {

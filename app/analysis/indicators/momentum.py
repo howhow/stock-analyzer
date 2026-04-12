@@ -112,9 +112,9 @@ def stochastic_oscillator(
         close_prices.values,
         fastk_period=k_period,
         slowk_period=d_period,
-        slowk_matype=0,
+        slowk_matype=0,  # type: ignore[arg-type]
         slowd_period=d_period,
-        slowd_matype=0,
+        slowd_matype=0,  # type: ignore[arg-type]
     )
 
     return {
