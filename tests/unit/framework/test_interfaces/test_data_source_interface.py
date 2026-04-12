@@ -51,9 +51,7 @@ class TestDataSourceInterface:
     async def test_get_quotes_returns_list(self):
         """验证 get_quotes 返回列表"""
         mock = MockDataSource()
-        quotes = await mock.get_quotes(
-            "600519.SH", date(2024, 1, 1), date(2024, 1, 10)
-        )
+        quotes = await mock.get_quotes("600519.SH", date(2024, 1, 1), date(2024, 1, 10))
         assert isinstance(quotes, list)
 
     @pytest.mark.asyncio
