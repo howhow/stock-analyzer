@@ -37,7 +37,8 @@ def sma(data: list[float] | pd.Series, period: int) -> pd.Series:
 
     # TA-Lib 需要 numpy array 且类型为 float64
     data_array = np.asarray(data.values, dtype=np.float64)
-    ma_values = talib.MA(data_array, timeperiod=period, matype=0)  # type: ignore[arg-type]
+    # mypy 无法识别 TA-Lib 的 MA_Type 枚举
+    ma_values = talib.MA(data_array, timeperiod=period, matype=0)  # type: ignore
 
     return pd.Series(ma_values, index=data.index)
 
