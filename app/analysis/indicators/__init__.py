@@ -6,7 +6,7 @@
 
 from app.analysis.indicators.momentum import (
     cci,
-    macd,  # 添加 MACD 到 momentum（已实现）
+    macd,
     momentum,
     rate_of_change,
     rsi,
@@ -24,28 +24,31 @@ from app.analysis.indicators.trend import (
 )
 from app.analysis.indicators.volatility import (
     atr,
-    bollinger_bands as bollinger_bands_volatility,  # 别名
     donchian_channel,
     historical_volatility,
     keltner_channel,
 )
 from app.analysis.indicators.volume import (
-    ad as accumulation_distribution,  # 别名
+    ad,
     adosc,
-    mfi as money_flow_index,  # 别名
+    mfi,
     obv,
     vwap,
     volume_ma,
-    volume_rate as volume_ratio,  # 别名
+    volume_rate,
     volume_spike,
 )
 
 
-# 定义别名函数（向后兼容）
+# 向后兼容别名
+accumulation_distribution = ad
+money_flow_index = mfi
+volume_ratio = volume_rate
+
+
+# 向后兼容函数
 def atr_percentage(high_prices, low_prices, close_prices, period: int = 14):
     """ATR占价格百分比"""
-    from app.analysis.indicators.volatility import atr
-
     atr_values = atr(high_prices, low_prices, close_prices, period)
     if hasattr(close_prices, "iloc"):
         close = close_prices.iloc[-1] if len(close_prices) > 0 else 1
@@ -56,8 +59,6 @@ def atr_percentage(high_prices, low_prices, close_prices, period: int = 14):
 
 def volatility(close_prices, period: int = 20):
     """历史波动率（别名）"""
-    from app.analysis.indicators.volatility import historical_volatility
-
     return historical_volatility(close_prices, period)
 
 
@@ -65,8 +66,6 @@ def keltner_channels(
     high_prices, low_prices, close_prices, period: int = 20, atr_multiplier: float = 2.0
 ):
     """肯特纳通道（别名）"""
-    from app.analysis.indicators.volatility import keltner_channel
-
     return keltner_channel(
         high_prices, low_prices, close_prices, period, atr_multiplier
     )
@@ -74,16 +73,13 @@ def keltner_channels(
 
 def volatility_regime(close_prices, period: int = 20):
     """波动率状态判断"""
-    from app.analysis.indicators.volatility import historical_volatility
     import pandas as pd
-    import numpy as np
 
     hv = historical_volatility(close_prices, period)
 
     if len(hv) == 0 or pd.isna(hv.iloc[-1]):
         return "unknown"
 
-    # 简单的状态判断
     avg_hv = hv.rolling(window=period).mean()
     current_hv = hv.iloc[-1]
     avg_value = (
@@ -102,7 +98,6 @@ def volatility_regime(close_prices, period: int = 20):
 
 def chaikin_money_flow(high_prices, low_prices, close_prices, volume, period: int = 20):
     """佳庆资金流量指标"""
-    from app.analysis.indicators.volume import ad
     import pandas as pd
 
     ad_values = ad(high_prices, low_prices, close_prices, volume)
@@ -110,7 +105,6 @@ def chaikin_money_flow(high_prices, low_prices, close_prices, volume, period: in
     if isinstance(volume, list):
         volume = pd.Series(volume)
 
-    # CMF = SUM(AD, period) / SUM(Volume, period)
     cmf = ad_values.rolling(window=period).sum() / volume.rolling(window=period).sum()
 
     return cmf
@@ -125,7 +119,6 @@ def volume_price_trend(close_prices, volume):
     if isinstance(volume, list):
         volume = pd.Series(volume)
 
-    # VPT = VPT_prev + Volume * (Close - Close_prev) / Close_prev
     price_change = close_prices.pct_change()
     vpt = (volume * price_change).cumsum()
 

@@ -122,7 +122,7 @@ def bollinger_bands(
         timeperiod=period,
         nbdevup=std_dev,
         nbdevdn=std_dev,
-        matype=0,
+        matype=0,  # type: ignore[arg-type]
     )
 
     # 计算带宽
