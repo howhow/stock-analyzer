@@ -230,7 +230,7 @@ def get_encryption_manager() -> EncryptionManager:
         EncryptionManager实例
 
     Raises:
-        EncryptionError: 未配置ENCRYPTION_KEY
+        EncryptionError: 未配置encryption_key
     """
     global _encryption_manager
 
