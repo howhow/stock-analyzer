@@ -1,11 +1,14 @@
 """
 动量指标
 
-实现RSI、MACD动量指标
+使用 TA-Lib 实现动量指标
 """
+
+from typing import Any
 
 import numpy as np
 import pandas as pd
+import talib
 
 from app.utils.logger import get_logger
 
@@ -19,9 +22,11 @@ def rsi(
     """
     相对强弱指标 (Relative Strength Index)
 
+    使用 TA-Lib 实现，采用 Wilder's smoothing 算法
+
     Args:
         close_prices: 收盘价序列
-        period: 周期
+        period: 周期（默认14）
 
     Returns:
         RSI序列 (0-100)
@@ -29,24 +34,15 @@ def rsi(
     if isinstance(close_prices, list):
         close_prices = pd.Series(close_prices)
 
-    # 价格变化
-    delta = close_prices.diff()
+    # 边界检查
+    if len(close_prices) == 0:
+        return pd.Series([], dtype=float)
 
-    # 上涨和下跌
-    gain = delta.where(delta > 0, 0)
-    loss = (-delta).where(delta < 0, 0)
+    # TA-Lib 需要 numpy array 且类型为 float64
+    close_array = np.asarray(close_prices.values, dtype=np.float64)
+    rsi_values = talib.RSI(close_array, timeperiod=period)
 
-    # 平均上涨和下跌
-    avg_gain = gain.rolling(window=period).mean()
-    avg_loss = loss.rolling(window=period).mean()
-
-    # RS = 平均上涨 / 平均下跌
-    rs = avg_gain / avg_loss
-
-    # RSI = 100 - 100 / (1 + RS)
-    rsi_series = 100 - (100 / (1 + rs))
-
-    return rsi_series
+    return pd.Series(rsi_values, index=close_prices.index)
 
 
 def rsi_signal(
@@ -90,6 +86,8 @@ def stochastic_oscillator(
     """
     随机指标 (Stochastic Oscillator)
 
+    使用 TA-Lib STOCH 实现
+
     Args:
         high_prices: 最高价序列
         low_prices: 最低价序列
@@ -107,19 +105,21 @@ def stochastic_oscillator(
     if isinstance(close_prices, list):
         close_prices = pd.Series(close_prices)
 
-    # 最高价和最低价
-    highest_high = high_prices.rolling(window=k_period).max()
-    lowest_low = low_prices.rolling(window=k_period).min()
-
-    # K值 = (收盘价 - 最低价) / (最高价 - 最低价) * 100
-    k_value = ((close_prices - lowest_low) / (highest_high - lowest_low)) * 100
-
-    # D值 = K值的移动平均
-    d_value = k_value.rolling(window=d_period).mean()
+    # TA-Lib STOCH
+    slowk, slowd = talib.STOCH(
+        high_prices.values,
+        low_prices.values,
+        close_prices.values,
+        fastk_period=k_period,
+        slowk_period=d_period,
+        slowk_matype=0,
+        slowd_period=d_period,
+        slowd_matype=0,
+    )
 
     return {
-        "k": k_value,
-        "d": d_value,
+        "k": pd.Series(slowk, index=close_prices.index),
+        "d": pd.Series(slowd, index=close_prices.index),
     }
 
 
@@ -131,6 +131,8 @@ def williams_r(
 ) -> pd.Series:
     """
     威廉指标 (Williams %R)
+
+    使用 TA-Lib WILLR 实现
 
     Args:
         high_prices: 最高价序列
@@ -148,14 +150,12 @@ def williams_r(
     if isinstance(close_prices, list):
         close_prices = pd.Series(close_prices)
 
-    # 最高价和最低价
-    highest_high = high_prices.rolling(window=period).max()
-    lowest_low = low_prices.rolling(window=period).min()
+    # TA-Lib WILLR
+    wr_values = talib.WILLR(
+        high_prices.values, low_prices.values, close_prices.values, timeperiod=period
+    )
 
-    # Williams %R = (最高价 - 收盘价) / (最高价 - 最低价) * -100
-    wr = ((highest_high - close_prices) / (highest_high - lowest_low)) * -100
-
-    return wr
+    return pd.Series(wr_values, index=close_prices.index)
 
 
 def momentum(
@@ -164,6 +164,8 @@ def momentum(
 ) -> pd.Series:
     """
     动量指标 (Momentum)
+
+    使用 TA-Lib MOM 实现
 
     Args:
         close_prices: 收盘价序列
@@ -175,8 +177,10 @@ def momentum(
     if isinstance(close_prices, list):
         close_prices = pd.Series(close_prices)
 
-    # 动量 = 当前价格 - N期前价格
-    return close_prices - close_prices.shift(period)
+    # TA-Lib MOM
+    mom_values = talib.MOM(close_prices.values, timeperiod=period)
+
+    return pd.Series(mom_values, index=close_prices.index)
 
 
 def rate_of_change(
@@ -185,6 +189,8 @@ def rate_of_change(
 ) -> pd.Series:
     """
     变动率指标 (Rate of Change)
+
+    使用 TA-Lib ROC 实现
 
     Args:
         close_prices: 收盘价序列
@@ -196,12 +202,10 @@ def rate_of_change(
     if isinstance(close_prices, list):
         close_prices = pd.Series(close_prices)
 
-    # ROC = (当前价格 - N期前价格) / N期前价格 * 100
-    roc = (
-        (close_prices - close_prices.shift(period)) / close_prices.shift(period)
-    ) * 100
+    # TA-Lib ROC
+    roc_values = talib.ROC(close_prices.values, timeperiod=period)
 
-    return roc
+    return pd.Series(roc_values, index=close_prices.index)
 
 
 def cci(
@@ -212,6 +216,8 @@ def cci(
 ) -> pd.Series:
     """
     顺势指标 (Commodity Channel Index)
+
+    使用 TA-Lib CCI 实现
 
     Args:
         high_prices: 最高价序列
@@ -229,16 +235,47 @@ def cci(
     if isinstance(close_prices, list):
         close_prices = pd.Series(close_prices)
 
-    # 典型价格 = (最高 + 最低 + 收盘) / 3
-    tp = (high_prices + low_prices + close_prices) / 3
+    # TA-Lib CCI
+    cci_values = talib.CCI(
+        high_prices.values, low_prices.values, close_prices.values, timeperiod=period
+    )
 
-    # SMA
-    sma = tp.rolling(window=period).mean()
+    return pd.Series(cci_values, index=close_prices.index)
 
-    # 平均绝对偏差
-    mad = tp.rolling(window=period).apply(lambda x: np.abs(x - x.mean()).mean())
 
-    # CCI = (典型价格 - SMA) / (0.015 * MAD)
-    cci_series = (tp - sma) / (0.015 * mad)
+def macd(
+    close_prices: list[float] | pd.Series,
+    fast_period: int = 12,
+    slow_period: int = 26,
+    signal_period: int = 9,
+) -> dict[str, pd.Series]:
+    """
+    MACD指标 (Moving Average Convergence Divergence)
 
-    return cci_series
+    使用 TA-Lib MACD 实现
+
+    Args:
+        close_prices: 收盘价序列
+        fast_period: 快线周期
+        slow_period: 慢线周期
+        signal_period: 信号线周期
+
+    Returns:
+        {'macd': MACD线, 'signal': 信号线, 'histogram': 柱状图}
+    """
+    if isinstance(close_prices, list):
+        close_prices = pd.Series(close_prices)
+
+    # TA-Lib MACD
+    macd_line, signal_line, histogram = talib.MACD(
+        close_prices.values,
+        fastperiod=fast_period,
+        slowperiod=slow_period,
+        signalperiod=signal_period,
+    )
+
+    return {
+        "macd": pd.Series(macd_line, index=close_prices.index),
+        "signal": pd.Series(signal_line, index=close_prices.index),
+        "histogram": pd.Series(histogram, index=close_prices.index),
+    }

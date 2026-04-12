@@ -1,11 +1,14 @@
 """
 波动率指标
 
-实现ATR等波动率指标
+使用 TA-Lib 实现波动率指标
 """
+
+from typing import Any
 
 import numpy as np
 import pandas as pd
+import talib
 
 from app.utils.logger import get_logger
 
@@ -20,6 +23,8 @@ def atr(
 ) -> pd.Series:
     """
     平均真实波幅 (Average True Range)
+
+    使用 TA-Lib ATR 实现
 
     Args:
         high_prices: 最高价序列
@@ -37,32 +42,24 @@ def atr(
     if isinstance(close_prices, list):
         close_prices = pd.Series(close_prices)
 
-    # 计算真实波幅
-    prev_close = close_prices.shift(1)
+    # TA-Lib ATR
+    atr_values = talib.ATR(
+        high_prices.values, low_prices.values, close_prices.values, timeperiod=period
+    )
 
-    tr1 = high_prices - low_prices  # 当日最高-最低
-    tr2 = abs(high_prices - prev_close)  # 当日最高-前收
-    tr3 = abs(low_prices - prev_close)  # 当日最低-前收
-
-    # 真实波幅取三者最大
-    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
-
-    # ATR = 真实波幅的移动平均
-    atr_series = tr.rolling(window=period).mean()
-
-    return atr_series
+    return pd.Series(atr_values, index=close_prices.index)
 
 
-def atr_percentage(
+def adx(
     high_prices: list[float] | pd.Series,
     low_prices: list[float] | pd.Series,
     close_prices: list[float] | pd.Series,
     period: int = 14,
-) -> pd.Series:
+) -> dict[str, pd.Series]:
     """
-    ATR百分比 (ATR / 收盘价)
+    平均趋向指标 (Average Directional Index)
 
-    用于衡量相对波动率
+    使用 TA-Lib ADX 实现
 
     Args:
         high_prices: 最高价序列
@@ -71,43 +68,106 @@ def atr_percentage(
         period: 周期
 
     Returns:
-        ATR百分比序列
+        {'adx': ADX值, 'plus_di': +DI, 'minus_di': -DI}
     """
-    atr_series = atr(high_prices, low_prices, close_prices, period)
-
+    if isinstance(high_prices, list):
+        high_prices = pd.Series(high_prices)
+    if isinstance(low_prices, list):
+        low_prices = pd.Series(low_prices)
     if isinstance(close_prices, list):
         close_prices = pd.Series(close_prices)
 
-    return (atr_series / close_prices) * 100
+    # TA-Lib ADX, PLUS_DI, MINUS_DI
+    adx_values = talib.ADX(
+        high_prices.values, low_prices.values, close_prices.values, timeperiod=period
+    )
+    plus_di = talib.PLUS_DI(
+        high_prices.values, low_prices.values, close_prices.values, timeperiod=period
+    )
+    minus_di = talib.MINUS_DI(
+        high_prices.values, low_prices.values, close_prices.values, timeperiod=period
+    )
+
+    return {
+        "adx": pd.Series(adx_values, index=close_prices.index),
+        "plus_di": pd.Series(plus_di, index=close_prices.index),
+        "minus_di": pd.Series(minus_di, index=close_prices.index),
+    }
 
 
-def volatility(
+def bollinger_bands(
+    close_prices: list[float] | pd.Series,
+    period: int = 20,
+    std_dev: float = 2.0,
+) -> dict[str, pd.Series]:
+    """
+    布林通道 (Bollinger Bands)
+
+    使用 TA-Lib BBANDS 实现
+
+    Args:
+        close_prices: 收盘价序列
+        period: 周期
+        std_dev: 标准差倍数
+
+    Returns:
+        {'upper': 上轨, 'middle': 中轨, 'lower': 下轨, 'width': 带宽}
+    """
+    if isinstance(close_prices, list):
+        close_prices = pd.Series(close_prices)
+
+    # TA-Lib BBANDS
+    upper, middle, lower = talib.BBANDS(
+        close_prices.values,
+        timeperiod=period,
+        nbdevup=std_dev,
+        nbdevdn=std_dev,
+        matype=0,
+    )
+
+    # 计算带宽
+    width = (upper - lower) / middle
+
+    return {
+        "upper": pd.Series(upper, index=close_prices.index),
+        "middle": pd.Series(middle, index=close_prices.index),
+        "lower": pd.Series(lower, index=close_prices.index),
+        "width": pd.Series(width, index=close_prices.index),
+    }
+
+
+def historical_volatility(
     close_prices: list[float] | pd.Series,
     period: int = 20,
 ) -> pd.Series:
     """
-    历史波动率 (标准差)
+    历史波动率 (Historical Volatility)
+
+    计算收益率的标准差（年化）
 
     Args:
         close_prices: 收盘价序列
         period: 周期
 
     Returns:
-        波动率序列
+        历史波动率序列（年化）
     """
     if isinstance(close_prices, list):
         close_prices = pd.Series(close_prices)
 
-    # 收益率
+    # 计算日收益率
     returns = close_prices.pct_change()
 
-    # 波动率 = 收益率的标准差
-    volatility_series = returns.rolling(window=period).std() * np.sqrt(252)
+    # 计算滚动标准差
+    volatility = returns.rolling(window=period).std()
 
-    return volatility_series
+    # 年化（假设252个交易日）
+    annualized_volatility = volatility * np.sqrt(252)
+
+    return annualized_volatility
 
 
-def keltner_channels(
+def keltner_channel(
     high_prices: list[float] | pd.Series,
     low_prices: list[float] | pd.Series,
     close_prices: list[float] | pd.Series,
@@ -115,7 +175,7 @@ def keltner_channels(
     atr_multiplier: float = 2.0,
 ) -> dict[str, pd.Series]:
     """
-    肯特纳通道 (Keltner Channels)
+    肯特纳通道 (Keltner Channel)
 
     Args:
         high_prices: 最高价序列
@@ -134,56 +194,55 @@ def keltner_channels(
     if isinstance(close_prices, list):
         close_prices = pd.Series(close_prices)
 
-    # 中轨 = EMA
-    from app.analysis.indicators.trend import ema
+    # 计算EMA和ATR
+    middle = talib.EMA(close_prices.values, timeperiod=period)
+    atr_values = talib.ATR(
+        high_prices.values, low_prices.values, close_prices.values, timeperiod=period
+    )
 
-    middle = ema(close_prices, period)
+    # 计算上下轨
+    upper = middle + (atr_values * atr_multiplier)
+    lower = middle - (atr_values * atr_multiplier)
 
-    # ATR
-    atr_series = atr(high_prices, low_prices, close_prices, period)
+    return {
+        "upper": pd.Series(upper, index=close_prices.index),
+        "middle": pd.Series(middle, index=close_prices.index),
+        "lower": pd.Series(lower, index=close_prices.index),
+    }
 
-    # 上下轨
-    upper = middle + atr_multiplier * atr_series
-    lower = middle - atr_multiplier * atr_series
+
+def donchian_channel(
+    high_prices: list[float] | pd.Series,
+    low_prices: list[float] | pd.Series,
+    period: int = 20,
+) -> dict[str, pd.Series]:
+    """
+    唐奇安通道 (Donchian Channel)
+
+    Args:
+        high_prices: 最高价序列
+        low_prices: 最低价序列
+        period: 周期
+
+    Returns:
+        {'upper': 上轨, 'middle': 中轨, 'lower': 下轨}
+    """
+    if isinstance(high_prices, list):
+        high_prices = pd.Series(high_prices)
+    if isinstance(low_prices, list):
+        low_prices = pd.Series(low_prices)
+
+    # 上轨：period期间最高价的最大值
+    upper = high_prices.rolling(window=period).max()
+
+    # 下轨：period期间最低价的最小值
+    lower = low_prices.rolling(window=period).min()
+
+    # 中轨：上下轨的平均值
+    middle = (upper + lower) / 2
 
     return {
         "upper": upper,
         "middle": middle,
         "lower": lower,
     }
-
-
-def volatility_regime(
-    close_prices: list[float] | pd.Series,
-    short_period: int = 10,
-    long_period: int = 60,
-) -> pd.Series:
-    """
-    波动率状态判断
-
-    判断当前是高波动还是低波动状态
-
-    Args:
-        close_prices: 收盘价序列
-        short_period: 短期周期
-        long_period: 长期周期
-
-    Returns:
-        状态序列 (1: 高波动, -1: 低波动, 0: 正常)
-    """
-    if isinstance(close_prices, list):
-        close_prices = pd.Series(close_prices)
-
-    # 短期和长期波动率
-    short_vol = volatility(close_prices, short_period)
-    long_vol = volatility(close_prices, long_period)
-
-    # 波动率比率
-    vol_ratio = short_vol / long_vol
-
-    # 状态判断
-    regime = pd.Series(0, index=close_prices.index)
-    regime[vol_ratio > 1.5] = 1  # 高波动
-    regime[vol_ratio < 0.7] = -1  # 低波动
-
-    return regime
