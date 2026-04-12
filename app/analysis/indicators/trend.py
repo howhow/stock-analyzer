@@ -1,10 +1,14 @@
 """
 趋势指标
 
-实现移动平均线等趋势指标
+使用 TA-Lib 实现移动平均线等趋势指标
 """
 
+from typing import Any
+
+import numpy as np
 import pandas as pd
+import talib
 
 from app.utils.logger import get_logger
 
@@ -14,6 +18,8 @@ logger = get_logger(__name__)
 def sma(data: list[float] | pd.Series, period: int) -> pd.Series:
     """
     简单移动平均线 (Simple Moving Average)
+
+    使用 TA-Lib MA 实现
 
     Args:
         data: 价格数据序列
@@ -25,12 +31,22 @@ def sma(data: list[float] | pd.Series, period: int) -> pd.Series:
     if isinstance(data, list):
         data = pd.Series(data)
 
-    return data.rolling(window=period).mean()
+    # 边界检查
+    if len(data) == 0:
+        return pd.Series([], dtype=float)
+
+    # TA-Lib 需要 numpy array 且类型为 float64
+    data_array = np.asarray(data.values, dtype=np.float64)
+    ma_values = talib.MA(data_array, timeperiod=period, matype=0)
+
+    return pd.Series(ma_values, index=data.index)
 
 
 def ema(data: list[float] | pd.Series, period: int) -> pd.Series:
     """
     指数移动平均线 (Exponential Moving Average)
+
+    使用 TA-Lib EMA 实现
 
     Args:
         data: 价格数据序列
@@ -42,7 +58,10 @@ def ema(data: list[float] | pd.Series, period: int) -> pd.Series:
     if isinstance(data, list):
         data = pd.Series(data)
 
-    return data.ewm(span=period, adjust=False).mean()
+    # TA-Lib EMA
+    ema_values = talib.EMA(data.values, timeperiod=period)
+
+    return pd.Series(ema_values, index=data.index)
 
 
 def macd(
@@ -53,6 +72,8 @@ def macd(
 ) -> dict[str, pd.Series]:
     """
     MACD指标 (Moving Average Convergence Divergence)
+
+    使用 TA-Lib MACD 实现
 
     Args:
         close_prices: 收盘价序列
@@ -66,23 +87,18 @@ def macd(
     if isinstance(close_prices, list):
         close_prices = pd.Series(close_prices)
 
-    # 快慢EMA
-    ema_fast = ema(close_prices, fast_period)
-    ema_slow = ema(close_prices, slow_period)
-
-    # MACD线 = 快线 - 慢线
-    macd_line = ema_fast - ema_slow
-
-    # 信号线 = MACD的EMA
-    signal_line = ema(macd_line, signal_period)
-
-    # 柱状图 = MACD - 信号线
-    histogram = macd_line - signal_line
+    # TA-Lib MACD
+    macd_line, signal_line, histogram = talib.MACD(
+        close_prices.values,
+        fastperiod=fast_period,
+        slowperiod=slow_period,
+        signalperiod=signal_period,
+    )
 
     return {
-        "macd": macd_line,
-        "signal": signal_line,
-        "histogram": histogram,
+        "macd": pd.Series(macd_line, index=close_prices.index),
+        "signal": pd.Series(signal_line, index=close_prices.index),
+        "histogram": pd.Series(histogram, index=close_prices.index),
     }
 
 
@@ -92,7 +108,9 @@ def bollinger_bands(
     std_dev: float = 2.0,
 ) -> dict[str, pd.Series]:
     """
-    布林带 (Bollinger Bands)
+    布林通道 (Bollinger Bands)
+
+    使用 TA-Lib BBANDS 实现
 
     Args:
         close_prices: 收盘价序列
@@ -105,20 +123,19 @@ def bollinger_bands(
     if isinstance(close_prices, list):
         close_prices = pd.Series(close_prices)
 
-    # 中轨 = SMA
-    middle = sma(close_prices, period)
-
-    # 标准差
-    std = close_prices.rolling(window=period).std()
-
-    # 上下轨
-    upper = middle + std_dev * std
-    lower = middle - std_dev * std
+    # TA-Lib BBANDS
+    upper, middle, lower = talib.BBANDS(
+        close_prices.values,
+        timeperiod=period,
+        nbdevup=std_dev,
+        nbdevdn=std_dev,
+        matype=0,
+    )
 
     return {
-        "upper": upper,
-        "middle": middle,
-        "lower": lower,
+        "upper": pd.Series(upper, index=close_prices.index),
+        "middle": pd.Series(middle, index=close_prices.index),
+        "lower": pd.Series(lower, index=close_prices.index),
     }
 
 
@@ -130,26 +147,27 @@ def trend_direction(
     """
     趋势方向判断
 
-    基于短期和长期均线的关系判断趋势
-
     Args:
         close_prices: 收盘价序列
-        short_period: 短期周期
-        long_period: 长期周期
+        short_period: 短期均线周期
+        long_period: 长期均线周期
 
     Returns:
-        趋势方向序列 (1: 上涨, -1: 下跌, 0: 震荡)
+        趋势方向 (1: 上升趋势, -1: 下降趋势, 0: 震荡)
     """
     if isinstance(close_prices, list):
         close_prices = pd.Series(close_prices)
 
-    short_ma = ema(close_prices, short_period)
-    long_ma = ema(close_prices, long_period)
+    short_ma = sma(close_prices, short_period)
+    long_ma = sma(close_prices, long_period)
 
-    # 趋势判断
     trend = pd.Series(0, index=close_prices.index)
-    trend[short_ma > long_ma] = 1  # 上涨趋势
-    trend[short_ma < long_ma] = -1  # 下跌趋势
+
+    # 金叉 → 上升趋势
+    trend[short_ma > long_ma] = 1
+
+    # 死叉 → 下降趋势
+    trend[short_ma < long_ma] = -1
 
     return trend
 
@@ -164,8 +182,8 @@ def golden_cross(
 
     Args:
         close_prices: 收盘价序列
-        short_period: 短期周期
-        long_period: 长期周期
+        short_period: 短期均线周期
+        long_period: 长期均线周期
 
     Returns:
         信号序列 (1: 金叉, -1: 死叉, 0: 无信号)
@@ -173,21 +191,21 @@ def golden_cross(
     if isinstance(close_prices, list):
         close_prices = pd.Series(close_prices)
 
-    short_ma = ema(close_prices, short_period)
-    long_ma = ema(close_prices, long_period)
+    short_ma = sma(close_prices, short_period)
+    long_ma = sma(close_prices, long_period)
 
     # 计算差值
     diff = short_ma - long_ma
-    prev_diff = diff.shift(1)
 
-    # 信号判断
+    # 金叉：短期从下往上穿越长期
+    golden = (diff > 0) & (diff.shift(1) <= 0)
+
+    # 死叉：短期从上往下穿越长期
+    death = (diff < 0) & (diff.shift(1) >= 0)
+
     signal = pd.Series(0, index=close_prices.index)
-
-    # 金叉：短期从下向上穿越长期
-    signal[(prev_diff <= 0) & (diff > 0)] = 1
-
-    # 死叉：短期从上向下穿越长期
-    signal[(prev_diff >= 0) & (diff < 0)] = -1
+    signal[golden] = 1
+    signal[death] = -1
 
     return signal
 
@@ -208,7 +226,7 @@ def support_resistance(
         period: 周期
 
     Returns:
-        {'support': 支撑位, 'resistance': 阻力位, 'current_position': 当前位置}
+        {'support': 支撑位, 'resistance': 阻力位}
     """
     if isinstance(high_prices, list):
         high_prices = pd.Series(high_prices)
@@ -217,20 +235,52 @@ def support_resistance(
     if isinstance(close_prices, list):
         close_prices = pd.Series(close_prices)
 
-    # 最近N期的最高价和最低价
-    recent_high = high_prices.rolling(window=period).max().iloc[-1]
-    recent_low = low_prices.rolling(window=period).min().iloc[-1]
-    current_price = close_prices.iloc[-1]
+    # 使用最近 period 天的最高价作为阻力位
+    resistance = float(high_prices.tail(period).max())
 
-    # 计算当前位置（0-1之间，0表示支撑位，1表示阻力位）
-    price_range = recent_high - recent_low
-    if price_range > 0:
-        current_position = (current_price - recent_low) / price_range
-    else:
-        current_position = 0.5
+    # 使用最近 period 天的最低价作为支撑位
+    support = float(low_prices.tail(period).min())
 
     return {
-        "support": float(recent_low),
-        "resistance": float(recent_high),
-        "current_position": float(current_position),
+        "support": support,
+        "resistance": resistance,
     }
+
+
+def vwap(
+    high_prices: list[float] | pd.Series,
+    low_prices: list[float] | pd.Series,
+    close_prices: list[float] | pd.Series,
+    volume: list[float] | pd.Series,
+) -> pd.Series:
+    """
+    成交量加权平均价格 (Volume Weighted Average Price)
+
+    Args:
+        high_prices: 最高价序列
+        low_prices: 最低价序列
+        close_prices: 收盘价序列
+        volume: 成交量序列
+
+    Returns:
+        VWAP序列
+    """
+    if isinstance(high_prices, list):
+        high_prices = pd.Series(high_prices)
+    if isinstance(low_prices, list):
+        low_prices = pd.Series(low_prices)
+    if isinstance(close_prices, list):
+        close_prices = pd.Series(close_prices)
+    if isinstance(volume, list):
+        volume = pd.Series(volume)
+
+    # 典型价格
+    typical_price = (high_prices + low_prices + close_prices) / 3
+
+    # VWAP = 累计(典型价格 * 成交量) / 累计成交量
+    cum_tp_volume = (typical_price * volume).cumsum()
+    cum_volume = volume.cumsum()
+
+    vwap_values = cum_tp_volume / cum_volume
+
+    return vwap_values
