@@ -12,7 +12,9 @@ import bcrypt
 from cryptography.fernet import Fernet
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
+import jwt
+from jwt import InvalidTokenError as JWTInvalidTokenError
+from jwt.exceptions import ExpiredSignatureError
 
 from app.core.exceptions import InvalidTokenError, TokenExpiredError
 from app.utils.logger import get_logger
@@ -247,10 +249,10 @@ class JWTManager:
         try:
             payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
             return dict(payload)
-        except jwt.ExpiredSignatureError as e:
+        except ExpiredSignatureError as e:
             logger.warning("token_expired", error=str(e))
             raise TokenExpiredError("Token has expired")
-        except JWTError as e:
+        except JWTInvalidTokenError as e:
             logger.warning("invalid_token", error=str(e))
             raise InvalidTokenError("Invalid token")
 

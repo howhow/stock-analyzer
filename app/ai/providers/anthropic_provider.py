@@ -8,7 +8,7 @@ import asyncio
 import time
 from typing import Any
 
-import aiohttp
+import httpx
 from structlog import get_logger
 
 from app.ai.base import AIAnalysisRequest, AIAnalysisResponse, BaseAIProvider
@@ -74,21 +74,23 @@ class AnthropicProvider(BaseAIProvider):
         url = f"{self.base_url}/messages"
 
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.post(
                     url,
                     json=payload,
                     headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=self.timeout),
-                ) as response:
-                    if response.status == 200:
-                        data: dict[str, Any] = await response.json()
-                        return data
-                    error: dict[str, Any] = await response.json()
-                    if response.status == 429:
-                        raise AIRateLimitError(str(error))
-                    raise AIAPIError(f"API error {response.status}: {error}")
-        except asyncio.TimeoutError as e:
+                )
+
+                if response.status_code == 200:
+                    data: dict[str, Any] = response.json()
+                    return data
+
+                error: dict[str, Any] = response.json()
+                if response.status_code == 429:
+                    raise AIRateLimitError(str(error))
+                raise AIAPIError(f"API error {response.status_code}: {error}")
+
+        except httpx.TimeoutException as e:
             raise AITimeoutError(f"Timeout after {self.timeout}s") from e
 
     async def test_connection(self) -> dict[str, Any]:

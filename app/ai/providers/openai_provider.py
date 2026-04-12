@@ -10,7 +10,7 @@ OpenAI协议适配器
 import asyncio
 from typing import Any
 
-import aiohttp
+import httpx
 from structlog import get_logger
 
 from app.ai.base import AIAnalysisRequest, AIAnalysisResponse, BaseAIProvider
@@ -163,37 +163,37 @@ class OpenAIProvider(BaseAIProvider):
         url = f"{self.base_url}/chat/completions"
 
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.post(
                     url,
                     json=payload,
                     headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=self.timeout),
-                ) as response:
-                    if response.status == 200:
-                        data: dict[str, Any] = await response.json()
-                        return data
+                )
 
-                    # 错误处理
-                    error_data: dict[str, Any] = await response.json()
-                    error_message = error_data.get("error", {}).get(
-                        "message", "Unknown error"
+                if response.status_code == 200:
+                    data: dict[str, Any] = response.json()
+                    return data
+
+                # 错误处理
+                error_data: dict[str, Any] = response.json()
+                error_message = error_data.get("error", {}).get(
+                    "message", "Unknown error"
+                )
+
+                if response.status_code == 429:
+                    raise AIRateLimitError(f"Rate limit: {error_message}")
+                elif response.status_code == 401:
+                    raise AIAPIError(f"Authentication failed: {error_message}")
+                elif response.status_code == 404:
+                    raise AIAPIError(f"Model not found: {error_message}")
+                else:
+                    raise AIAPIError(
+                        f"API error {response.status_code}: {error_message}"
                     )
 
-                    if response.status == 429:
-                        raise AIRateLimitError(f"Rate limit: {error_message}")
-                    elif response.status == 401:
-                        raise AIAPIError(f"Authentication failed: {error_message}")
-                    elif response.status == 404:
-                        raise AIAPIError(f"Model not found: {error_message}")
-                    else:
-                        raise AIAPIError(
-                            f"API error {response.status}: {error_message}"
-                        )
-
-        except asyncio.TimeoutError as e:
+        except httpx.TimeoutException as e:
             raise AITimeoutError(f"Request timeout after {self.timeout}s") from e
-        except aiohttp.ClientError as e:
+        except httpx.HTTPError as e:
             raise AIAPIError(f"Network error: {e}") from e
 
     async def test_connection(self) -> dict[str, Any]:
