@@ -95,19 +95,51 @@ class TestStandardQuote:
 
         assert quote.is_valid() is True
 
-    def test_is_valid_false_high_less_than_low(self):
-        """测试数据合理性 - 最高价小于最低价"""
+    def test_is_valid_false_close_out_of_range(self):
+        """测试数据合理性 - 收盘价超出范围"""
         quote = StandardQuote(
             code="600519.SH",
             trade_date=date(2024, 1, 1),
             open=1840.00,
-            high=1830.00,  # 最高价 < 最低价
+            high=1860.00,
             low=1835.00,
-            close=1850.50,
+            close=1870.00,  # 超出最高价
             source="tushare",
         )
 
         assert quote.is_valid() is False
+
+    def test_get_quality_label(self):
+        """测试质量标签"""
+        # 高质量
+        quote_high = StandardQuote(
+            code="600519.SH",
+            trade_date=date(2024, 1, 1),
+            close=1850.50,
+            source="tushare",
+            quality_score=0.95,
+        )
+        assert quote_high.get_quality_label() == "high"
+
+        # 中质量
+        quote_medium = StandardQuote(
+            code="600519.SH",
+            trade_date=date(2024, 1, 1),
+            close=1850.50,
+            source="tushare",
+            quality_score=0.75,
+        )
+        assert quote_medium.get_quality_label() == "medium"
+
+        # 低质量
+        quote_low = StandardQuote(
+            code="600519.SH",
+            trade_date=date(2024, 1, 1),
+            close=1850.50,
+            source="tushare",
+            quality_score=0.50,
+        )
+        assert quote_low.get_quality_label() == "low"
 
     def test_to_dict(self):
         """测试转换为字典"""
@@ -204,6 +236,50 @@ class TestStandardQuoteBatch:
 
         assert batch.count == 0
         df = batch.to_dataframe()
-        # 空列表返回 None
-        if len(batch.quotes) == 0:
-            assert df is None or len(df) == 0
+        assert df is None
+
+    def test_get_first_and_last_quote(self):
+        """测试获取首尾数据"""
+        quotes = [
+            StandardQuote(
+                code="600519.SH",
+                trade_date=date(2024, 1, 1),
+                close=1850.50,
+                source="tushare",
+            ),
+            StandardQuote(
+                code="600519.SH",
+                trade_date=date(2024, 1, 2),
+                close=1860.00,
+                source="tushare",
+            ),
+        ]
+
+        batch = StandardQuoteBatch(
+            code="600519.SH",
+            quotes=quotes,
+            start_date=date(2024, 1, 1),
+            end_date=date(2024, 1, 2),
+            source="tushare",
+        )
+
+        first = batch.get_first_quote()
+        last = batch.get_last_quote()
+
+        assert first is not None
+        assert first.close == 1850.50
+        assert last is not None
+        assert last.close == 1860.00
+
+    def test_empty_batch_first_last_none(self):
+        """测试空批次的首尾数据"""
+        batch = StandardQuoteBatch(
+            code="600519.SH",
+            quotes=[],
+            start_date=date(2024, 1, 1),
+            end_date=date(2024, 1, 10),
+            source="tushare",
+        )
+
+        assert batch.get_first_quote() is None
+        assert batch.get_last_quote() is None
