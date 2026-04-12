@@ -11,6 +11,7 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from app.analysis.base import AnalyzerResult
 from app.models.analysis import AnalysisResult
 from app.models.report import ReportContent, ReportFormat
 from app.utils.logger import get_logger
@@ -140,7 +141,7 @@ class ReportGenerator:
 
     def _prepare_report_data(
         self,
-        result: AnalysisResult,
+        result: AnalysisResult | AnalyzerResult,
         chart_data: dict[str, Any] | None = None,
         indicators: dict[str, Any] | None = None,
         fundamentals: dict[str, Any] | None = None,
@@ -161,7 +162,7 @@ class ReportGenerator:
         # 1. AnalyzerResult（app/analysis/base.py）- 内部使用
         # 2. AnalysisResult（app/models/analysis.py）- API 响应
 
-        if hasattr(result, "details"):
+        if isinstance(result, AnalyzerResult):
             # AnalyzerResult 内部格式
             analyst_data = result.details.get("analyst", {})  # type: ignore
             trader_data = result.details.get("trader", {}).get(
@@ -440,7 +441,9 @@ class ReportGenerator:
 
         return warnings
 
-    def _generate_mock_chart_data(self, result: AnalysisResult) -> dict[str, Any]:
+    def _generate_mock_chart_data(
+        self, result: AnalysisResult | AnalyzerResult
+    ) -> dict[str, Any]:
         """
         生成模拟图表数据（用于测试）
 
