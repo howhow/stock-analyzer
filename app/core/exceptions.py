@@ -189,3 +189,96 @@ class AIProviderError(AIError):
     """AI 提供商错误"""
 
     pass
+
+
+# ============ 数据核心相关异常 ============
+
+
+class AllDataSourcesFailedError(DataError):
+    """所有数据源都失败"""
+
+    def __init__(
+        self,
+        stock_code: str,
+        start_date: "date",
+        end_date: "date",
+        failures: dict[str, str],
+    ):
+        """
+        初始化异常
+
+        Args:
+            stock_code: 股票代码
+            start_date: 开始日期
+            end_date: 结束日期
+            failures: 各数据源失败原因 {source_name: error_message}
+        """
+        self.stock_code = stock_code
+        self.start_date = start_date
+        self.end_date = end_date
+        self.failures = failures
+
+        failure_details = "; ".join(
+            f"{k}: {v}" for k, v in failures.items()
+        )
+        message = (
+            f"All data sources failed for {stock_code} "
+            f"({start_date} to {end_date}). "
+            f"Failures: {failure_details}"
+        )
+        super().__init__(message, {"failures": failures})
+
+
+class DataSourceNotFoundError(DataError):
+    """数据源未找到"""
+
+    def __init__(self, source: str, available_sources: list[str]):
+        self.source = source
+        self.available_sources = available_sources
+        message = (
+            f"Data source '{source}' not found. "
+            f"Available sources: {', '.join(available_sources) or 'none'}"
+        )
+        super().__init__(message, {"source": source, "available_sources": available_sources})
+
+
+class NoDataError(DataError):
+    """无数据异常"""
+
+    def __init__(
+        self,
+        stock_code: str,
+        start_date: "date",
+        end_date: "date",
+        source: str | None = None,
+    ):
+        self.stock_code = stock_code
+        self.start_date = start_date
+        self.end_date = end_date
+        self.source = source
+
+        source_info = f" from {source}" if source else ""
+        message = (
+            f"No data found for {stock_code}{source_info} "
+            f"between {start_date} and {end_date}"
+        )
+        super().__init__(message)
+
+
+class NoAvailableDataSourceError(DataError):
+    """没有可用的数据源"""
+
+    pass
+
+
+class DataQualityError(DataError):
+    """数据质量错误"""
+
+    def __init__(
+        self,
+        message: str = "Data quality check failed",
+        quality_score: float | None = None,
+        details: dict[str, Any] | None = None,
+    ):
+        self.quality_score = quality_score
+        super().__init__(message, details)
