@@ -42,9 +42,7 @@ def mock_cache_manager():
     cache.delete = AsyncMock()
     cache.clear_local = AsyncMock()
     cache.close = AsyncMock()
-    cache.make_key = Mock(
-        side_effect=lambda *args: ":".join(str(a) for a in args)
-    )
+    cache.make_key = Mock(side_effect=lambda *args: ":".join(str(a) for a in args))
     cache.default_ttl = 1800
     return cache
 
@@ -116,9 +114,7 @@ def mock_tushare_plugin(sample_quote_data: list[StandardQuote]):
         return_value=sample_quote_data[0] if sample_quote_data else None
     )
     plugin.health_check = AsyncMock(return_value=True)
-    plugin.get_supported_stocks = AsyncMock(
-        return_value=["600519.SH", "000001.SZ"]
-    )
+    plugin.get_supported_stocks = AsyncMock(return_value=["600519.SH", "000001.SZ"])
     return plugin
 
 
@@ -133,9 +129,7 @@ def mock_akshare_plugin(sample_quote_data: list[StandardQuote]):
         return_value=sample_quote_data[0] if sample_quote_data else None
     )
     plugin.health_check = AsyncMock(return_value=True)
-    plugin.get_supported_stocks = AsyncMock(
-        return_value=["600519.SH", "000001.SZ"]
-    )
+    plugin.get_supported_stocks = AsyncMock(return_value=["600519.SH", "000001.SZ"])
     return plugin
 
 
@@ -148,13 +142,9 @@ def mock_failing_plugin():
     plugin.get_quotes = AsyncMock(
         side_effect=Exception("Timeout")  # 使用通用 Exception
     )
-    plugin.get_realtime_quote = AsyncMock(
-        side_effect=Exception("Timeout")
-    )
+    plugin.get_realtime_quote = AsyncMock(side_effect=Exception("Timeout"))
     plugin.health_check = AsyncMock(return_value=False)
-    plugin.get_supported_stocks = AsyncMock(
-        side_effect=Exception("Timeout")
-    )
+    plugin.get_supported_stocks = AsyncMock(side_effect=Exception("Timeout"))
     return plugin
 
 
@@ -174,14 +164,14 @@ def mock_empty_plugin():
 @pytest.fixture
 def data_core_no_plugins(mock_cache_manager: Mock):
     """无插件的 DataCore 实例"""
-    with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-         patch("framework.core.data_core.settings") as mock_settings, \
-         patch("framework.core.data_core.get_logger") as mock_logger:
+    with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+        "framework.core.data_core.settings"
+    ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
         MockCacheManager.return_value = mock_cache_manager
         mock_settings.cache_ttl_daily = 1800
         mock_settings.circuit_breaker_threshold = 3
         mock_logger.return_value = Mock()
-        
+
         return DataCore(plugins=None, cache_ttl=1800)
 
 
@@ -192,14 +182,14 @@ def data_core_with_plugins(
     mock_cache_manager: Mock,
 ):
     """带插件的 DataCore 实例"""
-    with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-         patch("framework.core.data_core.settings") as mock_settings, \
-         patch("framework.core.data_core.get_logger") as mock_logger:
+    with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+        "framework.core.data_core.settings"
+    ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
         MockCacheManager.return_value = mock_cache_manager
         mock_settings.cache_ttl_daily = 1800
         mock_settings.circuit_breaker_threshold = 3
         mock_logger.return_value = Mock()
-        
+
         plugins = {
             "tushare": mock_tushare_plugin,
             "akshare": mock_akshare_plugin,
@@ -218,14 +208,14 @@ def data_core_with_failing_primary(
     mock_cache_manager: Mock,
 ):
     """主数据源失败，备用数据源可用的 DataCore 实例"""
-    with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-         patch("framework.core.data_core.settings") as mock_settings, \
-         patch("framework.core.data_core.get_logger") as mock_logger:
+    with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+        "framework.core.data_core.settings"
+    ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
         MockCacheManager.return_value = mock_cache_manager
         mock_settings.cache_ttl_daily = 1800
         mock_settings.circuit_breaker_threshold = 3
         mock_logger.return_value = Mock()
-        
+
         plugins = {
             "failing_source": mock_failing_plugin,
             "akshare": mock_akshare_plugin,
@@ -246,23 +236,19 @@ def data_core_all_failing(
     plugin2 = Mock()
     plugin2.name = "another_failing"
     plugin2.supported_markets = ["SH", "SZ"]
-    plugin2.get_quotes = AsyncMock(
-        side_effect=Exception("Unexpected error")
-    )
-    plugin2.get_realtime_quote = AsyncMock(
-        side_effect=Exception("Unexpected error")
-    )
+    plugin2.get_quotes = AsyncMock(side_effect=Exception("Unexpected error"))
+    plugin2.get_realtime_quote = AsyncMock(side_effect=Exception("Unexpected error"))
     plugin2.health_check = AsyncMock(return_value=False)
     plugin2.get_supported_stocks = AsyncMock(return_value=[])
 
-    with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-         patch("framework.core.data_core.settings") as mock_settings, \
-         patch("framework.core.data_core.get_logger") as mock_logger:
+    with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+        "framework.core.data_core.settings"
+    ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
         MockCacheManager.return_value = mock_cache_manager
         mock_settings.cache_ttl_daily = 1800
         mock_settings.circuit_breaker_threshold = 3
         mock_logger.return_value = Mock()
-        
+
         plugins = {
             "failing_source": mock_failing_plugin,
             "another_failing": plugin2,
@@ -284,14 +270,14 @@ class TestDataCoreInitialization:
 
     def test_init_with_default_params(self, mock_cache_manager: Mock):
         """测试使用默认参数初始化"""
-        with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-             patch("framework.core.data_core.settings") as mock_settings, \
-             patch("framework.core.data_core.get_logger") as mock_logger:
+        with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+            "framework.core.data_core.settings"
+        ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
             MockCacheManager.return_value = mock_cache_manager
             mock_settings.cache_ttl_daily = 1800
             mock_settings.circuit_breaker_threshold = 3
             mock_logger.return_value = Mock()
-            
+
             data_core = DataCore()
 
             assert data_core._plugins == {}
@@ -300,14 +286,14 @@ class TestDataCoreInitialization:
 
     def test_init_with_custom_params(self, mock_cache_manager: Mock):
         """测试使用自定义参数初始化"""
-        with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-             patch("framework.core.data_core.settings") as mock_settings, \
-             patch("framework.core.data_core.get_logger") as mock_logger:
+        with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+            "framework.core.data_core.settings"
+        ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
             MockCacheManager.return_value = mock_cache_manager
             mock_settings.cache_ttl_daily = 3600
             mock_settings.circuit_breaker_threshold = 3
             mock_logger.return_value = Mock()
-            
+
             plugins = {"test": Mock()}
             priority = ["test", "backup"]
             cache_ttl = 3600
@@ -324,33 +310,35 @@ class TestDataCoreInitialization:
 
     def test_init_with_none_plugins(self, mock_cache_manager: Mock):
         """测试传入 None 插件"""
-        with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-             patch("framework.core.data_core.settings") as mock_settings, \
-             patch("framework.core.data_core.get_logger") as mock_logger:
+        with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+            "framework.core.data_core.settings"
+        ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
             MockCacheManager.return_value = mock_cache_manager
             mock_settings.cache_ttl_daily = 1800
             mock_settings.circuit_breaker_threshold = 3
             mock_logger.return_value = Mock()
-            
+
             data_core = DataCore(plugins=None)
 
             assert data_core._plugins == {}
 
     def test_init_with_none_priority(self, mock_cache_manager: Mock):
         """测试传入 None 优先级"""
-        with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-             patch("framework.core.data_core.settings") as mock_settings, \
-             patch("framework.core.data_core.get_logger") as mock_logger:
+        with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+            "framework.core.data_core.settings"
+        ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
             MockCacheManager.return_value = mock_cache_manager
             mock_settings.cache_ttl_daily = 1800
             mock_settings.circuit_breaker_threshold = 3
             mock_logger.return_value = Mock()
-            
+
             data_core = DataCore(priority=None)
 
             assert data_core._priority == DataCore.DEFAULT_PRIORITY.copy()
 
-    def test_register_plugin(self, data_core_no_plugins: DataCore, mock_tushare_plugin: Mock):
+    def test_register_plugin(
+        self, data_core_no_plugins: DataCore, mock_tushare_plugin: Mock
+    ):
         """测试注册插件"""
         data_core_no_plugins.register_plugin(mock_tushare_plugin)
 
@@ -473,15 +461,15 @@ class TestDataRouting:
                 )
             ]
         )
-        
-        with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-             patch("framework.core.data_core.settings") as mock_settings, \
-             patch("framework.core.data_core.get_logger") as mock_logger:
+
+        with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+            "framework.core.data_core.settings"
+        ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
             MockCacheManager.return_value = mock_cache_manager
             mock_settings.cache_ttl_daily = 1800
             mock_settings.circuit_breaker_threshold = 3
             mock_logger.return_value = Mock()
-            
+
             data_core = DataCore(
                 plugins={"akshare": plugin},
                 priority=["tushare", "akshare"],  # tushare 未注册
@@ -516,15 +504,16 @@ class TestDataCaching:
         """测试缓存命中"""
         # 配置缓存第一次返回 None（未命中），第二次返回数据（命中）
         cached_data = [q.model_dump() for q in sample_quote_data]
-        
+
         call_count = 0
+
         def mock_get(*args, **kwargs):
             nonlocal call_count
             call_count += 1
             if call_count == 1:
                 return None  # 第一次调用返回 None（未命中）
             return cached_data  # 第二次调用返回缓存数据
-        
+
         mock_cache_manager.get = AsyncMock(side_effect=mock_get)
 
         # 第一次调用，缓存未命中
@@ -580,7 +569,7 @@ class TestDataCaching:
         """测试缓存过期"""
         # 设置缓存过期（第一次返回数据，第二次返回 None）
         call_count = 0
-        
+
         def mock_get(*args, **kwargs):
             nonlocal call_count
             call_count += 1
@@ -590,7 +579,7 @@ class TestDataCaching:
             else:
                 # 后续调用也返回 None
                 return None
-        
+
         mock_cache_manager.get = AsyncMock(side_effect=mock_get)
 
         # 第一次调用
@@ -661,9 +650,13 @@ class TestDataDegradation:
 
         assert result == sample_quote_data
         # 主数据源应该被尝试
-        data_core_with_failing_primary._plugins["failing_source"].get_quotes.assert_called_once()
+        data_core_with_failing_primary._plugins[
+            "failing_source"
+        ].get_quotes.assert_called_once()
         # 备用数据源应该被调用
-        data_core_with_failing_primary._plugins["akshare"].get_quotes.assert_called_once()
+        data_core_with_failing_primary._plugins[
+            "akshare"
+        ].get_quotes.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_fallback_on_timeout(
@@ -673,8 +666,8 @@ class TestDataDegradation:
     ):
         """测试超时后降级"""
         # 模拟超时异常
-        data_core_with_failing_primary._plugins["failing_source"].get_quotes = AsyncMock(
-            side_effect=asyncio.TimeoutError("Connection timeout")
+        data_core_with_failing_primary._plugins["failing_source"].get_quotes = (
+            AsyncMock(side_effect=asyncio.TimeoutError("Connection timeout"))
         )
 
         result = await data_core_with_failing_primary.get_quotes(
@@ -685,7 +678,9 @@ class TestDataDegradation:
 
         assert result == sample_quote_data
         # 备用数据源应该被调用
-        data_core_with_failing_primary._plugins["akshare"].get_quotes.assert_called_once()
+        data_core_with_failing_primary._plugins[
+            "akshare"
+        ].get_quotes.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_all_sources_failed(
@@ -728,15 +723,15 @@ class TestDataDegradation:
         plugin3 = Mock()
         plugin3.name = "priority3"
         plugin3.get_quotes = AsyncMock(return_value=[])
-        
-        with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-             patch("framework.core.data_core.settings") as mock_settings, \
-             patch("framework.core.data_core.get_logger") as mock_logger:
+
+        with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+            "framework.core.data_core.settings"
+        ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
             MockCacheManager.return_value = mock_cache_manager
             mock_settings.cache_ttl_daily = 1800
             mock_settings.circuit_breaker_threshold = 3
             mock_logger.return_value = Mock()
-            
+
             data_core = DataCore(
                 plugins={
                     "priority1": plugin1,
@@ -884,8 +879,12 @@ class TestBoundaryConditions:
     ):
         """测试数据源返回空数据"""
         # 配置所有数据源都返回空数据
-        data_core_with_plugins._plugins["tushare"].get_quotes = AsyncMock(return_value=[])
-        data_core_with_plugins._plugins["akshare"].get_quotes = AsyncMock(return_value=[])
+        data_core_with_plugins._plugins["tushare"].get_quotes = AsyncMock(
+            return_value=[]
+        )
+        data_core_with_plugins._plugins["akshare"].get_quotes = AsyncMock(
+            return_value=[]
+        )
 
         with pytest.raises(NoDataError):
             await data_core_with_plugins.get_quotes(
@@ -925,15 +924,15 @@ class TestBoundaryConditions:
         plugin2 = Mock()
         plugin2.name = "timeout2"
         plugin2.get_quotes = AsyncMock(side_effect=asyncio.TimeoutError())
-        
-        with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-             patch("framework.core.data_core.settings") as mock_settings, \
-             patch("framework.core.data_core.get_logger") as mock_logger:
+
+        with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+            "framework.core.data_core.settings"
+        ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
             MockCacheManager.return_value = mock_cache_manager
             mock_settings.cache_ttl_daily = 1800
             mock_settings.circuit_breaker_threshold = 3
             mock_logger.return_value = Mock()
-            
+
             data_core = DataCore(
                 plugins={"timeout1": plugin1, "timeout2": plugin2},
                 priority=["timeout1", "timeout2"],
@@ -953,8 +952,12 @@ class TestBoundaryConditions:
     ):
         """测试无效的股票代码"""
         # 配置所有数据源都返回空数据（模拟无效股票代码）
-        data_core_with_plugins._plugins["tushare"].get_quotes = AsyncMock(return_value=[])
-        data_core_with_plugins._plugins["akshare"].get_quotes = AsyncMock(return_value=[])
+        data_core_with_plugins._plugins["tushare"].get_quotes = AsyncMock(
+            return_value=[]
+        )
+        data_core_with_plugins._plugins["akshare"].get_quotes = AsyncMock(
+            return_value=[]
+        )
 
         with pytest.raises(NoDataError):
             await data_core_with_plugins.get_quotes(
@@ -973,9 +976,13 @@ class TestBoundaryConditions:
         # 结束日期早于开始日期
         # DataCore 不会自动处理这种情况，数据源需要处理
         # 这里测试 DataCore 会正常传递参数给数据源
-        data_core_with_plugins._plugins["tushare"].get_quotes = AsyncMock(return_value=[])
-        data_core_with_plugins._plugins["akshare"].get_quotes = AsyncMock(return_value=[])
-        
+        data_core_with_plugins._plugins["tushare"].get_quotes = AsyncMock(
+            return_value=[]
+        )
+        data_core_with_plugins._plugins["akshare"].get_quotes = AsyncMock(
+            return_value=[]
+        )
+
         with pytest.raises(NoDataError):
             await data_core_with_plugins.get_quotes(
                 stock_code="600519.SH",
@@ -1034,7 +1041,10 @@ class TestBoundaryConditions:
         # 应该没有异常（或正确处理异常）
         for result in results:
             if isinstance(result, Exception):
-                assert isinstance(result, (AllDataSourcesFailedError, DataSourceNotFoundError, NoDataError))
+                assert isinstance(
+                    result,
+                    (AllDataSourcesFailedError, DataSourceNotFoundError, NoDataError),
+                )
 
 
 # ============================================================
@@ -1080,15 +1090,15 @@ class TestHealthCheck:
         plugin = Mock()
         plugin.name = "error_plugin"
         plugin.health_check = AsyncMock(side_effect=Exception("Health check error"))
-        
-        with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-             patch("framework.core.data_core.settings") as mock_settings, \
-             patch("framework.core.data_core.get_logger") as mock_logger:
+
+        with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+            "framework.core.data_core.settings"
+        ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
             MockCacheManager.return_value = mock_cache_manager
             mock_settings.cache_ttl_daily = 1800
             mock_settings.circuit_breaker_threshold = 3
             mock_logger.return_value = Mock()
-            
+
             data_core = DataCore(plugins={"error_plugin": plugin})
 
             results = await data_core.health_check()
@@ -1155,14 +1165,14 @@ class TestRealWorldScenarios:
             ]
         )
 
-        with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-             patch("framework.core.data_core.settings") as mock_settings, \
-             patch("framework.core.data_core.get_logger") as mock_logger:
+        with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+            "framework.core.data_core.settings"
+        ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
             MockCacheManager.return_value = mock_cache_manager
             mock_settings.cache_ttl_daily = 300
             mock_settings.circuit_breaker_threshold = 3
             mock_logger.return_value = Mock()
-            
+
             data_core = DataCore(
                 plugins={"realtime": plugin},
                 priority=["realtime"],
@@ -1200,14 +1210,14 @@ class TestRealWorldScenarios:
         plugin.name = "historical"
         plugin.get_quotes = AsyncMock(return_value=historical_data)
 
-        with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-             patch("framework.core.data_core.settings") as mock_settings, \
-             patch("framework.core.data_core.get_logger") as mock_logger:
+        with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+            "framework.core.data_core.settings"
+        ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
             MockCacheManager.return_value = mock_cache_manager
             mock_settings.cache_ttl_daily = 86400
             mock_settings.circuit_breaker_threshold = 3
             mock_logger.return_value = Mock()
-            
+
             data_core = DataCore(
                 plugins={"historical": plugin},
                 priority=["historical"],
@@ -1260,14 +1270,14 @@ class TestRealWorldScenarios:
         plugin.name = "mixed"
         plugin.get_quotes = AsyncMock(return_value=mixed_data)
 
-        with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-             patch("framework.core.data_core.settings") as mock_settings, \
-             patch("framework.core.data_core.get_logger") as mock_logger:
+        with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+            "framework.core.data_core.settings"
+        ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
             MockCacheManager.return_value = mock_cache_manager
             mock_settings.cache_ttl_daily = 1800
             mock_settings.circuit_breaker_threshold = 3
             mock_logger.return_value = Mock()
-            
+
             data_core = DataCore(
                 plugins={"mixed": plugin},
                 priority=["mixed"],
@@ -1325,15 +1335,15 @@ class TestRedisMocking:
                 )
             ]
         )
-        
-        with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-             patch("framework.core.data_core.settings") as mock_settings, \
-             patch("framework.core.data_core.get_logger") as mock_logger:
+
+        with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+            "framework.core.data_core.settings"
+        ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
             MockCacheManager.return_value = mock_cache_manager
             mock_settings.cache_ttl_daily = 1800
             mock_settings.circuit_breaker_threshold = 3
             mock_logger.return_value = Mock()
-            
+
             data_core = DataCore(
                 plugins={"test": plugin},
                 priority=["test"],
@@ -1365,9 +1375,7 @@ class TestAdditionalCoverage:
         sample_quote_data: list[StandardQuote],
     ):
         """测试获取实时行情成功"""
-        result = await data_core_with_plugins.get_realtime_quote(
-            stock_code="600519.SH"
-        )
+        result = await data_core_with_plugins.get_realtime_quote(stock_code="600519.SH")
 
         assert result is not None
         assert result.code == "600519.SH"
@@ -1392,9 +1400,7 @@ class TestAdditionalCoverage:
             )
         )
 
-        result = await data_core_with_plugins.get_realtime_quote(
-            stock_code="600519.SH"
-        )
+        result = await data_core_with_plugins.get_realtime_quote(stock_code="600519.SH")
 
         assert result is not None
         assert result.source == "akshare"
@@ -1413,9 +1419,7 @@ class TestAdditionalCoverage:
             return_value=None
         )
 
-        result = await data_core_with_plugins.get_realtime_quote(
-            stock_code="600519.SH"
-        )
+        result = await data_core_with_plugins.get_realtime_quote(stock_code="600519.SH")
 
         assert result is None
 
@@ -1433,8 +1437,12 @@ class TestAdditionalCoverage:
 
         assert result is not None
         # 只应该调用 akshare
-        data_core_with_plugins._plugins["akshare"].get_realtime_quote.assert_called_once()
-        data_core_with_plugins._plugins["tushare"].get_realtime_quote.assert_not_called()
+        data_core_with_plugins._plugins[
+            "akshare"
+        ].get_realtime_quote.assert_called_once()
+        data_core_with_plugins._plugins[
+            "tushare"
+        ].get_realtime_quote.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_get_source_status(
@@ -1524,7 +1532,7 @@ class TestAdditionalCoverage:
         failing_plugin = Mock()
         failing_plugin.name = "failing"
         failing_plugin.get_quotes = AsyncMock(side_effect=Exception("Failed"))
-        
+
         working_plugin = Mock()
         working_plugin.name = "working"
         working_plugin.get_quotes = AsyncMock(
@@ -1538,14 +1546,14 @@ class TestAdditionalCoverage:
             ]
         )
 
-        with patch("framework.core.data_core.CacheManager") as MockCacheManager, \
-             patch("framework.core.data_core.settings") as mock_settings, \
-             patch("framework.core.data_core.get_logger") as mock_logger:
+        with patch("framework.core.data_core.CacheManager") as MockCacheManager, patch(
+            "framework.core.data_core.settings"
+        ) as mock_settings, patch("framework.core.data_core.get_logger") as mock_logger:
             MockCacheManager.return_value = mock_cache_manager
             mock_settings.cache_ttl_daily = 1800
             mock_settings.circuit_breaker_threshold = 2  # 失败 2 次就熔断
             mock_logger.return_value = Mock()
-            
+
             data_core = DataCore(
                 plugins={"failing": failing_plugin, "working": working_plugin},
                 priority=["failing", "working"],
@@ -1558,7 +1566,7 @@ class TestAdditionalCoverage:
                 end_date=date.today(),
             )
             assert result[0].source == "working"
-            
+
             # 第二次失败
             result = await data_core.get_quotes(
                 stock_code="600519.SH",
@@ -1566,17 +1574,17 @@ class TestAdditionalCoverage:
                 end_date=date.today(),
             )
             assert result[0].source == "working"
-            
+
             # 第三次，failing 应该被熔断（跳过）
             # 重置 working 的调用计数
             working_plugin.get_quotes.reset_mock()
-            
+
             result = await data_core.get_quotes(
                 stock_code="600519.SH",
                 start_date=date.today(),
                 end_date=date.today(),
             )
-            
+
             # failing 被熔断，应该直接使用 working
             assert result[0].source == "working"
             # failing 不应该被调用（被熔断跳过）
@@ -1613,9 +1621,7 @@ class TestAdditionalCoverage:
             )
         )
 
-        result = await data_core_with_plugins.get_realtime_quote(
-            stock_code="600519.SH"
-        )
+        result = await data_core_with_plugins.get_realtime_quote(stock_code="600519.SH")
 
         # 应该降级到备用数据源
         assert result is not None

@@ -218,9 +218,7 @@ class AllDataSourcesFailedError(DataError):
         self.end_date = end_date
         self.failures = failures
 
-        failure_details = "; ".join(
-            f"{k}: {v}" for k, v in failures.items()
-        )
+        failure_details = "; ".join(f"{k}: {v}" for k, v in failures.items())
         message = (
             f"All data sources failed for {stock_code} "
             f"({start_date} to {end_date}). "
@@ -239,7 +237,9 @@ class DataSourceNotFoundError(DataError):
             f"Data source '{source}' not found. "
             f"Available sources: {', '.join(available_sources) or 'none'}"
         )
-        super().__init__(message, {"source": source, "available_sources": available_sources})
+        super().__init__(
+            message, {"source": source, "available_sources": available_sources}
+        )
 
 
 class NoDataError(DataError):
