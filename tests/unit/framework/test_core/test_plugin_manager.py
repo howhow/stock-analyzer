@@ -83,18 +83,18 @@ class TestPluginManager:
         """测试发现插件"""
         manager = PluginManager()
         discovered = manager.discover_plugins("plugins")
-        
+
         assert isinstance(discovered, list)
         assert len(discovered) > 0
 
     def test_load_plugin_from_entrypoint(self):
         """测试从入口点加载插件"""
         manager = PluginManager()
-        
+
         plugin = manager.load_plugin_from_entrypoint(
             "plugins.reports.markdown:MarkdownReportPlugin"
         )
-        
+
         assert plugin is not None
         assert plugin.name == "markdown"
 
@@ -102,9 +102,9 @@ class TestPluginManager:
     async def test_health_check(self):
         """测试健康检查"""
         manager = PluginManager()
-        
+
         health = await manager.health_check()
-        
+
         assert isinstance(health, dict)
 
     def test_enable_disable_plugin(self):
@@ -113,11 +113,11 @@ class TestPluginManager:
         mock_plugin = MagicMock()
         mock_plugin.name = "mock"
         manager.register_plugin(mock_plugin, "report", "mock")
-        
+
         # 禁用
         result = manager.disable_plugin("mock", "report")
         assert result is True
-        
+
         # 启用
         result = manager.enable_plugin("mock", "report")
         assert result is True

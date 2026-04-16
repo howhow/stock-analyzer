@@ -76,7 +76,7 @@ class TestDataCore:
     async def test_get_quotes_not_implemented(self):
         """测试 get_quotes 数据源未找到"""
         from app.core.exceptions import DataSourceNotFoundError
-        
+
         core = DataCore()
 
         with pytest.raises(DataSourceNotFoundError):
