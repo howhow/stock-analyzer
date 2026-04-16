@@ -177,6 +177,7 @@ class PredictionCreate(BaseModel):
     confidence: float = Field(0.5, ge=0, le=1)
     target_date: date
     baseline_price: float = Field(..., gt=0)
+    source: str = "manual"
     strategy: str | None = None
     notes: str | None = None
 

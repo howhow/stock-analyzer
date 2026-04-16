@@ -60,6 +60,11 @@ class PredictionStore:
             baseline_price=request.baseline_price,
             strategy=request.strategy,
             notes=request.notes,
+            source=request.source,
+            status=PredictionStatus.PENDING,
+            actual_price=None,
+            accuracy_score=None,
+            verified_at=None,
         )
         
         self._predictions[prediction_id] = prediction
@@ -134,7 +139,7 @@ class PredictionStore:
             return True
         return False
     
-    def list(
+    def get_all(
         self,
         stock_code: str | None = None,
         status: PredictionStatus | None = None,
@@ -204,7 +209,7 @@ class PredictionStore:
         Returns:
             统计结果
         """
-        predictions = self.list(stock_code=stock_code, limit=1000)
+        predictions = self.get_all(stock_code=stock_code, limit=1000)
         
         if strategy:
             predictions = [p for p in predictions if p.strategy == strategy]
