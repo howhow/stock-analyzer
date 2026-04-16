@@ -130,7 +130,9 @@ class TestOpenAIProviderCallAPI:
         """测试其他 API 错误 (500)"""
         mock_response = MagicMock()
         mock_response.status_code = 500
-        mock_response.json.return_value = {"error": {"message": "Internal server error"}}
+        mock_response.json.return_value = {
+            "error": {"message": "Internal server error"}
+        }
 
         mock_client = AsyncMock()
         mock_client.post = AsyncMock(return_value=mock_response)
