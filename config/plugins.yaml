@@ -1,0 +1,65 @@
+# 插件配置文件
+# 所有插件通过此文件配置和启用
+
+# 数据源插件
+data_sources:
+  tushare:
+    enabled: true
+    entrypoint: "plugins.data_sources.tushare:TusharePlugin"
+    config:
+      token: "${TUSHARE_TOKEN}"
+  
+  akshare:
+    enabled: true
+    entrypoint: "plugins.data_sources.akshare:AKSharePlugin"
+  
+  openbb:
+    enabled: false  # OpenBB 需要额外配置
+    entrypoint: "plugins.data_sources.openbb:OpenBBPlugin"
+  
+  local:
+    enabled: true
+    entrypoint: "plugins.data_sources.local:LocalPlugin"
+    config:
+      data_dir: "./data/local"
+
+# AI 提供商插件
+ai_providers:
+  openai:
+    enabled: true
+    entrypoint: "plugins.ai_providers.openai:OpenAIPlugin"
+    config:
+      api_key: "${OPENAI_API_KEY}"
+      base_url: "${OPENAI_BASE_URL:-https://api.openai.com/v1}"
+      default_model: "gpt-4-turbo-preview"
+  
+  anthropic:
+    enabled: true
+    entrypoint: "plugins.ai_providers.anthropic:AnthropicPlugin"
+    config:
+      api_key: "${ANTHROPIC_API_KEY}"
+      default_model: "claude-3-sonnet-20240229"
+
+# 报告插件
+reports:
+  markdown:
+    enabled: true
+    entrypoint: "plugins.reports.markdown:MarkdownReportPlugin"
+  
+  pdf:
+    enabled: true
+    entrypoint: "plugins.reports.pdf:PDFReportPlugin"
+    config:
+      template_dir: "./templates/reports"
+
+# 指标插件（预留）
+indicators:
+  built_in:
+    enabled: true
+    entrypoint: "plugins.indicators.built_in:BuiltInIndicatorsPlugin"
+
+# 策略插件（预留）
+strategies:
+  example:
+    enabled: false
+    entrypoint: "plugins.strategies.example:ExampleStrategy"
