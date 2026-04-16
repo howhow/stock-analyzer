@@ -18,30 +18,29 @@ from app.core.cache import CacheManager
 class TestCacheManagerRedisConnection:
     """Redis 连接测试"""
 
-    @pytest.fixture
-    def cache_manager(self):
-        """创建缓存管理器"""
-        return CacheManager(redis_url="redis://localhost:6379/0")
-
     @pytest.mark.asyncio
-    async def test_get_redis_connection_success(self, cache_manager):
+    async def test_get_redis_connection_success(self):
         """测试 Redis 连接成功"""
-        with patch("app.core.cache.redis.from_url") as mock_from_url:
+        # 必须在创建 CacheManager 之前应用 patch
+        with patch("redis.asyncio.from_url") as mock_from_url:
             mock_redis = AsyncMock()
             mock_redis.ping = AsyncMock()
             mock_from_url.return_value = mock_redis
 
+            cache_manager = CacheManager(redis_url="redis://localhost:6379/0")
             result = await cache_manager._get_redis()
 
             assert result is mock_redis
             mock_redis.ping.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_get_redis_connection_failure(self, cache_manager):
+    async def test_get_redis_connection_failure(self):
         """测试 Redis 连接失败"""
-        with patch("app.core.cache.redis.from_url") as mock_from_url:
+        # 必须在创建 CacheManager 之前应用 patch
+        with patch("redis.asyncio.from_url") as mock_from_url:
             mock_from_url.side_effect = Exception("Connection refused")
 
+            cache_manager = CacheManager(redis_url="redis://localhost:6379/0")
             result = await cache_manager._get_redis()
 
             assert result is None

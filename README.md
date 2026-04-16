@@ -6,8 +6,8 @@
 
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
-[![Test Coverage](https://img.shields.io/badge/coverage-86.71%25-brightgreen.svg)](tests/)
-[![Tests](https://img.shields.io/badge/tests-901%20passed-success.svg)](tests/)
+[![Test Coverage](https://img.shields.io/badge/coverage-90%25-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-940%20passed-success.svg)](tests/)
 
 </div>
 
@@ -20,12 +20,14 @@
 
 ### 核心特性
 
-- ✅ **多数据源支持** - Tushare + AKShare，自动降级熔断
+- ✅ **插件化架构** - 数据源/AI/报告插件动态加载
+- ✅ **多数据源支持** - Tushare/AKShare/OpenBB/Local，自动降级熔断
 - ✅ **完整技术分析** - MA/EMA/MACD/RSI/布林带等20+指标
-- ✅ **双格式报告** - HTML（可视化图表）+ Markdown（AI友好）
+- ✅ **预测验证体系** - 预测记录、准确率计算、排行榜
+- ✅ **双格式报告** - Markdown/PDF 专业报告
 - ✅ **交互式图表** - ECharts K线图、MACD、RSI可视化
 - ✅ **模块化架构** - 清晰的分层设计，易于扩展
-- ✅ **高测试覆盖** - 100%测试通过率，86.71%代码覆盖率
+- ✅ **高测试覆盖** - 100%测试通过率，90%+代码覆盖率
 - ✅ **Web 前端** - Streamlit 交互式界面
 - ✅ **AI 增强** - OpenAI/Claude 多模型支持
 - ✅ **生产就绪** - 熔断器、缓存、重试机制、健康检查

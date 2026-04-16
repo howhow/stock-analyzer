@@ -55,7 +55,8 @@ class TestPluginInterface:
         """测试 TusharePlugin 实现 DataSourceInterface"""
         from plugins.data_sources.tushare import TusharePlugin
 
-        plugin = TusharePlugin()
+        # 传入假 token 避免初始化错误
+        plugin = TusharePlugin(token="test_token_for_testing")
         assert isinstance(plugin, DataSourceInterface)
         assert plugin.name == "tushare"
         assert "SH" in plugin.supported_markets

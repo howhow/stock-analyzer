@@ -65,8 +65,12 @@ class TestAlgorithmCore:
 
     @pytest.mark.asyncio
     async def test_calculate_indicator_not_implemented(self):
-        """测试 calculate_indicator 未实现"""
-        core = AlgorithmCore()
+        """测试 calculate_indicator 指标未找到"""
+        import pandas as pd
+        from framework.core.algorithm_core import IndicatorNotFoundError
 
-        with pytest.raises(NotImplementedError):
-            await core.calculate_indicator("rsi", [])
+        core = AlgorithmCore()
+        df = pd.DataFrame({"close": [1.0, 2.0, 3.0]})
+
+        with pytest.raises(IndicatorNotFoundError):
+            await core.calculate_indicator("nonexistent", df)
