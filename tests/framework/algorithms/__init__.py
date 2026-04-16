@@ -1,0 +1,1 @@
+"""Framework algorithms tests"""
