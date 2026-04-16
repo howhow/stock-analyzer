@@ -741,7 +741,7 @@ class TestDataDegradation:
                 priority=["priority1", "priority2", "priority3"],
             )
 
-            result = await data_core.get_quotes(
+            _ = await data_core.get_quotes(
                 stock_code="600519.SH",
                 start_date=date.today(),
                 end_date=date.today(),
