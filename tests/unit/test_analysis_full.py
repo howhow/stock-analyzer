@@ -78,8 +78,9 @@ class TestVolumeIndicators:
     def test_obv(self):
         """测试OBV计算"""
         try:
-            closes = [10.0, 11.0, 10.5, 12.0, 11.5]
-            volumes = [1000000, 1200000, 1100000, 1500000, 1300000]
+            import pandas as pd
+            closes = pd.Series([10.0, 11.0, 10.5, 12.0, 11.5], dtype=float)
+            volumes = pd.Series([1000000.0, 1200000.0, 1100000.0, 1500000.0, 1300000.0], dtype=float)
             result = volume.obv(closes, volumes)
             assert result is not None
         except AttributeError:
