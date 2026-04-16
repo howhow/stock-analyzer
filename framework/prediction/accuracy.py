@@ -129,7 +129,17 @@ class AccuracyCalculator:
         """
         total = len(predictions)
         if total == 0:
-            return PredictionStats()
+            return PredictionStats(
+                total=0,
+                correct=0,
+                incorrect=0,
+                pending=0,
+                accuracy_rate=0.0,
+                avg_confidence=0.0,
+                up_correct=0,
+                down_correct=0,
+                flat_correct=0,
+            )
         
         correct = sum(1 for p in predictions if p.status == PredictionStatus.CORRECT)
         incorrect = sum(1 for p in predictions if p.status == PredictionStatus.INCORRECT)
