@@ -189,3 +189,38 @@ class AIProviderError(AIError):
     """AI 提供商错误"""
 
     pass
+
+
+# ============ 数据核心相关异常 ============
+
+
+class AllDataSourcesFailedError(DataError):
+    """所有数据源都失败"""
+
+    def __init__(
+        self,
+        message: str = "All data sources failed",
+        failures: dict[str, str] | None = None,
+        details: dict[str, Any] | None = None,
+    ):
+        self.failures = failures or {}  # {source_name: error_message}
+        super().__init__(message, details)
+
+
+class NoAvailableDataSourceError(DataError):
+    """没有可用的数据源"""
+
+    pass
+
+
+class DataQualityError(DataError):
+    """数据质量错误"""
+
+    def __init__(
+        self,
+        message: str = "Data quality check failed",
+        quality_score: float | None = None,
+        details: dict[str, Any] | None = None,
+    ):
+        self.quality_score = quality_score
+        super().__init__(message, details)
