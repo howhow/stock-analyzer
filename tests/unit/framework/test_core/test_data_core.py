@@ -74,10 +74,12 @@ class TestDataCore:
 
     @pytest.mark.asyncio
     async def test_get_quotes_not_implemented(self):
-        """测试 get_quotes 未实现"""
+        """测试 get_quotes 数据源未找到"""
+        from app.core.exceptions import DataSourceNotFoundError
+
         core = DataCore()
 
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(DataSourceNotFoundError):
             await core.get_quotes(
                 "600519.SH",
                 date(2024, 1, 1),

@@ -227,7 +227,7 @@ def support_resistance(
         period: 周期
 
     Returns:
-        {'support': 支撑位, 'resistance': 阻力位}
+        {'support': 支撑位, 'resistance': 阻力位, 'current_position': 当前价格位置(0-1)}
     """
     if isinstance(high_prices, list):
         high_prices = pd.Series(high_prices)
@@ -242,9 +242,19 @@ def support_resistance(
     # 使用最近 period 天的最低价作为支撑位
     support = float(low_prices.tail(period).min())
 
+    # 计算当前价格在支撑阻力位之间的位置 (0-1)
+    current_price = float(close_prices.iloc[-1])
+    if resistance != support:
+        current_position = (current_price - support) / (resistance - support)
+        # 限制在 0-1 范围内
+        current_position = max(0.0, min(1.0, current_position))
+    else:
+        current_position = 0.5
+
     return {
         "support": support,
         "resistance": resistance,
+        "current_position": current_position,
     }
 
 

@@ -2,13 +2,13 @@
 OpenAI Provider 完整测试
 
 关键原则: 不要 Mock 你想测试的代码！
-Mock aiohttp.ClientSession，让 _call_api 内部代码执行
+Mock httpx.AsyncClient，让 _call_api 内部代码执行
 """
 
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import aiohttp
+import httpx
 import pytest
 
 from app.ai.base import AIAnalysisRequest
@@ -47,7 +47,7 @@ class TestOpenAIProviderInit:
 
 
 class TestOpenAIProviderCallAPI:
-    """测试 _call_api 内部逻辑 - Mock aiohttp.ClientSession"""
+    """测试 _call_api 内部逻辑 - Mock httpx.AsyncClient"""
 
     @pytest.fixture
     def provider(self) -> OpenAIProvider:
@@ -57,29 +57,21 @@ class TestOpenAIProviderCallAPI:
     async def test_call_api_success(self, provider: OpenAIProvider) -> None:
         """测试成功调用 API"""
         # Mock response
-        mock_response = AsyncMock()
-        mock_response.status = 200
-        mock_response.json = AsyncMock(
-            return_value={
-                "choices": [{"message": {"content": "OK"}}],
-                "usage": {"total_tokens": 100},
-            }
-        )
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "choices": [{"message": {"content": "OK"}}],
+            "usage": {"total_tokens": 100},
+        }
 
-        # Mock session - 正确设置异步上下文管理器
-        mock_session = AsyncMock()
-        mock_post = AsyncMock()
-        mock_post.__aenter__ = AsyncMock(return_value=mock_response)
-        mock_post.__aexit__ = AsyncMock(return_value=None)
-        mock_session.post = MagicMock(return_value=mock_post)
+        # Mock client - 正确设置异步上下文管理器
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_response)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        # Mock ClientSession
-        with patch("aiohttp.ClientSession") as mock_client_session:
-            mock_client_session.return_value.__aenter__ = AsyncMock(
-                return_value=mock_session
-            )
-            mock_client_session.return_value.__aexit__ = AsyncMock(return_value=None)
-
+        # Mock httpx.AsyncClient
+        with patch("httpx.AsyncClient", return_value=mock_client):
             result = await provider._call_api({"model": "gpt-4", "messages": []})
 
         assert result["choices"][0]["message"]["content"] == "OK"
@@ -88,138 +80,90 @@ class TestOpenAIProviderCallAPI:
     @pytest.mark.asyncio
     async def test_call_api_rate_limit(self, provider: OpenAIProvider) -> None:
         """测试限流错误 (429)"""
-        mock_response = AsyncMock()
-        mock_response.status = 429
-        mock_response.json = AsyncMock(
-            return_value={"error": {"message": "Rate limit exceeded"}}
-        )
+        mock_response = MagicMock()
+        mock_response.status_code = 429
+        mock_response.json.return_value = {"error": {"message": "Rate limit exceeded"}}
 
-        mock_session = AsyncMock()
-        mock_post = AsyncMock()
-        mock_post.__aenter__ = AsyncMock(return_value=mock_response)
-        mock_post.__aexit__ = AsyncMock(return_value=None)
-        mock_session.post = MagicMock(return_value=mock_post)
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_response)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("aiohttp.ClientSession") as mock_client_session:
-            mock_client_session.return_value.__aenter__ = AsyncMock(
-                return_value=mock_session
-            )
-            mock_client_session.return_value.__aexit__ = AsyncMock(return_value=None)
-
+        with patch("httpx.AsyncClient", return_value=mock_client):
             with pytest.raises(AIRateLimitError, match="Rate limit"):
                 await provider._call_api({"model": "gpt-4"})
 
     @pytest.mark.asyncio
     async def test_call_api_auth_error(self, provider: OpenAIProvider) -> None:
         """测试认证错误 (401)"""
-        mock_response = AsyncMock()
-        mock_response.status = 401
-        mock_response.json = AsyncMock(
-            return_value={"error": {"message": "Invalid API key"}}
-        )
+        mock_response = MagicMock()
+        mock_response.status_code = 401
+        mock_response.json.return_value = {"error": {"message": "Invalid API key"}}
 
-        mock_session = AsyncMock()
-        mock_post = AsyncMock()
-        mock_post.__aenter__ = AsyncMock(return_value=mock_response)
-        mock_post.__aexit__ = AsyncMock(return_value=None)
-        mock_session.post = MagicMock(return_value=mock_post)
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_response)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("aiohttp.ClientSession") as mock_client_session:
-            mock_client_session.return_value.__aenter__ = AsyncMock(
-                return_value=mock_session
-            )
-            mock_client_session.return_value.__aexit__ = AsyncMock(return_value=None)
-
+        with patch("httpx.AsyncClient", return_value=mock_client):
             with pytest.raises(AIAPIError, match="Authentication failed"):
                 await provider._call_api({"model": "gpt-4"})
 
     @pytest.mark.asyncio
     async def test_call_api_model_not_found(self, provider: OpenAIProvider) -> None:
         """测试模型不存在 (404)"""
-        mock_response = AsyncMock()
-        mock_response.status = 404
-        mock_response.json = AsyncMock(
-            return_value={"error": {"message": "Model not found"}}
-        )
+        mock_response = MagicMock()
+        mock_response.status_code = 404
+        mock_response.json.return_value = {"error": {"message": "Model not found"}}
 
-        mock_session = AsyncMock()
-        mock_post = AsyncMock()
-        mock_post.__aenter__ = AsyncMock(return_value=mock_response)
-        mock_post.__aexit__ = AsyncMock(return_value=None)
-        mock_session.post = MagicMock(return_value=mock_post)
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_response)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("aiohttp.ClientSession") as mock_client_session:
-            mock_client_session.return_value.__aenter__ = AsyncMock(
-                return_value=mock_session
-            )
-            mock_client_session.return_value.__aexit__ = AsyncMock(return_value=None)
-
+        with patch("httpx.AsyncClient", return_value=mock_client):
             with pytest.raises(AIAPIError, match="Model not found"):
                 await provider._call_api({"model": "gpt-4"})
 
     @pytest.mark.asyncio
     async def test_call_api_other_error(self, provider: OpenAIProvider) -> None:
         """测试其他 API 错误 (500)"""
-        mock_response = AsyncMock()
-        mock_response.status = 500
-        mock_response.json = AsyncMock(
-            return_value={"error": {"message": "Internal server error"}}
-        )
+        mock_response = MagicMock()
+        mock_response.status_code = 500
+        mock_response.json.return_value = {
+            "error": {"message": "Internal server error"}
+        }
 
-        mock_session = AsyncMock()
-        mock_post = AsyncMock()
-        mock_post.__aenter__ = AsyncMock(return_value=mock_response)
-        mock_post.__aexit__ = AsyncMock(return_value=None)
-        mock_session.post = MagicMock(return_value=mock_post)
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_response)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("aiohttp.ClientSession") as mock_client_session:
-            mock_client_session.return_value.__aenter__ = AsyncMock(
-                return_value=mock_session
-            )
-            mock_client_session.return_value.__aexit__ = AsyncMock(return_value=None)
-
+        with patch("httpx.AsyncClient", return_value=mock_client):
             with pytest.raises(AIAPIError, match="API error 500"):
                 await provider._call_api({"model": "gpt-4"})
 
     @pytest.mark.asyncio
     async def test_call_api_timeout(self, provider: OpenAIProvider) -> None:
         """测试超时"""
-        # Mock post 返回一个会抛出 TimeoutError 的上下文管理器
-        mock_post = AsyncMock()
-        mock_post.__aenter__ = AsyncMock(side_effect=asyncio.TimeoutError())
-        mock_post.__aexit__ = AsyncMock(return_value=None)
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(side_effect=httpx.TimeoutException("timeout"))
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        mock_session = AsyncMock()
-        mock_session.post = MagicMock(return_value=mock_post)
-
-        with patch("aiohttp.ClientSession") as mock_client_session:
-            mock_client_session.return_value.__aenter__ = AsyncMock(
-                return_value=mock_session
-            )
-            mock_client_session.return_value.__aexit__ = AsyncMock(return_value=None)
-
+        with patch("httpx.AsyncClient", return_value=mock_client):
             with pytest.raises(AITimeoutError, match="timeout"):
                 await provider._call_api({"model": "gpt-4"})
 
     @pytest.mark.asyncio
     async def test_call_api_network_error(self, provider: OpenAIProvider) -> None:
         """测试网络错误"""
-        # Mock post 返回一个会抛出 ClientError 的上下文管理器
-        mock_post = AsyncMock()
-        mock_post.__aenter__ = AsyncMock(
-            side_effect=aiohttp.ClientError("Connection failed")
-        )
-        mock_post.__aexit__ = AsyncMock(return_value=None)
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(side_effect=httpx.HTTPError("Connection failed"))
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        mock_session = AsyncMock()
-        mock_session.post = MagicMock(return_value=mock_post)
-
-        with patch("aiohttp.ClientSession") as mock_client_session:
-            mock_client_session.return_value.__aenter__ = AsyncMock(
-                return_value=mock_session
-            )
-            mock_client_session.return_value.__aexit__ = AsyncMock(return_value=None)
-
+        with patch("httpx.AsyncClient", return_value=mock_client):
             with pytest.raises(AIAPIError, match="Network error"):
                 await provider._call_api({"model": "gpt-4"})
 
