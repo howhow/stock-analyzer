@@ -37,14 +37,16 @@ from framework.core.algorithm_core import (
 def sample_data():
     """生成测试数据"""
     dates = pd.date_range("2024-01-01", periods=100, freq="D")
-    data = pd.DataFrame({
-        "date": dates,
-        "open": [100 + i * 0.5 for i in range(100)],
-        "high": [102 + i * 0.5 for i in range(100)],
-        "low": [98 + i * 0.5 for i in range(100)],
-        "close": [100 + i * 0.5 for i in range(100)],
-        "volume": [1000000 for i in range(100)],
-    })
+    data = pd.DataFrame(
+        {
+            "date": dates,
+            "open": [100 + i * 0.5 for i in range(100)],
+            "high": [102 + i * 0.5 for i in range(100)],
+            "low": [98 + i * 0.5 for i in range(100)],
+            "close": [100 + i * 0.5 for i in range(100)],
+            "volume": [1000000 for i in range(100)],
+        }
+    )
     return data
 
 
@@ -146,7 +148,9 @@ class TestIndicatorCalculation:
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_calculate_custom_indicator(self, algorithm_core, sample_data, mock_indicator):
+    async def test_calculate_custom_indicator(
+        self, algorithm_core, sample_data, mock_indicator
+    ):
         """测试自定义指标"""
         algorithm_core.register_indicator(mock_indicator)
         result = await algorithm_core.calculate_indicator("custom_ma", sample_data)
@@ -173,18 +177,24 @@ class TestBatchCalculation:
         """测试批量计算多个指标"""
         indicators = ["rsi", "sma", "ema"]
         params = {"rsi": {"period": 14}, "sma": {"period": 20}, "ema": {"period": 20}}
-        results = await algorithm_core.calculate_indicators(sample_data, indicators, params)
+        results = await algorithm_core.calculate_indicators(
+            sample_data, indicators, params
+        )
         assert "rsi" in results
         assert "sma" in results
         assert "ema" in results
 
     @pytest.mark.asyncio
-    async def test_calculate_indicators_partial_failure(self, algorithm_core, sample_data):
+    async def test_calculate_indicators_partial_failure(
+        self, algorithm_core, sample_data
+    ):
         """测试部分指标失败时继续计算其他指标"""
         indicators = ["rsi", "unknown_indicator", "sma"]
         params = {"sma": {"period": 20}}  # sma 需要 period 参数
         # 应该返回成功的指标，失败的记录错误
-        results = await algorithm_core.calculate_indicators(sample_data, indicators, params)
+        results = await algorithm_core.calculate_indicators(
+            sample_data, indicators, params
+        )
         assert "rsi" in results
         # sma 应该成功计算
 
@@ -210,7 +220,9 @@ class TestAIAnalysis:
         assert "score" in result
 
     @pytest.mark.asyncio
-    async def test_analyze_with_ai_default_provider(self, algorithm_core, mock_ai_provider):
+    async def test_analyze_with_ai_default_provider(
+        self, algorithm_core, mock_ai_provider
+    ):
         """测试使用默认AI提供商"""
         algorithm_core.register_ai_provider(mock_ai_provider)
         result = await algorithm_core.analyze_with_ai(
@@ -265,14 +277,16 @@ class TestHealthCheck:
         assert status["status"] in ["healthy", "degraded"]
 
     @pytest.mark.asyncio
-    async def test_health_check_provider_unhealthy(self, algorithm_core, mock_ai_provider):
+    async def test_health_check_provider_unhealthy(
+        self, algorithm_core, mock_ai_provider
+    ):
         """测试AI提供商不健康"""
         mock_ai_provider.health_check = AsyncMock(return_value=False)
         algorithm_core.register_ai_provider(mock_ai_provider)
         status = await algorithm_core.health_check()
         # 检查 providers 字典中包含 mock_ai
         if "providers" in status and "mock_ai" in status["providers"]:
-            assert status["providers"]["mock_ai"]["healthy"] == False
+            assert status["providers"]["mock_ai"]["healthy"] is False
 
 
 # ============================================================
@@ -342,15 +356,17 @@ class TestBoundaryConditions:
     @pytest.mark.asyncio
     async def test_single_row_data(self, algorithm_core):
         """测试单行数据"""
-        single_data = pd.DataFrame({
-            "close": [100.0],
-            "high": [102.0],
-            "low": [98.0],
-            "volume": [1000000],
-        })
+        single_data = pd.DataFrame(
+            {
+                "close": [100.0],
+                "high": [102.0],
+                "low": [98.0],
+                "volume": [1000000],
+            }
+        )
         # 单行数据某些指标无法计算，但不应崩溃
         try:
-            result = await algorithm_core.calculate_indicator("sma", single_data, period=1)
+            _ = await algorithm_core.calculate_indicator("sma", single_data, period=1)
             # 允许返回 NaN 或空结果
         except (IndicatorCalculationError, ValueError):
             pass  # 预期的异常
@@ -365,14 +381,20 @@ class TestBoundaryConditions:
     @pytest.mark.asyncio
     async def test_large_period_parameter(self, algorithm_core, sample_data):
         """测试大周期参数"""
-        result = await algorithm_core.calculate_indicator("sma", sample_data, period=200)
+        result = await algorithm_core.calculate_indicator(
+            "sma", sample_data, period=200
+        )
         # 大于数据长度时，应该返回 NaN 或部分结果
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_health_check_provider_exception(self, algorithm_core, mock_ai_provider):
+    async def test_health_check_provider_exception(
+        self, algorithm_core, mock_ai_provider
+    ):
         """测试AI提供商健康检查抛出异常"""
-        mock_ai_provider.health_check = AsyncMock(side_effect=Exception("Connection error"))
+        mock_ai_provider.health_check = AsyncMock(
+            side_effect=Exception("Connection error")
+        )
         algorithm_core.register_ai_provider(mock_ai_provider)
         status = await algorithm_core.health_check()
         # 应该捕获异常，状态为 error
@@ -384,12 +406,14 @@ class TestBoundaryConditions:
     async def test_unknown_indicator_data_preparation(self, algorithm_core):
         """测试未知指标的数据准备分支"""
         # 使用需要特殊列的指标
-        data = pd.DataFrame({
-            "close": [100.0] * 50,
-            "high": [102.0] * 50,
-            "low": [98.0] * 50,
-            "volume": [1000000] * 50,
-        })
+        data = pd.DataFrame(
+            {
+                "close": [100.0] * 50,
+                "high": [102.0] * 50,
+                "low": [98.0] * 50,
+                "volume": [1000000] * 50,
+            }
+        )
         # 计算 ATR 使用三元指标分支
         result = await algorithm_core.calculate_indicator("atr", data, period=14)
         assert result is not None
@@ -397,43 +421,53 @@ class TestBoundaryConditions:
     @pytest.mark.asyncio
     async def test_money_flow_index(self, algorithm_core):
         """测试MFI指标（需要high/low/close/volume）"""
-        data = pd.DataFrame({
-            "close": [100.0 + i * 0.5 for i in range(50)],
-            "high": [102.0 + i * 0.5 for i in range(50)],
-            "low": [98.0 + i * 0.5 for i in range(50)],
-            "volume": [1000000.0 + i * 1000 for i in range(50)],
-        })
-        result = await algorithm_core.calculate_indicator("money_flow_index", data, period=14)
+        data = pd.DataFrame(
+            {
+                "close": [100.0 + i * 0.5 for i in range(50)],
+                "high": [102.0 + i * 0.5 for i in range(50)],
+                "low": [98.0 + i * 0.5 for i in range(50)],
+                "volume": [1000000.0 + i * 1000 for i in range(50)],
+            }
+        )
+        result = await algorithm_core.calculate_indicator(
+            "money_flow_index", data, period=14
+        )
         assert result is not None
 
     @pytest.mark.asyncio
     async def test_obv_indicator(self, algorithm_core):
         """测试OBV指标（需要close/volume）"""
-        data = pd.DataFrame({
-            "close": [100.0 + i * 0.5 for i in range(50)],
-            "volume": [1000000.0 + i * 1000 for i in range(50)],
-        })
+        data = pd.DataFrame(
+            {
+                "close": [100.0 + i * 0.5 for i in range(50)],
+                "volume": [1000000.0 + i * 1000 for i in range(50)],
+            }
+        )
         result = await algorithm_core.calculate_indicator("obv", data)
         assert result is not None
 
     @pytest.mark.asyncio
     async def test_williams_r_indicator(self, algorithm_core):
         """测试威廉指标（需要high/low/close）"""
-        data = pd.DataFrame({
-            "close": [100.0] * 50,
-            "high": [102.0] * 50,
-            "low": [98.0] * 50,
-        })
+        data = pd.DataFrame(
+            {
+                "close": [100.0] * 50,
+                "high": [102.0] * 50,
+                "low": [98.0] * 50,
+            }
+        )
         result = await algorithm_core.calculate_indicator("williams_r", data, period=14)
         assert result is not None
 
     @pytest.mark.asyncio
     async def test_stochastic_oscillator(self, algorithm_core):
         """测试随机指标（需要high/low/close）"""
-        data = pd.DataFrame({
-            "close": [100.0] * 50,
-            "high": [102.0] * 50,
-            "low": [98.0] * 50,
-        })
+        data = pd.DataFrame(
+            {
+                "close": [100.0] * 50,
+                "high": [102.0] * 50,
+                "low": [98.0] * 50,
+            }
+        )
         result = await algorithm_core.calculate_indicator("stochastic_oscillator", data)
         assert result is not None
