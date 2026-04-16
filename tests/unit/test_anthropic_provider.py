@@ -1,13 +1,13 @@
 """
 Anthropic Provider 完整测试
 
-关键原则: Mock aiohttp.ClientSession，让 _call_api 内部代码执行
+关键原则: Mock httpx.AsyncClient，让 _call_api 内部代码执行
 """
 
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import aiohttp
+import httpx
 import pytest
 
 from app.ai.base import AIAnalysisRequest
@@ -46,7 +46,7 @@ class TestAnthropicProviderInit:
 
 
 class TestAnthropicProviderCallAPI:
-    """测试 _call_api 内部逻辑"""
+    """测试 _call_api 内部逻辑 - Mock httpx.AsyncClient"""
 
     @pytest.fixture
     def provider(self) -> AnthropicProvider:
@@ -55,27 +55,19 @@ class TestAnthropicProviderCallAPI:
     @pytest.mark.asyncio
     async def test_call_api_success(self, provider: AnthropicProvider) -> None:
         """测试成功调用"""
-        mock_response = AsyncMock()
-        mock_response.status = 200
-        mock_response.json = AsyncMock(
-            return_value={
-                "content": [{"text": "Hello from Claude"}],
-                "usage": {"input_tokens": 10, "output_tokens": 20},
-            }
-        )
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "content": [{"text": "Hello from Claude"}],
+            "usage": {"input_tokens": 10, "output_tokens": 20},
+        }
 
-        mock_session = AsyncMock()
-        mock_post = AsyncMock()
-        mock_post.__aenter__ = AsyncMock(return_value=mock_response)
-        mock_post.__aexit__ = AsyncMock(return_value=None)
-        mock_session.post = MagicMock(return_value=mock_post)
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_response)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("aiohttp.ClientSession") as mock_client_session:
-            mock_client_session.return_value.__aenter__ = AsyncMock(
-                return_value=mock_session
-            )
-            mock_client_session.return_value.__aexit__ = AsyncMock(return_value=None)
-
+        with patch("httpx.AsyncClient", return_value=mock_client):
             result = await provider._call_api({"model": "claude-3-opus"})
 
         assert result["content"][0]["text"] == "Hello from Claude"
@@ -83,63 +75,44 @@ class TestAnthropicProviderCallAPI:
     @pytest.mark.asyncio
     async def test_call_api_rate_limit(self, provider: AnthropicProvider) -> None:
         """测试限流错误 (429)"""
-        mock_response = AsyncMock()
-        mock_response.status = 429
-        mock_response.json = AsyncMock(return_value={"error": "Rate limit exceeded"})
+        mock_response = MagicMock()
+        mock_response.status_code = 429
+        mock_response.json.return_value = {"error": "Rate limit exceeded"}
 
-        mock_session = AsyncMock()
-        mock_post = AsyncMock()
-        mock_post.__aenter__ = AsyncMock(return_value=mock_response)
-        mock_post.__aexit__ = AsyncMock(return_value=None)
-        mock_session.post = MagicMock(return_value=mock_post)
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_response)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("aiohttp.ClientSession") as mock_client_session:
-            mock_client_session.return_value.__aenter__ = AsyncMock(
-                return_value=mock_session
-            )
-            mock_client_session.return_value.__aexit__ = AsyncMock(return_value=None)
-
+        with patch("httpx.AsyncClient", return_value=mock_client):
             with pytest.raises(AIRateLimitError):
                 await provider._call_api({"model": "claude-3-opus"})
 
     @pytest.mark.asyncio
     async def test_call_api_other_error(self, provider: AnthropicProvider) -> None:
         """测试其他 API 错误"""
-        mock_response = AsyncMock()
-        mock_response.status = 500
-        mock_response.json = AsyncMock(return_value={"error": "Internal error"})
+        mock_response = MagicMock()
+        mock_response.status_code = 500
+        mock_response.json.return_value = {"error": "Internal error"}
 
-        mock_session = AsyncMock()
-        mock_post = AsyncMock()
-        mock_post.__aenter__ = AsyncMock(return_value=mock_response)
-        mock_post.__aexit__ = AsyncMock(return_value=None)
-        mock_session.post = MagicMock(return_value=mock_post)
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_response)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("aiohttp.ClientSession") as mock_client_session:
-            mock_client_session.return_value.__aenter__ = AsyncMock(
-                return_value=mock_session
-            )
-            mock_client_session.return_value.__aexit__ = AsyncMock(return_value=None)
-
+        with patch("httpx.AsyncClient", return_value=mock_client):
             with pytest.raises(AIAPIError, match="API error 500"):
                 await provider._call_api({"model": "claude-3-opus"})
 
     @pytest.mark.asyncio
     async def test_call_api_timeout(self, provider: AnthropicProvider) -> None:
         """测试超时"""
-        mock_post = AsyncMock()
-        mock_post.__aenter__ = AsyncMock(side_effect=asyncio.TimeoutError())
-        mock_post.__aexit__ = AsyncMock(return_value=None)
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(side_effect=httpx.TimeoutException("timeout"))
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        mock_session = AsyncMock()
-        mock_session.post = MagicMock(return_value=mock_post)
-
-        with patch("aiohttp.ClientSession") as mock_client_session:
-            mock_client_session.return_value.__aenter__ = AsyncMock(
-                return_value=mock_session
-            )
-            mock_client_session.return_value.__aexit__ = AsyncMock(return_value=None)
-
+        with patch("httpx.AsyncClient", return_value=mock_client):
             with pytest.raises(AITimeoutError, match="Timeout"):
                 await provider._call_api({"model": "claude-3-opus"})
 
