@@ -19,8 +19,8 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 
-from framework.core.data_core import (
-    DataCore,
+from framework.core.data_core import DataCore
+from app.core.exceptions import (
     AllDataSourcesFailedError,
     DataSourceNotFoundError,
     NoDataError,
