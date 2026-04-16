@@ -21,21 +21,25 @@ class TestPluginImports:
     def test_import_tushare_plugin(self):
         """测试导入 TusharePlugin"""
         from plugins.data_sources.tushare import TusharePlugin
+
         assert TusharePlugin is not None
 
     def test_import_akshare_plugin(self):
         """测试导入 AKSharePlugin"""
         from plugins.data_sources.akshare import AKSharePlugin
+
         assert AKSharePlugin is not None
 
     def test_import_openbb_plugin(self):
         """测试导入 OpenBBPlugin"""
         from plugins.data_sources.openbb import OpenBBPlugin
+
         assert OpenBBPlugin is not None
 
     def test_import_local_plugin(self):
         """测试导入 LocalPlugin"""
         from plugins.data_sources.local import LocalPlugin
+
         assert LocalPlugin is not None
 
 
@@ -50,6 +54,7 @@ class TestPluginInterface:
     def test_tushare_implements_interface(self):
         """测试 TusharePlugin 实现 DataSourceInterface"""
         from plugins.data_sources.tushare import TusharePlugin
+
         plugin = TusharePlugin()
         assert isinstance(plugin, DataSourceInterface)
         assert plugin.name == "tushare"
@@ -58,6 +63,7 @@ class TestPluginInterface:
     def test_akshare_implements_interface(self):
         """测试 AKSharePlugin 实现 DataSourceInterface"""
         from plugins.data_sources.akshare import AKSharePlugin
+
         plugin = AKSharePlugin()
         assert isinstance(plugin, DataSourceInterface)
         assert plugin.name == "akshare"
@@ -66,6 +72,7 @@ class TestPluginInterface:
     def test_openbb_implements_interface(self):
         """测试 OpenBBPlugin 实现 DataSourceInterface"""
         from plugins.data_sources.openbb import OpenBBPlugin
+
         plugin = OpenBBPlugin()
         assert isinstance(plugin, DataSourceInterface)
         assert plugin.name == "openbb"
@@ -75,6 +82,7 @@ class TestPluginInterface:
     def test_local_implements_interface(self):
         """测试 LocalPlugin 实现 DataSourceInterface"""
         from plugins.data_sources.local import LocalPlugin
+
         plugin = LocalPlugin()
         assert isinstance(plugin, DataSourceInterface)
         assert plugin.name == "local"
@@ -96,14 +104,16 @@ class TestPluginWithMockData:
         from plugins.data_sources.local import LocalPlugin, LocalPluginConfig
 
         # 创建测试数据文件
-        test_data = pd.DataFrame({
-            "date": ["2024-01-01", "2024-01-02", "2024-01-03"],
-            "open": [100.0, 101.0, 102.0],
-            "high": [102.0, 103.0, 104.0],
-            "low": [99.0, 100.0, 101.0],
-            "close": [101.0, 102.0, 103.0],
-            "volume": [1000000, 1100000, 1200000],
-        })
+        test_data = pd.DataFrame(
+            {
+                "date": ["2024-01-01", "2024-01-02", "2024-01-03"],
+                "open": [100.0, 101.0, 102.0],
+                "high": [102.0, 103.0, 104.0],
+                "low": [99.0, 100.0, 101.0],
+                "close": [101.0, 102.0, 103.0],
+                "volume": [1000000, 1100000, 1200000],
+            }
+        )
         test_data.to_csv(tmp_path / "600519_SH.csv", index=False)
 
         # 创建插件
