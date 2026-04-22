@@ -18,6 +18,7 @@ logger = get_logger(__name__)
 # 核心逻辑函数（便于测试）
 # ============================================================
 
+
 def _execute_subscriptions_logic(self: Any) -> dict[str, Any]:
     """执行订阅的核心逻辑"""
     logger.info(
@@ -189,6 +190,7 @@ def _send_notification_logic(
 # Celery 任务包装
 # ============================================================
 
+
 @celery_app.task(
     bind=True,
     max_retries=3,
@@ -209,7 +211,9 @@ def create_subscription(
     schedule: str = "daily",
 ) -> dict[str, Any]:
     """创建订阅"""
-    return _create_subscription_logic(self, user_id, stock_code, analysis_type, schedule)
+    return _create_subscription_logic(
+        self, user_id, stock_code, analysis_type, schedule
+    )
 
 
 @celery_app.task(

@@ -10,15 +10,14 @@ from datetime import date
 
 from structlog import get_logger
 
-logger = get_logger(__name__)
-
-# 模块级别导入，便于测试时 mock
 from framework.models.prediction import PredictionStatus
 from framework.prediction import (
     AccuracyCalculator,
     AccuracyRanker,
     get_prediction_store,
 )
+
+logger = get_logger(__name__)
 
 
 def verify_predictions_task():

@@ -43,7 +43,9 @@ class TestMonitoringStubs:
 
     def test_record_http_request_with_kwargs(self):
         """测试 HTTP 记录带关键字参数"""
-        record_http_request(method="POST", path="/api/v1/analyze", status=201, duration=0.2)
+        record_http_request(
+            method="POST", path="/api/v1/analyze", status=201, duration=0.2
+        )
 
     def test_record_analysis_with_kwargs(self):
         """测试分析记录带关键字参数"""

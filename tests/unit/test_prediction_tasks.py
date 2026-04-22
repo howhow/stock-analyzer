@@ -51,7 +51,9 @@ class TestVerifyPredictionsTask:
     """测试预测验证任务"""
 
     @patch("app.tasks.prediction_tasks.get_prediction_store")
-    def test_verify_predictions_success(self, mock_get_store, mock_store, mock_prediction):
+    def test_verify_predictions_success(
+        self, mock_get_store, mock_store, mock_prediction
+    ):
         """测试正常验证"""
         mock_get_store.return_value = mock_store
 

@@ -25,41 +25,49 @@ def mock_tushare_pro():
     pro = MagicMock()
 
     # 模拟股票基本信息
-    pro.stock_basic.return_value = pd.DataFrame({
-        "ts_code": ["600519.SH"],
-        "name": ["贵州茅台"],
-        "industry": ["白酒"],
-        "list_date": ["20010827"],
-        "market": ["主板"],
-    })
+    pro.stock_basic.return_value = pd.DataFrame(
+        {
+            "ts_code": ["600519.SH"],
+            "name": ["贵州茅台"],
+            "industry": ["白酒"],
+            "list_date": ["20010827"],
+            "market": ["主板"],
+        }
+    )
 
     # 模拟日线行情
-    pro.daily.return_value = pd.DataFrame({
-        "ts_code": ["600519.SH"],
-        "trade_date": ["20240101"],
-        "open": [1700.0],
-        "high": [1750.0],
-        "low": [1680.0],
-        "close": [1720.0],
-        "vol": [10000.0],
-        "amount": [17200000.0],
-    })
+    pro.daily.return_value = pd.DataFrame(
+        {
+            "ts_code": ["600519.SH"],
+            "trade_date": ["20240101"],
+            "open": [1700.0],
+            "high": [1750.0],
+            "low": [1680.0],
+            "close": [1720.0],
+            "vol": [10000.0],
+            "amount": [17200000.0],
+        }
+    )
 
     # 模拟财务数据
-    pro.daily_basic.return_value = pd.DataFrame({
-        "ts_code": ["600519.SH"],
-        "trade_date": ["20240101"],
-        "pe": [30.0],
-        "pb": [8.0],
-        "turnover_rate": [0.5],
-    })
+    pro.daily_basic.return_value = pd.DataFrame(
+        {
+            "ts_code": ["600519.SH"],
+            "trade_date": ["20240101"],
+            "pe": [30.0],
+            "pb": [8.0],
+            "turnover_rate": [0.5],
+        }
+    )
 
     # 模拟交易日历
-    pro.trade_cal.return_value = pd.DataFrame({
-        "exchange": ["SSE"],
-        "cal_date": ["20240101"],
-        "is_open": [1],
-    })
+    pro.trade_cal.return_value = pd.DataFrame(
+        {
+            "exchange": ["SSE"],
+            "cal_date": ["20240101"],
+            "is_open": [1],
+        }
+    )
 
     return pro
 
