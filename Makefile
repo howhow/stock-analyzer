@@ -152,10 +152,13 @@ frontend-dev: venv-check
 # 测试
 # ============================================
 test: venv-check
+	@echo "🧪 运行测试 (pytest + coverage)..."
 	$(PYTHON) -m pytest tests/ -v --cov=app --cov=framework --cov-report=term-missing
+	@echo "✅ 测试完成"
 
 test-unit: venv-check
 	$(PYTHON) -m pytest tests/unit/ -v --cov=app --cov=framework --cov-report=term-missing
+	@echo "✅ 测试完成"
 
 test-integration: venv-check
 	$(PYTHON) -m pytest tests/integration/ -v
@@ -171,15 +174,29 @@ test-integration: venv-check
 
 # 代码风格检查(black + flake8) - 覆盖所有代码包括测试
 lint-style: venv-check
+	@echo "🎨 运行 black 格式检查..."
 	$(PYTHON) -m black --check app framework tests plugins frontend
+	@echo "✅ black 格式检查通过"
+	@echo "📏 运行 flake8 代码规范检查..."
 	$(PYTHON) -m flake8 app framework tests plugins frontend
+	@echo "✅ flake8 代码规范检查通过"
 
 # 类型检查(mypy) - 只检查生产代码，排除 tests
 lint-type: venv-check
+	@echo "🔍 运行 mypy 类型检查 (app/framework/plugins)..."
 	$(PYTHON) -m mypy app framework plugins
+	@echo "✅ mypy 类型检查通过"
 
 # 完整 lint(style + type)
-lint: lint-style lint-type
+lint: venv-check
+	@echo "═══════════════════════════════════════════════════"
+	@echo "  🔍 开始完整代码检查 (style + type)"
+	@echo "═══════════════════════════════════════════════════"
+	$(MAKE) lint-style
+	$(MAKE) lint-type
+	@echo "═══════════════════════════════════════════════════"
+	@echo "  ✅ 所有代码检查通过！"
+	@echo "═══════════════════════════════════════════════════"
 
 # 代码格式化(black + isort) - 覆盖所有代码
 format: venv-check
