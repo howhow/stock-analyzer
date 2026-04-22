@@ -1,16 +1,40 @@
-"""四季引擎模块
+"""四季系统模块
 
 包含:
-- DCFValuation: 蒙特卡洛 DCF 估值
-- SafetyMargin: 动态安全边际
-- SeasonsEngine: 四季状态机
+- SafetyMarginCalculator: 动态安全边际计算
+- SeasonsEngine: 四季引擎
 - TradingGuard: 四季→五行约束守卫
 """
 
-from .dcf import DCFValuation, MonteCarloDCFResult, INDUSTRY_DISCOUNT_RATES
+from framework.trading.seasons.safety_margin import (
+    SafetyMarginCalculator,
+    SafetyMarginResult,
+    MarginLevel,
+)
+from framework.trading.seasons.engine import (
+    Season,
+    SeasonState,
+    SeasonsEngine,
+)
+from framework.trading.seasons.guard import (
+    GuardAction,
+    WuxingAction,
+    GuardCheckResult,
+    TradingGuard,
+)
 
 __all__ = [
-    "DCFValuation",
-    "MonteCarloDCFResult",
-    "INDUSTRY_DISCOUNT_RATES",
+    # Safety Margin
+    "SafetyMarginCalculator",
+    "SafetyMarginResult",
+    "MarginLevel",
+    # Seasons Engine
+    "Season",
+    "SeasonState",
+    "SeasonsEngine",
+    # Trading Guard
+    "GuardAction",
+    "WuxingAction",
+    "GuardCheckResult",
+    "TradingGuard",
 ]
