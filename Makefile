@@ -23,8 +23,10 @@ help:
 	@echo "  make frontend    启动前端服务"
 	@echo "  make frontend-dev 同时启动前后端（需要两个终端）"
 	@echo "  make test        运行所有测试 + 覆盖率"
-	@echo "  make lint        代码检查"
-	@echo "  make format      格式化代码"
+	@echo "  make lint        完整代码检查(style + type)"
+	@echo "  make lint-style  代码风格检查(black + flake8，覆盖所有代码)"
+	@echo "  make lint-type   类型检查(mypy，只检查生产代码)"
+	@echo "  make format      格式化代码(black + isort)"
 	@echo "  make clean       清理缓存文件"
 	@echo ""
 	@echo "【Docker 部署]"
@@ -159,16 +161,30 @@ test-integration: venv-check
 	$(PYTHON) -m pytest tests/integration/ -v
 
 # ============================================
-# 代码质量
+# 代码质量 - 分层 Lint 策略
 # ============================================
-lint: venv-check
-	$(PYTHON) -m black --check app framework tests frontend
-	$(PYTHON) -m flake8 app framework tests frontend
-	$(PYTHON) -m mypy app framework tests frontend
+# 分层策略:
+# - lint-style: black + flake8 覆盖所有代码(app/framework/tests/plugins/frontend)
+# - lint-type: mypy 只检查生产代码(app/framework/plugins)，排除 tests
+# - lint: 完整检查(style + type)
+# ============================================
 
+# 代码风格检查(black + flake8) - 覆盖所有代码包括测试
+lint-style: venv-check
+	$(PYTHON) -m black --check app framework tests plugins frontend
+	$(PYTHON) -m flake8 app framework tests plugins frontend
+
+# 类型检查(mypy) - 只检查生产代码，排除 tests
+lint-type: venv-check
+	$(PYTHON) -m mypy app framework plugins
+
+# 完整 lint(style + type)
+lint: lint-style lint-type
+
+# 代码格式化(black + isort) - 覆盖所有代码
 format: venv-check
-	$(PYTHON) -m black app framework tests frontend
-	$(PYTHON) -m isort app framework tests frontend
+	$(PYTHON) -m black app framework tests plugins frontend
+	$(PYTHON) -m isort app framework tests plugins frontend
 
 # ============================================
 # 清理
