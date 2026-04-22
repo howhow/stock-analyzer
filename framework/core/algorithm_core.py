@@ -598,7 +598,7 @@ class AlgorithmCore:
         """
         logger.info("Running health check")
 
-        status = {
+        status: dict[str, Any] = {
             "status": "healthy",
             "indicators": {
                 "custom": len(self._indicators),
@@ -611,15 +611,17 @@ class AlgorithmCore:
         for name, provider in self._ai_providers.items():
             try:
                 is_healthy = await provider.health_check()
-                status["ai_providers"][name] = {
+                provider_status: dict[str, Any] = {
                     "status": "healthy" if is_healthy else "unhealthy",
                     "models": provider.supported_models,
                 }
+                status["ai_providers"][name] = provider_status
             except Exception as e:
-                status["ai_providers"][name] = {
+                error_status: dict[str, Any] = {
                     "status": "error",
                     "error": str(e),
                 }
+                status["ai_providers"][name] = error_status
                 status["status"] = "degraded"
 
         logger.info("Health check complete", status=status["status"])
@@ -642,23 +644,24 @@ class AlgorithmCore:
         # 检查自定义指标
         if name in self._indicators:
             indicator = self._indicators[name]
+            required_cols: list[str] = list(indicator.required_columns)
             return {
                 "name": indicator.name,
                 "type": "custom",
                 "description": indicator.description,
                 "params": indicator.params,
-                "required_columns": indicator.required_columns,
+                "required_columns": required_cols,
             }
 
         # 检查内置指标
         if name in BUILTIN_INDICATORS:
-            required_cols = INDICATOR_REQUIRED_COLUMNS.get(name, [])
+            builtin_required_cols: list[str] = list(INDICATOR_REQUIRED_COLUMNS.get(name, []))
             return {
                 "name": name,
                 "type": "builtin",
                 "description": f"Built-in indicator: {name}",
                 "params": {},  # 内置指标的参数由函数签名决定
-                "required_columns": required_cols,
+                "required_columns": builtin_required_cols,
             }
 
         return None

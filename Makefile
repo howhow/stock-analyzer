@@ -164,7 +164,7 @@ test-integration: venv-check
 lint: venv-check
 	$(PYTHON) -m black --check app tests frontend
 	$(PYTHON) -m flake8 app tests frontend
-	$(PYTHON) -m mypy app frontend
+	$(PYTHON) -m mypy app framework frontend
 
 format: venv-check
 	$(PYTHON) -m black app tests frontend

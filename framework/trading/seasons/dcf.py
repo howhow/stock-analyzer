@@ -311,13 +311,13 @@ class DCFValuation:
             valuations[i] = enterprise_value / shares_outstanding
 
         # 计算统计量
-        mean_val = np.mean(valuations)
-        median_val = np.median(valuations)
-        std_val = np.std(valuations)
+        mean_val = float(np.mean(valuations))
+        median_val = float(np.median(valuations))
+        std_val = float(np.std(valuations))
 
         # 置信区间
-        ci_90 = (np.percentile(valuations, 5), np.percentile(valuations, 95))
-        ci_95 = (np.percentile(valuations, 2.5), np.percentile(valuations, 97.5))
+        ci_90 = (float(np.percentile(valuations, 5)), float(np.percentile(valuations, 95)))
+        ci_95 = (float(np.percentile(valuations, 2.5)), float(np.percentile(valuations, 97.5)))
 
         # 发送事件
         Events.dcf_calculated.send(

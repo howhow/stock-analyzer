@@ -195,7 +195,7 @@ class BayesianTransitionEngine:
             posteriors = {k: v / total for k, v in posteriors.items()}
 
         # 最可能的下一个状态
-        most_likely = max(posteriors, key=posteriors.get)
+        most_likely = max(posteriors, key=lambda k: posteriors[k])
         next_prob = posteriors[most_likely]
 
         # 动作建议
