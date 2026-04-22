@@ -150,10 +150,10 @@ frontend-dev: venv-check
 # 测试
 # ============================================
 test: venv-check
-	$(PYTHON) -m pytest tests/ -v --cov=app --cov-report=term-missing
+	$(PYTHON) -m pytest tests/ -v --cov=app --cov=framework --cov-report=term-missing
 
 test-unit: venv-check
-	$(PYTHON) -m pytest tests/unit/ -v --cov=app --cov-report=term-missing
+	$(PYTHON) -m pytest tests/unit/ -v --cov=app --cov=framework --cov-report=term-missing
 
 test-integration: venv-check
 	$(PYTHON) -m pytest tests/integration/ -v
