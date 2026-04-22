@@ -66,7 +66,6 @@ class CircuitBreaker:
 
         # 每个数据源的独立状态
         self._failure_counts: Dict[str, int] = {}
-        self._success_counts: Dict[str, int] = {}
         self._last_failure_time: Dict[str, float] = {}
         self._states: Dict[str, CircuitState] = {}
         self._half_open_calls: Dict[str, int] = {}
@@ -208,7 +207,6 @@ class CircuitBreaker:
         """重置数据源的熔断状态"""
         with self._lock:
             self._failure_counts[source_name] = 0
-            self._success_counts[source_name] = 0
             self._last_failure_time.pop(source_name, None)
             self._states[source_name] = CircuitState.CLOSED
             self._half_open_calls[source_name] = 0
@@ -217,7 +215,6 @@ class CircuitBreaker:
         """重置所有数据源的熔断状态"""
         with self._lock:
             self._failure_counts.clear()
-            self._success_counts.clear()
             self._last_failure_time.clear()
             self._states.clear()
             self._half_open_calls.clear()

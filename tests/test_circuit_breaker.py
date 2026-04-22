@@ -275,7 +275,9 @@ class TestDataHub:
 
         hub = DataHub(sources=[primary, backup])
 
-        with pytest.raises(NoDataSourceAvailable, match="All sources failed"):
+        with pytest.raises(
+            NoDataSourceAvailable, match="All sources failed for fetch_daily"
+        ):
             await hub.fetch_daily("600519.SH")
 
     @pytest.mark.asyncio

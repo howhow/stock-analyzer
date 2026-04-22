@@ -5,6 +5,7 @@
 - 熔断器保护，避免雪崩
 - EventBus 事件通知
 - async 原生支持
+- DRY: 公共降级逻辑抽取到 _fetch_with_fallback
 
 使用方式:
     hub = DataHub(sources=[tushare_source, akshare_source])
@@ -54,14 +55,6 @@ class DataHub:
     ) -> pd.DataFrame:
         """获取日线数据 — 主源失败自动降级到备用源
 
-        降级逻辑:
-        1. 遍历所有数据源（按优先级排序）
-        2. 检查熔断器状态（should_retry）
-        3. 尝试获取数据
-        4. 成功：record_success + 返回数据
-        5. 失败：record_failure + 尝试下一个源
-        6. 所有源失败：抛出 NoDataSourceAvailable
-
         Args:
             symbol: 股票代码（如 "600519.SH"）
             start_date: 开始日期（可选）
@@ -73,43 +66,12 @@ class DataHub:
         Raises:
             NoDataSourceAvailable: 所有数据源均不可用
         """
-        last_error: Optional[Exception] = None
-
-        for source in self._sources:
-            source_name = source.name
-
-            if not self._breaker.should_retry(source_name):
-                continue
-
-            try:
-                df = await source.fetch_daily(
-                    symbol, start_date=start_date, end_date=end_date, **kwargs
-                )
-                self._breaker.record_success(source_name)
-
-                # 发送数据获取成功事件
-                Events.data_fetched.send(
-                    self,
-                    source=source_name,
-                    symbol=symbol,
-                )
-
-                return df
-
-            except Exception as e:
-                last_error = e
-                self._breaker.record_failure(source_name)
-
-                # 发送数据源失败事件
-                Events.data_source_failed.send(
-                    self,
-                    source=source_name,
-                    error=str(e),
-                )
-
-        raise NoDataSourceAvailable(
-            f"All sources failed for {symbol}"
-            + (f": {last_error}" if last_error else "")
+        return await self._fetch_with_fallback(
+            symbol,
+            "fetch_daily",
+            start_date=start_date,
+            end_date=end_date,
+            **kwargs,
         )
 
     async def fetch_financial(
@@ -128,6 +90,33 @@ class DataHub:
         Raises:
             NoDataSourceAvailable: 所有数据源均不可用
         """
+        return await self._fetch_with_fallback(symbol, "fetch_financial", **kwargs)
+
+    async def _fetch_with_fallback(
+        self,
+        symbol: str,
+        fetch_method: str,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """通用降级获取逻辑
+
+        遍历所有数据源（按优先级排序）：
+        1. 检查熔断器状态（should_retry）
+        2. 尝试获取数据
+        3. 成功：record_success + 返回数据
+        4. 失败：record_failure + 尝试下一个源
+        5. 所有源失败：抛出 NoDataSourceAvailable
+
+        Args:
+            symbol: 股票代码
+            fetch_method: 数据源方法名（如 "fetch_daily", "fetch_financial"）
+
+        Returns:
+            数据 DataFrame
+
+        Raises:
+            NoDataSourceAvailable: 所有数据源均不可用
+        """
         last_error: Optional[Exception] = None
 
         for source in self._sources:
@@ -137,18 +126,30 @@ class DataHub:
                 continue
 
             try:
-                df = await source.fetch_financial(symbol, **kwargs)
+                fetch_fn = getattr(source, fetch_method)
+                df = await fetch_fn(symbol, **kwargs)
                 self._breaker.record_success(source_name)
-                Events.data_fetched.send(self, source=source_name, symbol=symbol)
+
+                Events.data_fetched.send(
+                    self,
+                    source=source_name,
+                    symbol=symbol,
+                )
+
                 return df
 
             except Exception as e:
                 last_error = e
                 self._breaker.record_failure(source_name)
-                Events.data_source_failed.send(self, source=source_name, error=str(e))
+
+                Events.data_source_failed.send(
+                    self,
+                    source=source_name,
+                    error=str(e),
+                )
 
         raise NoDataSourceAvailable(
-            f"All sources failed for financial data of {symbol}"
+            f"All sources failed for {fetch_method} of {symbol}"
             + (f": {last_error}" if last_error else "")
         )
 
