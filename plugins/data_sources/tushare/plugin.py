@@ -244,7 +244,9 @@ class TusharePlugin:
             df = await self._client.get_stock_basic(exchange=exchange)
 
             # 提取股票代码
-            stock_codes = df["ts_code"].tolist() if "ts_code" in df.columns else []
+            stock_codes: list[str] = (
+                df["ts_code"].tolist() if "ts_code" in df.columns else []
+            )
 
             logger.info(
                 "tushare_plugin_get_supported_stocks_success",

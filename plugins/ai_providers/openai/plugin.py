@@ -105,8 +105,9 @@ class OpenAIPlugin(AIProviderInterface):
         async with httpx.AsyncClient(timeout=self._timeout) as client:
             response = await client.post(url, json=payload, headers=headers)
             response.raise_for_status()
-            data = response.json()
-            return data["choices"][0]["message"]["content"]
+            data: dict[str, Any] = response.json()
+            content: str = data["choices"][0]["message"]["content"]
+            return content
 
     async def analyze(
         self,
@@ -149,7 +150,8 @@ class OpenAIPlugin(AIProviderInterface):
             else:
                 json_str = content
 
-            return json.loads(json_str)
+            result: dict[str, Any] = json.loads(json_str)
+            return result
         except json.JSONDecodeError:
             return {"raw_content": content}
 

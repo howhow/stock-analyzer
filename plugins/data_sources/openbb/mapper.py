@@ -254,9 +254,7 @@ class OpenBBMapper:
         low_price = data.get("low")
         close_price = data.get("close")
 
-        if all(
-            p is not None for p in [open_price, high_price, low_price, close_price]
-        ):
+        if all(p is not None for p in [open_price, high_price, low_price, close_price]):
             # 最高价 >= 最低价
             if high_price is not None and low_price is not None:
                 if high_price < low_price:

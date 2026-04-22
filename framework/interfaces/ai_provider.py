@@ -4,7 +4,7 @@ AI提供商接口协议
 定义所有AI提供商插件必须实现的接口。
 """
 
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, AsyncIterator, Protocol, runtime_checkable
 
 
 @runtime_checkable
@@ -82,12 +82,12 @@ class AIProviderInterface(Protocol):
         """
         ...
 
-    async def stream_chat(
+    def stream_chat(
         self,
         messages: list[dict[str, str]],
         model: str | None = None,
         temperature: float = 0.7,
-    ):
+    ) -> AsyncIterator[str]:
         """
         流式对话接口
 

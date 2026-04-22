@@ -141,12 +141,14 @@ class QuoteMapper:
             raise ValueError("Missing date field in data row")
 
         if isinstance(date_value, pd.Timestamp):
-            return date_value.date()
+            dt: date = date_value.date()
+            return dt
         if isinstance(date_value, str):
-            dt = pd.to_datetime(date_value)
-            if hasattr(dt, 'date'):
-                return dt.date()
-            return date(dt.year, dt.month, dt.day)
+            parsed = pd.to_datetime(date_value)
+            if hasattr(parsed, "date"):
+                d: date = parsed.date()
+                return d
+            return date(parsed.year, parsed.month, parsed.day)
         if isinstance(date_value, date):
             return date_value
 
@@ -196,9 +198,7 @@ class QuoteMapper:
         quality_score = completeness
 
         # 如果所有价格都有值，检查价格逻辑
-        if all(
-            p is not None for p in [open_price, high_price, low_price, close_price]
-        ):
+        if all(p is not None for p in [open_price, high_price, low_price, close_price]):
             # 最高价 >= 最低价
             if (
                 high_price is not None

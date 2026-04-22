@@ -87,6 +87,14 @@ class OpenBBClient:
                     "OpenBB SDK 未安装，请运行: pip install openbb"
                 ) from e
 
+    @property
+    def obb(self) -> Any:
+        """获取 OpenBB 实例（带初始化检查）"""
+        self._ensure_initialized()
+        if self._obb is None:
+            raise OpenBBClientError("OpenBB SDK 初始化失败")
+        return self._obb
+
     def _check_rate_limit(self) -> None:
         """检查速率限制"""
         import time
@@ -133,7 +141,7 @@ class OpenBBClient:
         try:
             # OpenBB SDK 是同步的，需要在线程池中运行
             loop = asyncio.get_event_loop()
-            result = await asyncio.wait_for(
+            result: Any = await asyncio.wait_for(
                 loop.run_in_executor(None, coro),
                 timeout=timeout,
             )
@@ -161,9 +169,13 @@ class OpenBBClient:
         self._ensure_initialized()
         self._check_rate_limit()
 
+        if self._obb is None:
+            raise OpenBBClientError("OpenBB SDK 未初始化")
+
         try:
             # 使用 OpenBB SDK 获取历史数据
-            result = self._obb.equity.price.historical(
+            obb = self.obb
+            result = obb.equity.price.historical(
                 symbol=symbol,
                 start_date=start_date,
                 end_date=end_date,
@@ -237,7 +249,7 @@ class OpenBBClient:
 
         logger.debug(f"OpenBB 获取历史数据: {symbol} {start_str} ~ {end_str}")
 
-        data = await self._run_with_timeout(
+        data: list[dict[str, Any]] = await self._run_with_timeout(
             lambda: self._get_historical_sync(symbol, start_str, end_str)
         )
 
@@ -262,7 +274,8 @@ class OpenBBClient:
         try:
             # 尝试获取实时行情
             # 注意：OpenBB 的实时行情支持因数据源而异
-            result = self._obb.equity.price.quote(symbol)
+            obb = self.obb
+            result = obb.equity.price.quote(symbol)
 
             if hasattr(result, "results") and result.results:
                 item = (
@@ -302,7 +315,10 @@ class OpenBBClient:
         Returns:
             行情数据字典，如果不支持则返回 None
         """
-        return await self._run_with_timeout(lambda: self._get_quote_sync(symbol))
+        result: dict[str, Any] | None = await self._run_with_timeout(
+            lambda: self._get_quote_sync(symbol)
+        )
+        return result
 
     def _search_stocks_sync(self, market: str) -> list[str]:
         """
@@ -321,7 +337,8 @@ class OpenBBClient:
             # OpenBB 搜索功能
             # 注意：不同市场的支持程度不同
             if market == "US":
-                result = self._obb.equity.search()
+                obb = self.obb
+                result = obb.equity.search()
                 if hasattr(result, "results"):
                     return [
                         item.symbol
@@ -333,7 +350,8 @@ class OpenBBClient:
                 logger.warning(f"OpenBB 对 A股市场（{market}）支持有限")
                 return []
             elif market == "HK":
-                result = self._obb.equity.search(market="hk")
+                obb = self.obb
+                result = obb.equity.search(market="hk")
                 if hasattr(result, "results"):
                     return [
                         item.symbol
@@ -357,7 +375,10 @@ class OpenBBClient:
         Returns:
             股票代码列表
         """
-        return await self._run_with_timeout(lambda: self._search_stocks_sync(market))
+        result: list[str] = await self._run_with_timeout(
+            lambda: self._search_stocks_sync(market)
+        )
+        return result
 
     def health_check_sync(self) -> bool:
         """
@@ -371,7 +392,8 @@ class OpenBBClient:
 
             # 尝试获取一个已知的股票数据来验证
             # 使用美股 AAPL 作为测试
-            result = self._obb.equity.price.historical(
+            obb = self.obb
+            result = obb.equity.price.historical(
                 symbol="AAPL",
                 start_date=(
                     datetime.now().date().replace(day=1) - timedelta(days=1)
@@ -392,10 +414,11 @@ class OpenBBClient:
         Returns:
             True 如果服务可用
         """
-        return await self._run_with_timeout(
+        result: bool = await self._run_with_timeout(
             self.health_check_sync,
             timeout=10,  # 健康检查使用更短的超时
         )
+        return result
 
     def close(self) -> None:
         """关闭客户端，清理资源"""

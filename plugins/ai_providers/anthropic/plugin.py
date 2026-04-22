@@ -80,8 +80,8 @@ class AnthropicPlugin(AIProviderInterface):
 
         model = model or self._default_model
 
-        headers = {
-            "x-api-key": self._api_key,
+        headers: dict[str, str] = {
+            "x-api-key": self._api_key or "",
             "anthropic-version": "2023-06-01",
             "Content-Type": "application/json",
         }
@@ -98,8 +98,9 @@ class AnthropicPlugin(AIProviderInterface):
         async with httpx.AsyncClient(timeout=self._timeout) as client:
             response = await client.post(url, json=payload, headers=headers)
             response.raise_for_status()
-            data = response.json()
-            return data["content"][0]["text"]
+            data: dict[str, Any] = response.json()
+            content: str = data["content"][0]["text"]
+            return content
 
     async def analyze(
         self,
@@ -141,7 +142,8 @@ class AnthropicPlugin(AIProviderInterface):
             else:
                 json_str = content
 
-            return json.loads(json_str)
+            result: dict[str, Any] = json.loads(json_str)
+            return result
         except json.JSONDecodeError:
             return {"raw_content": content}
 
@@ -166,8 +168,8 @@ class AnthropicPlugin(AIProviderInterface):
 
         model = model or self._default_model
 
-        headers = {
-            "x-api-key": self._api_key,
+        headers: dict[str, str] = {
+            "x-api-key": self._api_key or "",
             "anthropic-version": "2023-06-01",
             "Content-Type": "application/json",
         }
@@ -191,10 +193,11 @@ class AnthropicPlugin(AIProviderInterface):
                     if line.startswith("data: "):
                         import json
 
-                        data = json.loads(line[6:])
+                        data: dict[str, Any] = json.loads(line[6:])
                         if data.get("type") == "content_block_delta":
                             if data.get("delta", {}).get("type") == "text_delta":
-                                yield data["delta"]["text"]
+                                text: str = data["delta"]["text"]
+                                yield text
 
     async def health_check(self) -> bool:
         """

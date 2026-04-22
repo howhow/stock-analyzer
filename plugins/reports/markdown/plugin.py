@@ -118,9 +118,11 @@ class MarkdownReportPlugin(ReportInterface):
     def _extract_data(self, analysis_result: Any) -> dict[str, Any]:
         """从分析结果提取数据"""
         if hasattr(analysis_result, "model_dump"):
-            return analysis_result.model_dump()
+            extracted1: dict[str, Any] = analysis_result.model_dump()
+            return extracted1
         elif hasattr(analysis_result, "dict"):
-            return analysis_result.dict()
+            extracted2: dict[str, Any] = analysis_result.dict()
+            return extracted2
         elif isinstance(analysis_result, dict):
             return analysis_result
         else:
