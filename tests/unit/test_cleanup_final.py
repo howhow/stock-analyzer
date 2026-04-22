@@ -2,8 +2,9 @@
 订阅任务简单测试 - 快速提升覆盖率
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 
 class TestSubscribeTasksSimple:

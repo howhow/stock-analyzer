@@ -7,20 +7,15 @@
 - 状态转换
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
-import pandas as pd
-import numpy as np
 
-from framework.trading.wuxing.engine import (
-    WuxingState,
-    WuxingEngine,
-)
-from framework.trading.wuxing.detectors import (
-    WuxingElement,
-    DetectionResult,
-)
+import numpy as np
+import pandas as pd
+import pytest
+
 from framework.trading.wuxing.bayesian import ActionAdvice
+from framework.trading.wuxing.detectors import DetectionResult, WuxingElement
+from framework.trading.wuxing.engine import WuxingEngine, WuxingState
 
 
 class TestWuxingState:

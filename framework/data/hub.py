@@ -17,6 +17,7 @@ from typing import Optional
 import pandas as pd
 
 from framework.events import Events
+
 from .circuit_breaker import CircuitBreaker
 
 

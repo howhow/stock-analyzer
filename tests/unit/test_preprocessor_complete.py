@@ -2,10 +2,11 @@
 数据预处理器完整测试 - 覆盖所有方法
 """
 
-import pytest
-import pandas as pd
-import numpy as np
 from datetime import date
+
+import numpy as np
+import pandas as pd
+import pytest
 
 from app.data.preprocessor import DataPreprocessor
 from app.models.stock import DailyQuote

@@ -82,15 +82,17 @@ class TestDatabaseModels:
 
     def test_base_is_declarative(self) -> None:
         """测试 Base 是声明式基类"""
-        from app.core.database import Base
         from sqlalchemy.orm import DeclarativeBase
+
+        from app.core.database import Base
 
         assert issubclass(Base, DeclarativeBase)
 
     def test_base_can_be_used_for_models(self) -> None:
         """测试 Base 可以用于定义模型"""
-        from app.core.database import Base
         from sqlalchemy import Column, Integer, String
+
+        from app.core.database import Base
 
         # 定义一个测试模型
         class TestModel(Base):

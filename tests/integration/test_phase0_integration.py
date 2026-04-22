@@ -7,16 +7,16 @@
 - Task 0.24: Phase 0 整体验收
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
 import numpy as np
 import pandas as pd
+import pytest
 
-from framework.events import Events
 from framework.data.circuit_breaker import CircuitBreaker
 from framework.data.hub import DataHub, NoDataSourceAvailable
+from framework.events import Events
 from framework.trading.seasons.dcf import DCFValuation, MonteCarloDCFResult
-
 
 # ═══════════════════════════════════════════════════════════════
 # Task 0.20: EventBus 集成测试

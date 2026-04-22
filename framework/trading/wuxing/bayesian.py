@@ -14,14 +14,13 @@
 
 from __future__ import annotations
 
-from enum import Enum
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Optional
 
 import numpy as np
 
-from framework.trading.wuxing.detectors import WuxingElement, DetectionResult
-
+from framework.trading.wuxing.detectors import DetectionResult, WuxingElement
 
 # ═══════════════════════════════════════════════════════════════
 # 先验分布配置
@@ -249,7 +248,11 @@ class BayesianTransitionEngine:
 
         # 如果概率不够高，降级为等待
         if prob < 0.5:
-            if action in (ActionAdvice.ADD, ActionAdvice.REDUCE, ActionAdvice.STOP_LOSS):
+            if action in (
+                ActionAdvice.ADD,
+                ActionAdvice.REDUCE,
+                ActionAdvice.STOP_LOSS,
+            ):
                 return ActionAdvice.WAIT
 
         return action

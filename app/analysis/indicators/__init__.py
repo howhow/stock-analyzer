@@ -33,12 +33,11 @@ from app.analysis.indicators.volume import (
     adosc,
     mfi,
     obv,
-    vwap,
     volume_ma,
     volume_rate,
     volume_spike,
+    vwap,
 )
-
 
 # 向后兼容别名
 accumulation_distribution = ad

@@ -4,22 +4,18 @@
 测试预测模型、准确率计算和存储。
 """
 
-import pytest
 from datetime import date, timedelta
+
+import pytest
 
 from framework.models.prediction import (
     Prediction,
     PredictionCreate,
     PredictionDirection,
-    PredictionStatus,
     PredictionStats,
+    PredictionStatus,
 )
-from framework.prediction import (
-    AccuracyCalculator,
-    AccuracyRanker,
-    PredictionStore,
-)
-
+from framework.prediction import AccuracyCalculator, AccuracyRanker, PredictionStore
 
 # ============================================================
 # Prediction Model Tests

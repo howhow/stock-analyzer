@@ -9,7 +9,6 @@ import pytest
 from framework.interfaces.ai_provider import AIProviderInterface
 from framework.interfaces.report import ReportInterface
 
-
 # ============================================================
 # Plugin Manager Tests
 # ============================================================

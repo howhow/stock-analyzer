@@ -135,13 +135,13 @@ class AlgorithmCore:
 
     Example:
         >>> core = AlgorithmCore()
-        >>> 
+        >>>
         >>> # 计算单个指标
         >>> rsi_result = await core.calculate_indicator('rsi', df, period=14)
-        >>> 
+        >>>
         >>> # 批量计算指标
         >>> results = await core.calculate_indicators(df, ['rsi', 'macd', 'sma'])
-        >>> 
+        >>>
         >>> # AI分析
         >>> analysis = await core.analyze_with_ai({'close': [1, 2, 3]}, '预测趋势')
     """
@@ -265,7 +265,7 @@ class AlgorithmCore:
         Example:
             >>> df = pd.DataFrame({'close': [1, 2, 3, 4, 5]})
             >>> rsi = await core.calculate_indicator('rsi', df, period=14)
-            >>> 
+            >>>
             >>> df2 = pd.DataFrame({
             ...     'high': [10, 11, 12],
             ...     'low': [8, 9, 10],
@@ -284,10 +284,11 @@ class AlgorithmCore:
             # 1. 检查是否是注册的自定义指标
             if name in self._indicators:
                 custom_indicator = self._indicators[name]
-                
+
                 # 验证所需列
                 missing_cols = [
-                    col for col in custom_indicator.required_columns
+                    col
+                    for col in custom_indicator.required_columns
                     if col not in data.columns
                 ]
                 if missing_cols:
@@ -295,35 +296,33 @@ class AlgorithmCore:
                         name,
                         f"Missing required columns: {missing_cols}",
                     )
-                
+
                 # 调用自定义指标（在线程池中执行同步函数）
                 loop = asyncio.get_event_loop()
                 result = await loop.run_in_executor(
-                    None,
-                    lambda: custom_indicator.calculate(data, **kwargs)
+                    None, lambda: custom_indicator.calculate(data, **kwargs)
                 )
-                
+
                 logger.info("Custom indicator calculated", indicator=name)
                 return result
 
             # 2. 检查是否是内置指标
             if name in BUILTIN_INDICATORS:
                 indicator_func = BUILTIN_INDICATORS[name]
-                
+
                 # 准备数据
                 prepared_data = self._prepare_indicator_data(name, data, **kwargs)
-                
+
                 # 执行计算（在线程池中执行同步函数）
                 loop = asyncio.get_event_loop()
                 result = await loop.run_in_executor(
-                    None,
-                    lambda: indicator_func(**prepared_data, **kwargs)
+                    None, lambda: indicator_func(**prepared_data, **kwargs)
                 )
-                
+
                 # 转换结果为 DataFrame（如果是 dict）
                 if isinstance(result, dict):
                     result = pd.DataFrame(result)
-                
+
                 logger.info("Built-in indicator calculated", indicator=name)
                 return result
 
@@ -366,7 +365,7 @@ class AlgorithmCore:
             IndicatorCalculationError: 缺少必要列
         """
         required_cols = INDICATOR_REQUIRED_COLUMNS.get(name, [])
-        
+
         # 检查列是否存在
         missing = [col for col in required_cols if col not in data.columns]
         if missing:
@@ -374,47 +373,49 @@ class AlgorithmCore:
                 name,
                 f"Missing required columns: {missing}. Available: {list(data.columns)}",
             )
-        
+
         # 准备参数
         prepared: dict[str, Any] = {}
-        
+
         # 根据指标类型准备数据
         if name in ["sma", "ema", "rsi", "momentum", "rate_of_change"]:
             # 一元指标：只需 close
-            prepared["data" if name in ["sma", "ema"] else "close_prices"] = data["close"]
-        
+            prepared["data" if name in ["sma", "ema"] else "close_prices"] = data[
+                "close"
+            ]
+
         elif name in ["macd", "bollinger_bands"]:
             # 复合指标：只需 close
             prepared["close_prices"] = data["close"]
-        
+
         elif name in ["atr", "stochastic_oscillator", "williams_r"]:
             # 三元指标：需要 high/low/close
             prepared["high_prices"] = data["high"]
             prepared["low_prices"] = data["low"]
             prepared["close_prices"] = data["close"]
-        
+
         elif name == "obv":
             # OBV：需要 close 和 volume
             prepared["close_prices"] = data["close"]
             prepared["volume"] = data["volume"]
-        
+
         elif name == "money_flow_index":
             # MFI：需要 high/low/close/volume
             prepared["high_prices"] = data["high"]
             prepared["low_prices"] = data["low"]
             prepared["close_prices"] = data["close"]
             prepared["volume"] = data["volume"]
-        
+
         else:
             # 默认：尝试将所有列作为参数传递
             # 检查函数签名，匹配列名
             indicator_func = BUILTIN_INDICATORS[name]
             sig = signature(indicator_func)
-            
+
             for param_name in sig.parameters:
                 if param_name in data.columns:
                     prepared[param_name] = data[param_name]
-        
+
         return prepared
 
     async def calculate_indicators(
@@ -524,11 +525,9 @@ class AlgorithmCore:
         try:
             # 选择AI提供商
             ai_provider = self._select_ai_provider(provider)
-            
+
             if ai_provider is None:
-                raise AIProviderNotFoundError(
-                    provider or "default"
-                )
+                raise AIProviderNotFoundError(provider or "default")
 
             logger.debug(
                 "Using AI provider",
@@ -578,11 +577,11 @@ class AlgorithmCore:
         """
         if name:
             return self._ai_providers.get(name)
-        
+
         # 默认选择第一个注册的提供商
         if self._ai_providers:
             return next(iter(self._ai_providers.values()))
-        
+
         return None
 
     # ========================================================================
@@ -655,7 +654,9 @@ class AlgorithmCore:
 
         # 检查内置指标
         if name in BUILTIN_INDICATORS:
-            builtin_required_cols: list[str] = list(INDICATOR_REQUIRED_COLUMNS.get(name, []))
+            builtin_required_cols: list[str] = list(
+                INDICATOR_REQUIRED_COLUMNS.get(name, [])
+            )
             return {
                 "name": name,
                 "type": "builtin",

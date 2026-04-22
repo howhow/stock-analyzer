@@ -17,10 +17,10 @@
 - 与 EventBus 集成，发送熔断事件
 """
 
-import time
 import threading
-from typing import Dict, Literal
+import time
 from enum import Enum
+from typing import Dict, Literal
 
 from framework.events import Events
 

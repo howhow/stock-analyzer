@@ -18,18 +18,18 @@ from typing import Optional
 import pandas as pd
 
 from framework.events import Events
+from framework.trading.wuxing.bayesian import (
+    ActionAdvice,
+    BayesianResult,
+    BayesianTransitionEngine,
+)
 from framework.trading.wuxing.detectors import (
-    WuxingElement,
     DetectionResult,
-    WoodStateDetector,
     FireStateDetector,
     MetalStateDetector,
     WaterStateDetector,
-)
-from framework.trading.wuxing.bayesian import (
-    BayesianTransitionEngine,
-    BayesianResult,
-    ActionAdvice,
+    WoodStateDetector,
+    WuxingElement,
 )
 
 
@@ -121,8 +121,13 @@ class WuxingEngine:
                 df, current_price, recent_low, avg_volume_20d, current_volume
             ),
             self._metal.detect(
-                df, current_price, recent_high, recent_low,
-                avg_volume_20d, current_volume, daily_change
+                df,
+                current_price,
+                recent_high,
+                recent_low,
+                avg_volume_20d,
+                current_volume,
+                daily_change,
             ),
             self._water.detect(
                 df, current_price, price_n_days_ago, avg_volume_20d, current_volume

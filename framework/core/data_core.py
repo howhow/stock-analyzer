@@ -7,6 +7,12 @@
 from datetime import date
 from typing import Any
 
+# 导入异常类（必须在其他导入之前，避免循环依赖）
+from app.core.exceptions import (
+    AllDataSourcesFailedError,
+    DataSourceNotFoundError,
+    NoDataError,
+)
 from app.core.cache import CacheManager
 from app.utils.logger import get_logger
 from config import settings
@@ -14,14 +20,6 @@ from framework.interfaces.data_source import DataSourceInterface
 from framework.models.quote import StandardQuote
 
 logger = get_logger(__name__)
-
-# 导入异常类（唯一真实源：app/core/exceptions.py）
-from app.core.exceptions import (
-    AllDataSourcesFailedError,
-    DataSourceNotFoundError,
-    NoDataError,
-)
-
 
 # ============================================================================
 # 数据核心
@@ -39,8 +37,12 @@ class DataCore:
     4. 数据降级：多源降级策略
 
     Example:
-        >>> data_core = DataCore(plugins={"tushare": tushare_plugin})
-        >>> quotes = await data_core.get_quotes("600519.SH", date(2024, 1, 1), date(2024, 1, 31))
+        >>> data_core = DataCore(
+        ...     plugins={"tushare": tushare_plugin}
+        ... )
+        >>> quotes = await data_core.get_quotes(
+        ...     "600519.SH", date(2024, 1, 1), date(2024, 1, 31)
+        ... )
     """
 
     # 数据源优先级（默认）
@@ -454,9 +456,7 @@ class DataCore:
             # 有空数据返回，不算完全失败
             raise NoDataError(stock_code, start_date, end_date, last_source)
 
-        raise AllDataSourcesFailedError(
-            stock_code, start_date, end_date, failures
-        )
+        raise AllDataSourcesFailedError(stock_code, start_date, end_date, failures)
 
     def _get_source_order(self, source: str | None = None) -> list[str]:
         """
@@ -488,7 +488,11 @@ class DataCore:
 
         # 如果所有高优先级数据源都被熔断，强制使用第一个可用数据源
         if not result and self._plugins:
-            result = [self._priority[0]] if self._priority[0] in self._plugins else list(self._plugins.keys())[:1]
+            result = (
+                [self._priority[0]]
+                if self._priority[0] in self._plugins
+                else list(self._plugins.keys())[:1]
+            )
 
         return result
 
@@ -543,7 +547,9 @@ class DataCore:
 
         # 计算整体质量统计
         avg_quality = sum(q.quality_score for q in checked_quotes) / len(checked_quotes)
-        avg_completeness = sum(q.completeness for q in checked_quotes) / len(checked_quotes)
+        avg_completeness = sum(q.completeness for q in checked_quotes) / len(
+            checked_quotes
+        )
 
         logger.debug(
             "data_quality_checked",

@@ -7,17 +7,17 @@
 - 动作建议
 """
 
-import pytest
 import numpy as np
+import pytest
 
-from framework.trading.wuxing.detectors import WuxingElement, DetectionResult
 from framework.trading.wuxing.bayesian import (
-    BayesianTransitionEngine,
-    BayesianResult,
-    ActionAdvice,
-    PRIORS,
     LIKELIHOOD_PARAMS,
+    PRIORS,
+    ActionAdvice,
+    BayesianResult,
+    BayesianTransitionEngine,
 )
+from framework.trading.wuxing.detectors import DetectionResult, WuxingElement
 
 
 class TestPriors:

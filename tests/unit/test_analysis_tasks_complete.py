@@ -19,10 +19,7 @@ class TestAnalysisTasksComplete:
 
     def test_analysis_tasks_imports(self) -> None:
         """测试分析任务模块导入"""
-        from app.tasks.analysis_tasks import (
-            async_analyze,
-            batch_analyze,
-        )
+        from app.tasks.analysis_tasks import async_analyze, batch_analyze
 
         assert callable(async_analyze)
         assert callable(batch_analyze)
@@ -33,8 +30,9 @@ class TestBatchAnalyze:
 
     def test_batch_analyze_signature(self) -> None:
         """测试批量分析签名"""
-        from app.tasks.analysis_tasks import batch_analyze
         import inspect
+
+        from app.tasks.analysis_tasks import batch_analyze
 
         sig = inspect.signature(batch_analyze)
         params = list(sig.parameters.keys())

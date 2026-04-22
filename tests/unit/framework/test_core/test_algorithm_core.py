@@ -67,6 +67,7 @@ class TestAlgorithmCore:
     async def test_calculate_indicator_not_implemented(self):
         """测试 calculate_indicator 指标未找到"""
         import pandas as pd
+
         from framework.core.algorithm_core import IndicatorNotFoundError
 
         core = AlgorithmCore()

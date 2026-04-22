@@ -27,7 +27,9 @@ class Events:
 
         # 订阅事件
         @Events.season_changed.connect
-        def on_season_changed(sender, ts_code, old_season, new_season, confidence, **kwargs):
+        def on_season_changed(
+            sender, ts_code, old_season, new_season, confidence, **kwargs
+        ):
             logger.info(f"{ts_code}: {old_season} → {new_season}")
     """
 

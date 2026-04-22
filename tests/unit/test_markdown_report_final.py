@@ -3,8 +3,9 @@ Markdown 报告生成器测试 - 简化版
 """
 
 import pytest
-from app.report.markdown_report import MarkdownReportGenerator
+
 from app.analysis.base import AnalyzerResult
+from app.report.markdown_report import MarkdownReportGenerator
 
 
 class TestMarkdownReportGenerator:

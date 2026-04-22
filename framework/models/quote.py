@@ -51,7 +51,9 @@ class StandardQuote(BaseModel):
     def is_complete(self) -> bool:
         """检查数据是否完整（所有价格和成交字段都有值）"""
         # 检查必填字段
-        if not all(getattr(self, f) is not None for f in ["code", "trade_date", "close"]):
+        if not all(
+            getattr(self, f) is not None for f in ["code", "trade_date", "close"]
+        ):
             return False
         # 检查价格字段（open, high, low 都要有值）
         if self.open is None or self.high is None or self.low is None:

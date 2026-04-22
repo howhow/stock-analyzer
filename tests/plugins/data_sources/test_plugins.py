@@ -9,7 +9,6 @@ import pytest
 from framework.interfaces.data_source import DataSourceInterface
 from framework.models.quote import StandardQuote
 
-
 # ============================================================
 # Import Tests
 # ============================================================
@@ -100,8 +99,10 @@ class TestPluginWithMockData:
     @pytest.mark.asyncio
     async def test_local_plugin_with_mock_data(self, tmp_path):
         """测试 LocalPlugin 读取 Mock 数据"""
-        import pandas as pd
         from datetime import date
+
+        import pandas as pd
+
         from plugins.data_sources.local import LocalPlugin, LocalPluginConfig
 
         # 创建测试数据文件

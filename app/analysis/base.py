@@ -5,7 +5,7 @@
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from app.models.stock import DailyQuote, FinancialData, StockInfo
 from app.utils.logger import get_logger
@@ -74,18 +74,19 @@ class AnalyzerResult:
         Returns:
             Pydantic AnalysisResult模型
         """
+        import uuid
+        from datetime import datetime
+
         from app.models.analysis import (
             AnalysisResult,
             AnalysisType,
             AnalystReport,
             DimensionScores,
-            TraderSignal,
-            Recommendation,
-            MTFAlignment,
             EntryTiming,
+            MTFAlignment,
+            Recommendation,
+            TraderSignal,
         )
-        import uuid
-        from datetime import datetime
 
         # 提取评分
         scores = self.scores

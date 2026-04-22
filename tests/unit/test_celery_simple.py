@@ -2,8 +2,9 @@
 Celery 任务测试 - 简化版
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 from app.tasks.celery_app import celery_app
 

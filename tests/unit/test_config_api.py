@@ -9,8 +9,8 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import app
 from app.core.database import get_db
+from app.main import app
 
 
 class TestMaskFunctions:

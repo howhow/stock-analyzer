@@ -9,15 +9,15 @@
 
 from __future__ import annotations
 
-from enum import Enum
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Optional
 
 from framework.events import Events
 from framework.trading.seasons.safety_margin import (
+    MarginLevel,
     SafetyMarginCalculator,
     SafetyMarginResult,
-    MarginLevel,
 )
 
 

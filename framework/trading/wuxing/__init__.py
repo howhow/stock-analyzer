@@ -6,25 +6,22 @@
 - WuxingEngine: 五行状态机
 """
 
+from framework.trading.wuxing.bayesian import (
+    LIKELIHOOD_PARAMS,
+    PRIORS,
+    ActionAdvice,
+    BayesianResult,
+    BayesianTransitionEngine,
+)
 from framework.trading.wuxing.detectors import (
-    WuxingElement,
     DetectionResult,
-    WoodStateDetector,
     FireStateDetector,
     MetalStateDetector,
     WaterStateDetector,
+    WoodStateDetector,
+    WuxingElement,
 )
-from framework.trading.wuxing.bayesian import (
-    BayesianTransitionEngine,
-    BayesianResult,
-    ActionAdvice,
-    PRIORS,
-    LIKELIHOOD_PARAMS,
-)
-from framework.trading.wuxing.engine import (
-    WuxingState,
-    WuxingEngine,
-)
+from framework.trading.wuxing.engine import WuxingEngine, WuxingState
 
 __all__ = [
     # Detectors

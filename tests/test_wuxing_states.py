@@ -6,17 +6,17 @@
 - 边界情况
 """
 
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 
 from framework.trading.wuxing.detectors import (
-    WuxingElement,
     DetectionResult,
-    WoodStateDetector,
     FireStateDetector,
     MetalStateDetector,
     WaterStateDetector,
+    WoodStateDetector,
+    WuxingElement,
 )
 
 

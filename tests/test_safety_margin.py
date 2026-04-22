@@ -7,16 +7,17 @@
 - 等级分类
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+import pytest
 
 from framework.trading.seasons.safety_margin import (
+    DEFAULT_THRESHOLDS,
+    MarginLevel,
     SafetyMarginCalculator,
     SafetyMarginResult,
-    MarginLevel,
-    DEFAULT_THRESHOLDS,
 )
 
 

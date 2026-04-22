@@ -11,9 +11,9 @@ import pytest
 from app.ai.base import AIAnalysisRequest
 from app.ai.exceptions import (
     AIAPIError,
+    AIConfigError,
     AIRateLimitError,
     AITimeoutError,
-    AIConfigError,
 )
 from app.ai.providers.anthropic_provider import AnthropicProvider
 from app.ai.providers.factory import AIProviderFactory, AIProviderType

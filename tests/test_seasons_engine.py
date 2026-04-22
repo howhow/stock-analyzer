@@ -6,18 +6,12 @@
 - EventBus 集成
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
 
-from framework.trading.seasons.engine import (
-    Season,
-    SeasonState,
-    SeasonsEngine,
-)
-from framework.trading.seasons.safety_margin import (
-    SafetyMarginCalculator,
-    MarginLevel,
-)
+import pytest
+
+from framework.trading.seasons.engine import Season, SeasonsEngine, SeasonState
+from framework.trading.seasons.safety_margin import MarginLevel, SafetyMarginCalculator
 
 
 class TestSeason:

@@ -2,11 +2,12 @@
 Markdown 报告生成器完整测试
 """
 
-import pytest
 from datetime import date
 
-from app.report.markdown_report import MarkdownReportGenerator
+import pytest
+
 from app.analysis.base import AnalyzerResult
+from app.report.markdown_report import MarkdownReportGenerator
 
 
 class TestMarkdownReportGeneratorComplete:

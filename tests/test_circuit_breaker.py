@@ -10,13 +10,13 @@
 """
 
 import time
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from framework.data.circuit_breaker import CircuitBreaker, CircuitState
 from framework.data.hub import DataHub, NoDataSourceAvailable
 from framework.events import Events
-
 
 # ═══════════════════════════════════════════════════════════════
 # CircuitBreaker 测试

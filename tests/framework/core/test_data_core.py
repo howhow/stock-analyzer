@@ -19,14 +19,13 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 
-from framework.core.data_core import DataCore
 from app.core.exceptions import (
     AllDataSourcesFailedError,
     DataSourceNotFoundError,
     NoDataError,
 )
+from framework.core.data_core import DataCore
 from framework.models.quote import StandardQuote
-
 
 # ============================================================
 # Fixtures

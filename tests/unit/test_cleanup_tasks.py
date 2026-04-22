@@ -7,8 +7,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from app.tasks.cleanup_tasks import (
-    cleanup_expired_reports,
     cleanup_expired_cache,
+    cleanup_expired_reports,
     cleanup_old_logs,
     cleanup_temp_files,
     get_storage_stats,

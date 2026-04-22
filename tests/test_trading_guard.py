@@ -6,17 +6,18 @@
 - 守卫动作判断
 """
 
-import pytest
 from unittest.mock import MagicMock
 
+import pytest
+
+from framework.trading.seasons.engine import Season, SeasonState
 from framework.trading.seasons.guard import (
+    SEASON_RULES,
     GuardAction,
-    WuxingAction,
     GuardCheckResult,
     TradingGuard,
-    SEASON_RULES,
+    WuxingAction,
 )
-from framework.trading.seasons.engine import Season, SeasonState
 from framework.trading.seasons.safety_margin import MarginLevel
 
 

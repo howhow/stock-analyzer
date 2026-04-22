@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 
-from frontend.utils.api_client import APIError, APIClient
+from frontend.utils.api_client import APIClient, APIError
 
 
 class TestAPIClient:

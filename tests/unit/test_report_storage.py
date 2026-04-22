@@ -253,8 +253,8 @@ class TestReportStorage:
         self, storage: ReportStorage, sample_html_content: str
     ) -> None:
         """测试清理过期报告"""
-        from datetime import datetime, timedelta
         import json
+        from datetime import datetime, timedelta
 
         # 保存一个报告
         storage.save(

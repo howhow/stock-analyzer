@@ -12,8 +12,8 @@
 
 from __future__ import annotations
 
-from enum import Enum
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Optional
 
 import numpy as np
@@ -93,7 +93,9 @@ class WoodStateDetector:
         pullback = (current_price - historical_high) / historical_high
         raw_scores["pullback"] = pullback
         if pullback <= self._pullback_threshold:
-            reasons.append(f"距高点回撤 {pullback*100:.1f}% ≥ {abs(self._pullback_threshold)*100:.0f}%")
+            reasons.append(
+                f"距高点回撤 {pullback*100:.1f}% ≥ {abs(self._pullback_threshold)*100:.0f}%"
+            )
 
         # 2. EMA 收敛
         if len(df) >= 60:
@@ -102,14 +104,20 @@ class WoodStateDetector:
             ema_convergence = abs(ema12 - ema26) / ema26
             raw_scores["ema_convergence"] = ema_convergence
             if ema_convergence <= self._ema_convergence_threshold:
-                reasons.append(f"EMA 收敛 {ema_convergence*100:.1f}% ≤ {self._ema_convergence_threshold*100:.0f}%")
+                reasons.append(
+                    f"EMA 收敛 {ema_convergence*100:.1f}%"
+                    f" ≤ {self._ema_convergence_threshold*100:.0f}%"
+                )
 
         # 3. 放量
         if avg_volume_20d > 0:
             volume_ratio = current_volume / avg_volume_20d
             raw_scores["volume_ratio"] = volume_ratio
             if self._volume_min <= volume_ratio <= self._volume_max:
-                reasons.append(f"放量 {volume_ratio:.1f} 倍（{self._volume_min:.0f}~{self._volume_max:.0f}倍区间）")
+                reasons.append(
+                    f"放量 {volume_ratio:.1f} 倍"
+                    f"（{self._volume_min:.0f}~{self._volume_max:.0f}倍区间）"
+                )
 
         # 计算置信度
         confidence = self._calc_confidence(reasons, raw_scores)
@@ -201,7 +209,10 @@ class FireStateDetector:
             breakout_pct = (current_price - recent_low) / recent_low
             raw_scores["breakout_pct"] = breakout_pct
             if breakout_pct >= self._breakout_threshold:
-                reasons.append(f"突破幅度 {breakout_pct*100:.1f}% ≥ {self._breakout_threshold*100:.0f}%")
+                reasons.append(
+                    f"突破幅度 {breakout_pct*100:.1f}%"
+                    f" ≥ {self._breakout_threshold*100:.0f}%"
+                )
 
         confidence = self._calc_confidence(reasons, raw_scores)
 
@@ -271,7 +282,9 @@ class MetalStateDetector:
 
         raw_scores["daily_change"] = daily_change
         if daily_change <= self._drop_threshold and volume_ratio >= 1.5:
-            reasons.append(f"放量跌 {daily_change*100:.1f}%（量 {volume_ratio:.1f} 倍）")
+            reasons.append(
+                f"放量跌 {daily_change*100:.1f}%（量 {volume_ratio:.1f} 倍）"
+            )
 
         # 2. 斐波那契 0.618 回落
         if recent_high > recent_low:
@@ -351,7 +364,9 @@ class WaterStateDetector:
             volume_ratio = current_volume / avg_volume_20d
             raw_scores["volume_ratio"] = volume_ratio
             if volume_ratio <= self._volume_shrink:
-                reasons.append(f"缩量至 {volume_ratio*100:.0f}%（≤{self._volume_shrink*100:.0f}%）")
+                reasons.append(
+                    f"缩量至 {volume_ratio*100:.0f}%（≤{self._volume_shrink*100:.0f}%）"
+                )
 
         confidence = self._calc_confidence(reasons, raw_scores)
 

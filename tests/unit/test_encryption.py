@@ -191,10 +191,11 @@ class TestEncryptionBackwardCompatibility:
 
     def test_decrypt_legacy_format(self) -> None:
         """测试解密旧格式数据（固定 salt）"""
+        import base64
+
         from cryptography.fernet import Fernet
         from cryptography.hazmat.primitives import hashes
         from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-        import base64
 
         password = "test-password"
         plaintext = "legacy-api-key"
@@ -230,10 +231,11 @@ class TestEncryptionBackwardCompatibility:
 
     def test_mixed_format_decryption(self) -> None:
         """测试混合格式解密"""
+        import base64
+
         from cryptography.fernet import Fernet
         from cryptography.hazmat.primitives import hashes
         from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-        import base64
 
         password = "test-password"
         manager = EncryptionManager(password)

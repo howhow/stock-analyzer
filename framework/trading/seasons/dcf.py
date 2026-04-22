@@ -11,13 +11,13 @@
 可选依赖：无（纯 numpy 实现）
 """
 
-from typing import Dict, Tuple, Optional, Any
 from dataclasses import dataclass
+from typing import Any, Dict, Optional, Tuple
+
 import numpy as np
 import pandas as pd
 
 from framework.events import Events
-
 
 # ═══════════════════════════════════════════════════════════════
 # 行业折现率配置
@@ -50,8 +50,8 @@ from framework.events import Events
 # - A股历史平均收益率约 10-12%
 # - 行业 β 参考 Wind/中证指数数据
 
-INDUSTRY_DISCOUNT_RATES: Dict[str, Tuple[float, float]] = {""
-    "银行": (0.08, 0.10),
+INDUSTRY_DISCOUNT_RATES: Dict[str, Tuple[float, float]] = {
+    "" "银行": (0.08, 0.10),
     "消费": (0.10, 0.12),
     "食品饮料": (0.10, 0.12),
     "科技": (0.12, 0.15),
@@ -316,8 +316,14 @@ class DCFValuation:
         std_val = float(np.std(valuations))
 
         # 置信区间
-        ci_90 = (float(np.percentile(valuations, 5)), float(np.percentile(valuations, 95)))
-        ci_95 = (float(np.percentile(valuations, 2.5)), float(np.percentile(valuations, 97.5)))
+        ci_90 = (
+            float(np.percentile(valuations, 5)),
+            float(np.percentile(valuations, 95)),
+        )
+        ci_95 = (
+            float(np.percentile(valuations, 2.5)),
+            float(np.percentile(valuations, 97.5)),
+        )
 
         # 发送事件
         Events.dcf_calculated.send(

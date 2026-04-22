@@ -5,7 +5,7 @@ FastAPI 主程序测试 - 覆盖 lifespan 和 root endpoint
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import create_app, app
+from app.main import app, create_app
 
 
 class TestMainApp:

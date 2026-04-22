@@ -7,8 +7,10 @@
 - 订阅者异常隔离
 """
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
+
 from framework.events import Events
 
 

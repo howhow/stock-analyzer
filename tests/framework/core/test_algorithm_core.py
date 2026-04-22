@@ -20,13 +20,12 @@ import pandas as pd
 import pytest
 
 from framework.core.algorithm_core import (
-    AlgorithmCore,
-    IndicatorNotFoundError,
-    IndicatorCalculationError,
-    AIProviderNotFoundError,
     AIAnalysisError,
+    AIProviderNotFoundError,
+    AlgorithmCore,
+    IndicatorCalculationError,
+    IndicatorNotFoundError,
 )
-
 
 # ============================================================
 # Fixtures
