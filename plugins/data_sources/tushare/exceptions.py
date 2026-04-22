@@ -32,7 +32,9 @@ class TushareAuthError(TushareError):
 class TushareRateLimitError(TushareError):
     """速率限制错误"""
 
-    def __init__(self, message: str = "Tushare API 请求频率超限", retry_after: int | None = None):
+    def __init__(
+        self, message: str = "Tushare API 请求频率超限", retry_after: int | None = None
+    ):
         """
         初始化速率限制异常
 

@@ -7,15 +7,13 @@ import asyncio
 from datetime import date, datetime
 from typing import Any
 
-from framework.interfaces.data_source import DataSourceInterface
-from framework.models.quote import StandardQuote
 from app.utils.logger import get_logger
 from config import settings
+from framework.interfaces.data_source import DataSourceInterface
+from framework.models.quote import StandardQuote
+
 from .client import TushareClient
-from .exceptions import (
-    TushareError,
-    TushareNoDataError,
-)
+from .exceptions import TushareError, TushareNoDataError
 from .mapper import TushareQuoteMapper
 
 logger = get_logger(__name__)
@@ -194,12 +192,12 @@ class TusharePlugin:
 
         try:
             is_healthy = await self._client.health_check()
-            
+
             logger.info(
                 "tushare_plugin_health_check_result",
                 is_healthy=is_healthy,
             )
-            
+
             return is_healthy
 
         except Exception as e:
@@ -230,7 +228,9 @@ class TusharePlugin:
                 market=market,
                 supported_markets=self.supported_markets,
             )
-            raise ValueError(f"不支持的市场代码：{market}，支持的市场：{self.supported_markets}")
+            raise ValueError(
+                f"不支持的市场代码：{market}，支持的市场：{self.supported_markets}"
+            )
 
         logger.info(
             "tushare_plugin_get_supported_stocks",

@@ -5,7 +5,7 @@ OpenBB 数据转换器
 """
 
 from datetime import date, datetime
-from typing import Any
+from typing import Any, cast, Literal
 
 from framework.models.quote import StandardQuote
 
@@ -72,7 +72,9 @@ class OpenBBMapper:
             return code
 
     @staticmethod
-    def convert_stock_code_from_openbb(openbb_code: str, original_market: str = "") -> str:
+    def convert_stock_code_from_openbb(
+        openbb_code: str, original_market: str = ""
+    ) -> str:
         """
         将 OpenBB 格式转换回标准格式
 
@@ -135,7 +137,8 @@ class OpenBBMapper:
             StandardQuote 实例
         """
         market = cls.extract_market_from_code(original_code)
-        currency = cls.MARKET_CURRENCY.get(market, "USD")
+        currency_str = cls.MARKET_CURRENCY.get(market, "USD")
+        currency = cast(Literal["CNY", "USD", "HKD"], currency_str)
 
         # 解析日期
         trade_date = openbb_data.get("date")
@@ -188,7 +191,7 @@ class OpenBBMapper:
             try:
                 quote = cls.map_to_standard_quote(data, original_code)
                 quotes.append(quote)
-            except Exception as e:
+            except Exception:
                 # 跳过无效数据，继续处理
                 continue
         return quotes
@@ -251,18 +254,31 @@ class OpenBBMapper:
         low_price = data.get("low")
         close_price = data.get("close")
 
-        if all(p is not None for p in [open_price, high_price, low_price, close_price]):
+        if all(
+            p is not None for p in [open_price, high_price, low_price, close_price]
+        ):
             # 最高价 >= 最低价
-            if high_price < low_price:
-                score -= 0.3
+            if high_price is not None and low_price is not None:
+                if high_price < low_price:
+                    score -= 0.3
 
             # 收盘价在最高价和最低价之间
-            if not (low_price <= close_price <= high_price):
-                score -= 0.2
+            if (
+                low_price is not None
+                and close_price is not None
+                and high_price is not None
+            ):
+                if not (low_price <= close_price <= high_price):
+                    score -= 0.2
 
             # 开盘价在最高价和最低价之间
-            if not (low_price <= open_price <= high_price):
-                score -= 0.1
+            if (
+                low_price is not None
+                and open_price is not None
+                and high_price is not None
+            ):
+                if not (low_price <= open_price <= high_price):
+                    score -= 0.1
 
         # 检查成交量为正数
         volume = data.get("volume")

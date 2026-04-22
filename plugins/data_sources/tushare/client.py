@@ -13,6 +13,7 @@ import tushare as ts
 from app.core.circuit_breaker import CircuitBreaker
 from app.utils.logger import get_logger
 from config import settings
+
 from .exceptions import (
     TushareAuthError,
     TushareCircuitBreakerError,
@@ -90,7 +91,9 @@ class TushareClient:
         """
         if not self._pro:
             if not self.token:
-                raise TushareAuthError("Tushare token 未配置，请设置 TUSHARE_TOKEN 环境变量")
+                raise TushareAuthError(
+                    "Tushare token 未配置，请设置 TUSHARE_TOKEN 环境变量"
+                )
             self._pro = ts.pro_api()  # type: ignore
         return self._pro
 
@@ -123,10 +126,12 @@ class TushareClient:
             start_date=start_date,
             end_date=end_date,
         )
-        
+
         if result is None or result.empty:
-            raise TushareNoDataError(f"未找到股票 {ts_code} 在 {start_date} 至 {end_date} 的数据")
-        
+            raise TushareNoDataError(
+                f"未找到股票 {ts_code} 在 {start_date} 至 {end_date} 的数据"
+            )
+
         return result
 
     async def get_realtime_quote(self, ts_code: str) -> pd.DataFrame | None:
@@ -156,7 +161,9 @@ class TushareClient:
             )
             return None
 
-    async def get_stock_basic(self, exchange: str = "", list_status: str = "L") -> pd.DataFrame:
+    async def get_stock_basic(
+        self, exchange: str = "", list_status: str = "L"
+    ) -> pd.DataFrame:
         """
         获取股票基础信息列表
 
@@ -177,10 +184,10 @@ class TushareClient:
             list_status=list_status,
             fields="ts_code,symbol,name,area,industry,market,list_date",
         )
-        
+
         if result is None or result.empty:
             raise TushareNoDataError("未找到股票列表数据")
-        
+
         return result
 
     async def get_trade_calendar(
@@ -206,7 +213,7 @@ class TushareClient:
             start_date=start_date,
             end_date=end_date,
         )
-        
+
         return result if result is not None else pd.DataFrame()
 
     async def health_check(self) -> bool:
@@ -275,7 +282,7 @@ class TushareClient:
                     func=func.__name__,
                     attempt=attempt + 1,
                 )
-                
+
                 return result
 
             except Exception as e:
@@ -311,14 +318,14 @@ class TushareClient:
                 # 超时错误 - 等待后重试
                 if "timeout" in error_msg:
                     if attempt < self.max_retries - 1:
-                        await asyncio.sleep(2 ** attempt)
+                        await asyncio.sleep(2**attempt)
                         continue
                     else:
                         raise TushareTimeoutError() from e
 
                 # 其他错误 - 等待后重试
                 if attempt < self.max_retries - 1:
-                    await asyncio.sleep(2 ** attempt)
+                    await asyncio.sleep(2**attempt)
 
         # 所有重试失败
         await self._circuit_breaker.record_failure()
@@ -335,10 +342,10 @@ class TushareClient:
         """
         current_time = asyncio.get_event_loop().time()
         elapsed = current_time - self._last_call_time
-        
+
         if elapsed < self._min_interval:
             await asyncio.sleep(self._min_interval - elapsed)
-        
+
         self._last_call_time = asyncio.get_event_loop().time()
 
     async def close(self) -> None:

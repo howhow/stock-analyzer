@@ -93,7 +93,9 @@ class AKSharePlugin:
         )
 
         if df is None or df.empty:
-            logger.info(f"No data found for {stock_code} from {start_date} to {end_date}")
+            logger.info(
+                f"No data found for {stock_code} from {start_date} to {end_date}"
+            )
             return []
 
         # 转换为标准格式
@@ -127,7 +129,7 @@ class AKSharePlugin:
         df = await self._client.get_realtime_data()
 
         if df is None or df.empty:
-            logger.warning(f"Failed to get realtime data")
+            logger.warning("Failed to get realtime data")
             return None
 
         # 转换为标准格式

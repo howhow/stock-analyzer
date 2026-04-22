@@ -8,14 +8,18 @@ from datetime import date
 from typing import Any
 
 from app.utils.logger import get_logger
-
 from framework.interfaces.data_source import DataSourceInterface
-
-logger = get_logger(__name__)
 from framework.models.quote import StandardQuote
 
-from .client import OpenBBClient, OpenBBClientError, OpenBBNoDataError, OpenBBTimeoutError
+from .client import (
+    OpenBBClient,
+    OpenBBClientError,
+    OpenBBNoDataError,
+    OpenBBTimeoutError,
+)
 from .mapper import OpenBBMapper
+
+logger = get_logger(__name__)
 
 
 class OpenBBPlugin:
@@ -80,9 +84,7 @@ class OpenBBPlugin:
             DataSourceTimeoutError: 数据获取超时
             NoDataError: 无数据
         """
-        logger.info(
-            f"OpenBB 获取行情: {stock_code}, {start_date} ~ {end_date}"
-        )
+        logger.info(f"OpenBB 获取行情: {stock_code}, {start_date} ~ {end_date}")
 
         # 验证市场支持
         market = OpenBBMapper.extract_market_from_code(stock_code)
@@ -106,9 +108,7 @@ class OpenBBPlugin:
             # 转换为标准格式
             quotes = OpenBBMapper.map_to_standard_quotes(raw_data, stock_code)
 
-            logger.info(
-                f"OpenBB 返回 {len(quotes)} 条数据 ({stock_code})"
-            )
+            logger.info(f"OpenBB 返回 {len(quotes)} 条数据 ({stock_code})")
 
             return quotes
 

@@ -8,8 +8,8 @@ from typing import Any
 
 import pandas as pd
 
-from framework.models.quote import StandardQuote
 from app.utils.logger import get_logger
+from framework.models.quote import StandardQuote
 
 logger = get_logger(__name__)
 
@@ -70,7 +70,7 @@ class TushareQuoteMapper:
             return []
 
         quotes: list[StandardQuote] = []
-        
+
         for _, row in df.iterrows():
             try:
                 quote = cls._map_row_to_quote(row, source)
@@ -92,7 +92,7 @@ class TushareQuoteMapper:
             total_rows=len(df),
             mapped_quotes=len(quotes),
         )
-        
+
         return quotes
 
     @classmethod
@@ -114,7 +114,7 @@ class TushareQuoteMapper:
         # 提取基础字段
         code = cls._extract_string(row, "ts_code")
         trade_date = cls._extract_date(row, "trade_date")
-        
+
         # 必须字段验证
         if not code or not trade_date:
             logger.warning(
@@ -219,9 +219,9 @@ class TushareQuoteMapper:
         value = row.get(field)
         if pd.isna(value) or value is None:
             return None
-        
+
         date_str = str(value).strip()
-        
+
         try:
             # YYYYMMDD 格式
             if len(date_str) == 8 and date_str.isdigit():
@@ -325,7 +325,10 @@ class TushareQuoteMapper:
         price_range = high_price - low_price
         if price_range > 0:
             # 开盘价偏离最高/最低价太远
-            if open_price < low_price - price_range * 0.1 or open_price > high_price + price_range * 0.1:
+            if (
+                open_price < low_price - price_range * 0.1
+                or open_price > high_price + price_range * 0.1
+            ):
                 score *= 0.9
 
         return round(score, 2)

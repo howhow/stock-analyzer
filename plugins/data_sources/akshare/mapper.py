@@ -61,7 +61,7 @@ class AKShareMapper:
                 quote = cls._row_to_quote(row, code, source)
                 if quote is not None:
                     quotes.append(quote)
-            except Exception as e:
+            except Exception:
                 # 跳过无效行
                 continue
 

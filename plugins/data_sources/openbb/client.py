@@ -95,13 +95,14 @@ class OpenBBClient:
 
         # 清理过期的请求时间记录
         self._request_times = [
-            t for t in self._request_times
-            if current_time - t < self.RATE_LIMIT_WINDOW
+            t for t in self._request_times if current_time - t < self.RATE_LIMIT_WINDOW
         ]
 
         # 如果超过限制，等待
         if len(self._request_times) >= self.RATE_LIMIT_REQUESTS:
-            sleep_time = self.RATE_LIMIT_WINDOW - (current_time - self._request_times[0])
+            sleep_time = self.RATE_LIMIT_WINDOW - (
+                current_time - self._request_times[0]
+            )
             if sleep_time > 0:
                 logger.warning(f"达到速率限制，等待 {sleep_time:.1f} 秒")
                 time.sleep(sleep_time)
@@ -138,9 +139,7 @@ class OpenBBClient:
             )
             return result
         except asyncio.TimeoutError as e:
-            raise OpenBBTimeoutError(
-                f"OpenBB 请求超时（{timeout}秒）"
-            ) from e
+            raise OpenBBTimeoutError(f"OpenBB 请求超时（{timeout}秒）") from e
 
     def _get_historical_sync(
         self,
@@ -174,13 +173,29 @@ class OpenBBClient:
             if hasattr(result, "results") and result.results:
                 return [
                     {
-                        "date": item.date if hasattr(item, "date") else item.get("date"),
-                        "open": item.open if hasattr(item, "open") else item.get("open"),
-                        "high": item.high if hasattr(item, "high") else item.get("high"),
+                        "date": (
+                            item.date if hasattr(item, "date") else item.get("date")
+                        ),
+                        "open": (
+                            item.open if hasattr(item, "open") else item.get("open")
+                        ),
+                        "high": (
+                            item.high if hasattr(item, "high") else item.get("high")
+                        ),
                         "low": item.low if hasattr(item, "low") else item.get("low"),
-                        "close": item.close if hasattr(item, "close") else item.get("close"),
-                        "volume": item.volume if hasattr(item, "volume") else item.get("volume"),
-                        "adj_close": item.adj_close if hasattr(item, "adj_close") else item.get("adj_close"),
+                        "close": (
+                            item.close if hasattr(item, "close") else item.get("close")
+                        ),
+                        "volume": (
+                            item.volume
+                            if hasattr(item, "volume")
+                            else item.get("volume")
+                        ),
+                        "adj_close": (
+                            item.adj_close
+                            if hasattr(item, "adj_close")
+                            else item.get("adj_close")
+                        ),
                     }
                     for item in result.results
                 ]
@@ -250,15 +265,25 @@ class OpenBBClient:
             result = self._obb.equity.price.quote(symbol)
 
             if hasattr(result, "results") and result.results:
-                item = result.results[0] if isinstance(result.results, list) else result.results
+                item = (
+                    result.results[0]
+                    if isinstance(result.results, list)
+                    else result.results
+                )
                 return {
                     "symbol": symbol,
-                    "price": item.price if hasattr(item, "price") else item.get("price"),
+                    "price": (
+                        item.price if hasattr(item, "price") else item.get("price")
+                    ),
                     "open": item.open if hasattr(item, "open") else item.get("open"),
                     "high": item.high if hasattr(item, "high") else item.get("high"),
                     "low": item.low if hasattr(item, "low") else item.get("low"),
-                    "close": item.price if hasattr(item, "price") else item.get("price"),
-                    "volume": item.volume if hasattr(item, "volume") else item.get("volume"),
+                    "close": (
+                        item.price if hasattr(item, "price") else item.get("price")
+                    ),
+                    "volume": (
+                        item.volume if hasattr(item, "volume") else item.get("volume")
+                    ),
                     "date": datetime.now().date(),
                 }
             return None
@@ -277,9 +302,7 @@ class OpenBBClient:
         Returns:
             行情数据字典，如果不支持则返回 None
         """
-        return await self._run_with_timeout(
-            lambda: self._get_quote_sync(symbol)
-        )
+        return await self._run_with_timeout(lambda: self._get_quote_sync(symbol))
 
     def _search_stocks_sync(self, market: str) -> list[str]:
         """
@@ -300,7 +323,11 @@ class OpenBBClient:
             if market == "US":
                 result = self._obb.equity.search()
                 if hasattr(result, "results"):
-                    return [item.symbol for item in result.results if hasattr(item, "symbol")]
+                    return [
+                        item.symbol
+                        for item in result.results
+                        if hasattr(item, "symbol")
+                    ]
             elif market in ["SH", "SZ"]:
                 # A股支持有限
                 logger.warning(f"OpenBB 对 A股市场（{market}）支持有限")
@@ -308,7 +335,11 @@ class OpenBBClient:
             elif market == "HK":
                 result = self._obb.equity.search(market="hk")
                 if hasattr(result, "results"):
-                    return [item.symbol for item in result.results if hasattr(item, "symbol")]
+                    return [
+                        item.symbol
+                        for item in result.results
+                        if hasattr(item, "symbol")
+                    ]
 
             return []
 
@@ -326,9 +357,7 @@ class OpenBBClient:
         Returns:
             股票代码列表
         """
-        return await self._run_with_timeout(
-            lambda: self._search_stocks_sync(market)
-        )
+        return await self._run_with_timeout(lambda: self._search_stocks_sync(market))
 
     def health_check_sync(self) -> bool:
         """
@@ -344,7 +373,9 @@ class OpenBBClient:
             # 使用美股 AAPL 作为测试
             result = self._obb.equity.price.historical(
                 symbol="AAPL",
-                start_date=(datetime.now().date().replace(day=1) - timedelta(days=1)).strftime("%Y-%m-%d"),
+                start_date=(
+                    datetime.now().date().replace(day=1) - timedelta(days=1)
+                ).strftime("%Y-%m-%d"),
                 end_date=datetime.now().strftime("%Y-%m-%d"),
             )
 

@@ -33,12 +33,16 @@ class LocalPlugin:
 
     Example:
         ```python
-        plugin = LocalPlugin(LocalPluginConfig(
-            data_dir="./data/historical",
-            file_format="parquet"
-        ))
+        plugin = LocalPlugin(
+            LocalPluginConfig(
+                data_dir="./data/historical",
+                file_format="parquet",
+            )
+        )
 
-        quotes = await plugin.get_quotes("600519.SH", date(2024, 1, 1), date(2024, 12, 31))
+        quotes = await plugin.get_quotes(
+            "600519.SH", date(2024, 1, 1), date(2024, 12, 31)
+        )
         ```
     """
 

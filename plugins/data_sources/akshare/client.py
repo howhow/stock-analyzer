@@ -159,7 +159,8 @@ class AKShareClient:
             except Exception as e:
                 last_error = e
                 logger.warning(
-                    f"AKShare API call failed (attempt {attempt + 1}/{self.max_retries}): {e}"
+                    f"AKShare API call failed"
+                    f" (attempt {attempt + 1}/{self.max_retries}): {e}"
                 )
 
                 # 等待后重试
@@ -167,7 +168,9 @@ class AKShareClient:
                     await asyncio.sleep(2**attempt)
 
         self._available = False
-        logger.error(f"AKShare API call failed after {self.max_retries} retries: {last_error}")
+        logger.error(
+            f"AKShare API call failed after {self.max_retries} retries: {last_error}"
+        )
         return None
 
     @property

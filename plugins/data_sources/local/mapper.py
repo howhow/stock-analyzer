@@ -78,8 +78,11 @@ class QuoteMapper:
         open_price = self._safe_float(row.get("open"))
         high_price = self._safe_float(row.get("high"))
         low_price = self._safe_float(row.get("low"))
-        close_price = self._safe_float(row.get("close"))
+        close_price_raw = self._safe_float(row.get("close"))
         adj_close = self._safe_float(row.get("adj_close"))
+
+        # close 不能为 None
+        close_price = close_price_raw if close_price_raw is not None else 0.0
 
         # 提取成交数据
         volume = self._safe_int(row.get("volume"))
@@ -140,7 +143,10 @@ class QuoteMapper:
         if isinstance(date_value, pd.Timestamp):
             return date_value.date()
         if isinstance(date_value, str):
-            return pd.to_datetime(date_value).date()
+            dt = pd.to_datetime(date_value)
+            if hasattr(dt, 'date'):
+                return dt.date()
+            return date(dt.year, dt.month, dt.day)
         if isinstance(date_value, date):
             return date_value
 
@@ -190,12 +196,23 @@ class QuoteMapper:
         quality_score = completeness
 
         # 如果所有价格都有值，检查价格逻辑
-        if all(p is not None for p in [open_price, high_price, low_price, close_price]):
+        if all(
+            p is not None for p in [open_price, high_price, low_price, close_price]
+        ):
             # 最高价 >= 最低价
-            if high_price < low_price:
+            if (
+                high_price is not None
+                and low_price is not None
+                and high_price < low_price
+            ):
                 quality_score *= 0.5
             # 收盘价在最高价和最低价之间
-            elif not (low_price <= close_price <= high_price):
+            elif (
+                low_price is not None
+                and close_price is not None
+                and high_price is not None
+                and not (low_price <= close_price <= high_price)
+            ):
                 quality_score *= 0.7
 
         return completeness, quality_score

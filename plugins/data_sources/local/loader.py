@@ -93,9 +93,7 @@ class LocalDataLoader:
         # 确保 date 列是 datetime 类型
         if "date" in df.columns:
             df["date"] = pd.to_datetime(df["date"])
-            df = df[
-                (df["date"] >= start_date) & (df["date"] <= end_date)
-            ]
+            df = df[(df["date"] >= start_date) & (df["date"] <= end_date)]
 
         return df
 
