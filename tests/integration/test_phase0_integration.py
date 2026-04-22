@@ -127,9 +127,7 @@ class TestDataHubCircuitBreakerIntegration:
         if should_fail:
             source.fetch_daily = AsyncMock(side_effect=Exception(f"{name} 不可用"))
         else:
-            mock_df = pd.DataFrame(
-                {"close": [100.0, 101.0], "volume": [1000, 1100]}
-            )
+            mock_df = pd.DataFrame({"close": [100.0, 101.0], "volume": [1000, 1100]})
             source.fetch_daily = AsyncMock(return_value=mock_df)
 
         return source
@@ -195,7 +193,6 @@ class TestDataHubCircuitBreakerIntegration:
     @pytest.mark.asyncio
     async def test_circuit_breaker_recovery(self) -> None:
         """熔断器恢复后重新尝试数据源"""
-        primary = self._create_mock_source("tushare", 1)
         breaker = CircuitBreaker(failure_threshold=1, recovery_timeout=0.01)
 
         # 手动熔断
@@ -313,7 +310,7 @@ class TestDCFIntegration:
         dcf = DCFValuation()
 
         start = time.time()
-        result = dcf.calculate_monte_carlo(
+        dcf.calculate_monte_carlo(
             current_fcf=40.0,
             shares_outstanding=12.56,
             industry="消费",
