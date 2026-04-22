@@ -14,22 +14,12 @@ from app.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-@celery_app.task(
-    bind=True,
-    max_retries=3,
-)
-def execute_subscriptions(self: Any) -> dict[str, Any]:
-    """
-    执行所有活跃订阅
+# ============================================================
+# 核心逻辑函数（便于测试）
+# ============================================================
 
-    定时任务，每天执行用户订阅的股票分析
-
-    Args:
-        self: Celery 任务实例
-
-    Returns:
-        执行结果
-    """
+def _execute_subscriptions_logic(self: Any) -> dict[str, Any]:
+    """执行订阅的核心逻辑"""
     logger.info(
         "execute_subscriptions_started",
         task_id=self.request.id,
@@ -83,29 +73,14 @@ def execute_subscriptions(self: Any) -> dict[str, Any]:
         raise self.retry(exc=e)
 
 
-@celery_app.task(
-    bind=True,
-)
-def create_subscription(
+def _create_subscription_logic(
     self: Any,
     user_id: str,
     stock_code: str,
     analysis_type: str = "both",
     schedule: str = "daily",
 ) -> dict[str, Any]:
-    """
-    创建订阅
-
-    Args:
-        self: Celery 任务实例
-        user_id: 用户ID
-        stock_code: 股票代码
-        analysis_type: 分析类型
-        schedule: 订阅频率 (daily/weekly)
-
-    Returns:
-        创建结果
-    """
+    """创建订阅的核心逻辑"""
     logger.info(
         "create_subscription_started",
         task_id=self.request.id,
@@ -139,23 +114,11 @@ def create_subscription(
         raise
 
 
-@celery_app.task(
-    bind=True,
-)
-def cancel_subscription(
+def _cancel_subscription_logic(
     self: Any,
     subscription_id: str,
 ) -> dict[str, Any]:
-    """
-    取消订阅
-
-    Args:
-        self: Celery 任务实例
-        subscription_id: 订阅ID
-
-    Returns:
-        取消结果
-    """
+    """取消订阅的核心逻辑"""
     logger.info(
         "cancel_subscription_started",
         task_id=self.request.id,
@@ -184,29 +147,14 @@ def cancel_subscription(
         raise
 
 
-@celery_app.task(
-    bind=True,
-)
-def send_notification(
+def _send_notification_logic(
     self: Any,
     user_id: str,
     title: str,
     content: str,
     channel: str = "feishu",
 ) -> dict[str, Any]:
-    """
-    发送通知
-
-    Args:
-        self: Celery 任务实例
-        user_id: 用户ID
-        title: 标题
-        content: 内容
-        channel: 通知渠道 (feishu/email)
-
-    Returns:
-        发送结果
-    """
+    """发送通知的核心逻辑"""
     logger.info(
         "send_notification_started",
         task_id=self.request.id,
@@ -235,3 +183,55 @@ def send_notification(
             error=str(e),
         )
         raise
+
+
+# ============================================================
+# Celery 任务包装
+# ============================================================
+
+@celery_app.task(
+    bind=True,
+    max_retries=3,
+)
+def execute_subscriptions(self: Any) -> dict[str, Any]:
+    """执行所有活跃订阅"""
+    return _execute_subscriptions_logic(self)
+
+
+@celery_app.task(
+    bind=True,
+)
+def create_subscription(
+    self: Any,
+    user_id: str,
+    stock_code: str,
+    analysis_type: str = "both",
+    schedule: str = "daily",
+) -> dict[str, Any]:
+    """创建订阅"""
+    return _create_subscription_logic(self, user_id, stock_code, analysis_type, schedule)
+
+
+@celery_app.task(
+    bind=True,
+)
+def cancel_subscription(
+    self: Any,
+    subscription_id: str,
+) -> dict[str, Any]:
+    """取消订阅"""
+    return _cancel_subscription_logic(self, subscription_id)
+
+
+@celery_app.task(
+    bind=True,
+)
+def send_notification(
+    self: Any,
+    user_id: str,
+    title: str,
+    content: str,
+    channel: str = "feishu",
+) -> dict[str, Any]:
+    """发送通知"""
+    return _send_notification_logic(self, user_id, title, content, channel)

@@ -12,6 +12,14 @@ from structlog import get_logger
 
 logger = get_logger(__name__)
 
+# 模块级别导入，便于测试时 mock
+from framework.models.prediction import PredictionStatus
+from framework.prediction import (
+    AccuracyCalculator,
+    AccuracyRanker,
+    get_prediction_store,
+)
+
 
 def verify_predictions_task():
     """
@@ -19,8 +27,6 @@ def verify_predictions_task():
 
     此任务应在每日收盘后运行。
     """
-    from framework.prediction import get_prediction_store
-
     store = get_prediction_store()
     pending = store.get_pending_verifications(date.today())
 
@@ -55,8 +61,6 @@ def calculate_accuracy_stats_task():
 
     定期更新统计数据。
     """
-    from framework.prediction import AccuracyCalculator, get_prediction_store
-
     store = get_prediction_store()
     predictions = store.list(limit=10000)
 
@@ -82,8 +86,6 @@ def generate_rankings_task():
 
     定期生成预测准确率排行榜。
     """
-    from framework.prediction import AccuracyRanker, get_prediction_store
-
     store = get_prediction_store()
     predictions = store.list(limit=10000)
 
@@ -108,9 +110,6 @@ def cleanup_expired_predictions_task():
 
     将超过验证日期且无数据的预测标记为过期。
     """
-    from framework.models.prediction import PredictionStatus
-    from framework.prediction import get_prediction_store
-
     store = get_prediction_store()
     predictions = store.list(status=PredictionStatus.PENDING, limit=10000)
 

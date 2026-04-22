@@ -384,6 +384,15 @@ def batch_analyze(
     Returns:
         批量分析结果
     """
+    return _batch_analyze_logic(self, stock_codes, analysis_type)
+
+
+def _batch_analyze_logic(
+    self: Any,
+    stock_codes: list[str],
+    analysis_type: str = "both",
+) -> dict[str, Any]:
+    """批量分析的核心逻辑"""
     logger.info(
         "batch_analyze_started",
         task_id=self.request.id,
