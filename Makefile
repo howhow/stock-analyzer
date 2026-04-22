@@ -162,13 +162,13 @@ test-integration: venv-check
 # 代码质量
 # ============================================
 lint: venv-check
-	$(PYTHON) -m black --check app tests frontend
-	$(PYTHON) -m flake8 app tests frontend
-	$(PYTHON) -m mypy app framework frontend
+	$(PYTHON) -m black --check app framework tests frontend
+	$(PYTHON) -m flake8 app framework tests frontend
+	$(PYTHON) -m mypy app framework tests frontend
 
 format: venv-check
-	$(PYTHON) -m black app tests frontend
-	$(PYTHON) -m isort app tests frontend
+	$(PYTHON) -m black app framework tests frontend
+	$(PYTHON) -m isort app framework tests frontend
 
 # ============================================
 # 清理
