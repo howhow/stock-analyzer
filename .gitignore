@@ -18,15 +18,9 @@ env/
 
 # Testing
 .pytest_cache/
-.coverage
-htmlcov/
-coverage.xml
-coverage.json
-coverage_report/
 
-# 项目特定
+# 项目特定 - 所有本地临时文件统一放 local_* 下
 local_*/
-data/
 
 # 环境变量
 .env

@@ -153,12 +153,14 @@ frontend-dev: venv-check
 # ============================================
 test: venv-check
 	@echo "🧪 运行测试 (pytest + coverage)..."
-	$(PYTHON) -m pytest tests/ -v --cov=app --cov=framework --cov-report=term-missing
+	$(PYTHON) -m pytest tests/ -v --cov=app --cov=framework --cov-report=term-missing --cov-report=html:local_test_report/htmlcov
 	@echo "✅ 测试完成"
+	@echo "📊 HTML覆盖率报告: local_test_report/htmlcov/index.html"
 
 test-unit: venv-check
-	$(PYTHON) -m pytest tests/unit/ -v --cov=app --cov=framework --cov-report=term-missing
+	$(PYTHON) -m pytest tests/unit/ -v --cov=app --cov=framework --cov-report=term-missing --cov-report=html:local_test_report/htmlcov
 	@echo "✅ 测试完成"
+	@echo "📊 HTML覆盖率报告: local_test_report/htmlcov/index.html"
 
 test-integration: venv-check
 	$(PYTHON) -m pytest tests/integration/ -v
