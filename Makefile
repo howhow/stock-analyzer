@@ -206,16 +206,16 @@ test-integration: venv-check
 # 代码风格检查(black + flake8) - 覆盖所有代码包括测试
 lint-style: venv-check
 	@echo "🎨 运行 black 格式检查..."
-	$(PYTHON) -m black --check app framework tests plugins frontend
+	$(PYTHON) -m black --check app framework tests plugins frontend scripts
 	@echo "✅ black 格式检查通过"
 	@echo "📏 运行 flake8 代码规范检查..."
-	$(PYTHON) -m flake8 app framework tests plugins frontend
+	$(PYTHON) -m flake8 app framework tests plugins frontend scripts
 	@echo "✅ flake8 代码规范检查通过"
 
 # 类型检查(mypy) - 只检查生产代码，排除 tests
 lint-type: venv-check
 	@echo "🔍 运行 mypy 类型检查 (app/framework/plugins)..."
-	$(PYTHON) -m mypy app framework plugins
+	$(PYTHON) -m mypy app framework plugins frontend scripts
 	@echo "✅ mypy 类型检查通过"
 
 # 完整 lint(style + type)
