@@ -17,7 +17,6 @@ from app.tasks.prediction_tasks import (
 )
 from framework.models.prediction import PredictionStatus
 
-
 # ============================================================
 # Fixtures
 # ============================================================

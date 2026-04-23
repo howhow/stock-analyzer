@@ -7,13 +7,14 @@
 from datetime import date
 from typing import Any
 
+from app.core.cache import CacheManager
+
 # 导入异常类（必须在其他导入之前，避免循环依赖）
 from app.core.exceptions import (
     AllDataSourcesFailedError,
     DataSourceNotFoundError,
     NoDataError,
 )
-from app.core.cache import CacheManager
 from app.utils.logger import get_logger
 from config import settings
 from framework.interfaces.data_source import DataSourceInterface

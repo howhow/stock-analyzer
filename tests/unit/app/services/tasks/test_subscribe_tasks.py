@@ -16,7 +16,6 @@ from app.tasks.subscribe_tasks import (
     _send_notification_logic,
 )
 
-
 # ============================================================
 # _execute_subscriptions_logic
 # ============================================================

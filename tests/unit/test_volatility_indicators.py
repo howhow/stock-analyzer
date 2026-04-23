@@ -19,7 +19,6 @@ from app.analysis.indicators.volatility import (
     keltner_channel,
 )
 
-
 # ============================================================
 # Fixtures
 # ============================================================

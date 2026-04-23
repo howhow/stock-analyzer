@@ -10,7 +10,6 @@ import pytest
 
 from app.tasks.analysis_tasks import _batch_analyze_logic
 
-
 # ============================================================
 # Fixtures
 # ============================================================

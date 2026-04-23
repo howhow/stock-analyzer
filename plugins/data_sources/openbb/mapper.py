@@ -5,7 +5,7 @@ OpenBB 数据转换器
 """
 
 from datetime import date, datetime
-from typing import Any, cast, Literal
+from typing import Any, Literal, cast
 
 from framework.models.quote import StandardQuote
 

@@ -13,7 +13,6 @@ import pytest
 from app.data.base import DataSourceError
 from app.data.tushare_client import TushareClient
 
-
 # ============================================================
 # Fixtures
 # ============================================================

@@ -12,10 +12,11 @@ from pathlib import Path
 # 添加项目根目录到 Python 路径
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from sqlalchemy import create_engine
-from config import settings
-from app.models.base import Base
-from app.utils.logger import get_logger
+from sqlalchemy import create_engine  # noqa: E402
+
+from app.models.base import Base  # noqa: E402
+from app.utils.logger import get_logger  # noqa: E402
+from config import settings  # noqa: E402
 
 logger = get_logger(__name__)
 
@@ -23,20 +24,20 @@ logger = get_logger(__name__)
 def init_database() -> None:
     """
     初始化数据库
-    
+
     创建所有表结构
     """
     logger.info("开始初始化数据库...")
-    
+
     # 创建数据库引擎
     engine = create_engine(
         settings.database_url,
         echo=True,  # 打印 SQL 语句，便于调试
     )
-    
+
     # 创建所有表
     Base.metadata.create_all(bind=engine)
-    
+
     logger.info("数据库初始化完成")
 
 

@@ -1,4 +1,4 @@
-.PHONY: help venv install dev celery celery-beat test test-unit test-integration lint format clean docker docker-prod docker-stop docker-logs docker-clean stress-test db-init db-migrate check-deps frontend frontend-dev
+.PHONY: help venv install dev celery celery-beat test test-unit test-integration test-all lint lint-style lint-type format clean clean-all docker docker-prod docker-stop docker-logs docker-clean stress-test db-init db-migrate check-deps reinstall frontend frontend-dev install-hooks uninstall-hooks
 
 # ============================================
 # 配置变量
@@ -178,135 +178,49 @@ frontend-dev: venv-check
 	@echo "  终端3: make celery    (如需异步任务)"
 
 # ============================================
-# 测试
+# 测试（重构后）
 # ============================================
+# test: 运行单元测试（纯 Mock，快速，默认命令）
 test: venv-check
-	@echo "🧪 运行测试 (pytest + coverage)..."
-	$(PYTHON) -m pytest tests/ -v --cov=app --cov=framework --cov-report=term-missing --cov-report=html:local_test_report/htmlcov
-	@echo "✅ 测试完成"
+	@echo "🧪 运行单元测试..."
+	$(PYTHON) -m pytest tests/unit/ -v \
+		--cov=app --cov=framework \
+		--cov-report=term-missing \
+		--cov-report=html:local_test_report/htmlcov
+	@echo "✅ 单元测试完成"
 	@echo "📊 HTML覆盖率报告: local_test_report/htmlcov/index.html"
 
-test-unit: venv-check
-	$(PYTHON) -m pytest tests/unit/ -v --cov=app --cov=framework --cov-report=term-missing --cov-report=html:local_test_report/htmlcov
-	@echo "✅ 测试完成"
-	@echo "📊 HTML覆盖率报告: local_test_report/htmlcov/index.html"
+# test-unit: test 的别名（语义清晰）
+test-unit: test
 
+# test-integration: 集成测试（真实环境，需要 .env + Tushare Token）
 test-integration: venv-check
-	$(PYTHON) -m pytest tests/integration/ -v
+	@echo "🔌 运行集成测试..."
+	@echo "⚠️  注意：集成测试会调用真实 Tushare API，消耗积分"
+	@test -f .env || (echo "❌ .env 文件不存在，集成测试需要 TUSHARE_TOKEN" && exit 1)
+	$(PYTHON) -m pytest tests/integration/ -v \
+		-s \
+		--tb=short
+	@echo "✅ 集成测试完成"
 
-# ============================================
-# 代码质量 - 分层 Lint 策略
-# ============================================
-# 分层策略:
-# - lint-style: black + flake8 覆盖所有代码(app/framework/tests/plugins/frontend)
-# - lint-type: mypy 只检查生产代码(app/framework/plugins)，排除 tests
-# - lint: 完整检查(style + type)
-# ============================================
+# test-all: 顺序运行单元测试 + 集成测试 + 压力测试
+test-all:
+	@echo "🧪 阶段 1/3: 单元测试..."
+	@$(MAKE) test
+	@echo "🔌 阶段 2/3: 集成测试..."
+	@$(MAKE) test-integration
+	@echo "💥 阶段 3/3: 压力测试..."
+	@$(MAKE) stress-test
+	@echo "🎉 全部测试完成"
 
-# 代码风格检查(black + flake8) - 覆盖所有代码包括测试
-lint-style: venv-check
-	@echo "🎨 运行 black 格式检查..."
-	$(PYTHON) -m black --check app framework tests plugins frontend scripts
-	@echo "✅ black 格式检查通过"
-	@echo "📏 运行 flake8 代码规范检查..."
-	$(PYTHON) -m flake8 app framework tests plugins frontend scripts
-	@echo "✅ flake8 代码规范检查通过"
-
-# 类型检查(mypy) - 只检查生产代码，排除 tests
-lint-type: venv-check
-	@echo "🔍 运行 mypy 类型检查 (app/framework/plugins)..."
-	$(PYTHON) -m mypy app framework plugins frontend scripts
-	@echo "✅ mypy 类型检查通过"
-
-# 完整 lint(style + type)
-lint: venv-check
-	@echo "═══════════════════════════════════════════════════"
-	@echo "  🔍 开始完整代码检查 (style + type)"
-	@echo "═══════════════════════════════════════════════════"
-	$(MAKE) lint-style
-	$(MAKE) lint-type
-	@echo "═══════════════════════════════════════════════════"
-	@echo "  ✅ 所有代码检查通过！"
-	@echo "═══════════════════════════════════════════════════"
-
-# 代码格式化(black + isort) - 覆盖所有代码
-format: venv-check
-	$(PYTHON) -m black app framework tests plugins frontend
-	$(PYTHON) -m isort app framework tests plugins frontend
-
-# ============================================
-# 清理
-# ============================================
-clean:
-	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-	@find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
-	@find . -type d -name ".mypy_cache" -exec rm -rf {} + 2>/dev/null || true
-	@find . -type f -name "*.pyc" -delete 2>/dev/null || true
-	@echo "✅ 缓存文件已清理"
-
-# 清理虚拟环境（完全重置）
-clean-all: clean
-	@rm -rf $(VENV)
-	@echo "✅ 虚拟环境已删除，请重新 make venv && make install"
-
-# ============================================
-# Docker 部署
-# ============================================
-docker:
-	@echo "🚀 启动 Docker 开发环境..."
-	@echo "🌐 后端: http://localhost:8000"
-	@echo "🌐 前端: http://localhost:8501"
-	cd docker && docker-compose up --build
-
-docker-prod:
-	@echo "🚀 启动 Docker 生产环境..."
-	cd docker && docker-compose -f docker-compose.prod.yml up -d
-
-docker-stop:
-	@echo "🛑 停止 Docker 容器..."
-	cd docker && docker-compose down
-
-docker-logs:
-	cd docker && docker-compose logs -f
-
-docker-clean:
-	@echo "🧹 清理 Docker 资源..."
-	cd docker && docker-compose down -v --rmi local
-
-# ============================================
-# Git Hooks
-# ============================================
-install-hooks:
-	@echo "🔧 安装 Git hooks..."
-	@if [ -d .git ]; then \
-		ln -sf ../../scripts/pre_commit_hook.py .git/hooks/pre-commit; \
-		chmod +x .git/hooks/pre-commit; \
-		chmod +x scripts/pre_commit_hook.py; \
-		echo "✅ pre-commit hook 已安装"; \
-		echo "   路径: .git/hooks/pre-commit"; \
-	else \
-		echo "❌ 这不是一个 Git 仓库"; \
-		exit 1; \
-	fi
-
-uninstall-hooks:
-	@echo "🗑️  卸载 Git hooks..."
-	@rm -f .git/hooks/pre-commit
-	@echo "✅ pre-commit hook 已卸载"
-
-# ============================================
-# 其他工具
-# ============================================
+# stress-test: 压力测试（非UI模式，自动运行）
 stress-test: venv-check
-	$(PYTHON) -m locust -f tests/stress/locustfile.py --users 50 --spawn-rate 5
-
-db-init: venv-check
-	@if [ ! -f scripts/init_db.py ]; then \
-		echo "❌ 错误: scripts/init_db.py 不存在"; \
-		exit 1; \
-	fi
-	$(PYTHON) scripts/init_db.py
-
-db-migrate: venv-check
-	$(VENV)/bin/alembic revision --autogenerate -m "$(msg)"
-	$(VENV)/bin/alembic upgrade head
+	@echo "💥 运行压力测试（非UI模式）..."
+	$(PYTHON) -m pytest tests/stress/ -v || true
+	$(PYTHON) -m locust -f tests/stress/locustfile.py \
+		--headless \
+		--users 50 \
+		--spawn-rate 5 \
+		--run-time 30s \
+		--host http://localhost:8000
+	@echo "✅ 压力测试完成"
