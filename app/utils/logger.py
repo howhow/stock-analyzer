@@ -6,6 +6,7 @@
 
 import logging
 import sys
+from pathlib import Path
 from typing import Any
 
 import structlog
@@ -13,12 +14,17 @@ from structlog.types import Processor
 
 from config import settings
 
+# 统一日志目录：local_log/（已被 .gitignore 的 local_* 规则排除）
+LOG_DIR = Path("local_log")
+LOG_DIR.mkdir(exist_ok=True)
+
 
 def setup_logging() -> None:
     """
     配置结构化日志
 
     使用 structlog 实现结构化日志，支持 JSON 格式输出
+    日志输出到 local_log/ 目录（已被 .gitignore 排除）
     """
     # 日志级别映射
     log_level = getattr(logging, settings.log_level)
@@ -55,11 +61,20 @@ def setup_logging() -> None:
         cache_logger_on_first_use=True,
     )
 
-    # 配置标准库 logging
+    # 配置标准库 logging — 输出到 local_log/
+    log_file = LOG_DIR / "app.log"
+    file_handler = logging.FileHandler(log_file, encoding="utf-8")
+    file_handler.setLevel(log_level)
+    file_handler.setFormatter(logging.Formatter("%(message)s"))
+
+    # 同时输出到控制台
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(log_level)
+    console_handler.setFormatter(logging.Formatter("%(message)s"))
+
     logging.basicConfig(
-        format="%(message)s",
-        stream=sys.stdout,
         level=log_level,
+        handlers=[file_handler, console_handler],
     )
 
 

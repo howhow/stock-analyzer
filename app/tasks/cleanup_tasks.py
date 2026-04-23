@@ -129,7 +129,7 @@ def cleanup_old_logs(self: Any, days: int = 30) -> dict[str, Any]:
         from datetime import datetime, timedelta
         from pathlib import Path
 
-        log_dir = Path("/var/log/stock-analyzer")
+        log_dir = Path("local_log")
         if not log_dir.exists():
             return {"status": "success", "cleaned_count": 0}
 

@@ -1,4 +1,4 @@
-.PHONY: help venv install dev test test-unit test-integration lint format clean docker docker-prod docker-stop docker-logs docker-clean stress-test db-init db-migrate check-deps frontend frontend-dev
+.PHONY: help venv install dev celery celery-beat test test-unit test-integration lint format clean docker docker-prod docker-stop docker-logs docker-clean stress-test db-init db-migrate check-deps frontend frontend-dev
 
 # ============================================
 # 配置变量
@@ -19,7 +19,9 @@ help:
 	@echo "  make install     安装所有依赖"
 	@echo ""
 	@echo "【日常开发】"
-	@echo "  make dev         启动开发服务器（后端）"
+	@echo "  make dev         启动开发服务器（后端，日志→local_log/）"
+	@echo "  make celery      启动 Celery Worker（日志→local_log/）"
+	@echo "  make celery-beat 启动 Celery 定时任务（日志→local_log/）"
 	@echo "  make frontend    启动前端服务"
 	@echo "  make frontend-dev 同时启动前后端（需要两个终端）"
 	@echo "  make test        运行所有测试 + 覆盖率"
@@ -123,10 +125,36 @@ venv-check:
 	fi
 
 # ============================================
-# 开发运行
+# 日志目录（统一使用 local_log/，已被 .gitignore 排除）
 # ============================================
-dev: venv-check
-	$(PYTHON) -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+LOG_DIR = local_log
+API_LOG = $(LOG_DIR)/api.log
+CELERY_LOG = $(LOG_DIR)/celery.log
+
+# 确保日志目录存在
+$(LOG_DIR):
+	@mkdir -p $(LOG_DIR)
+
+# ============================================
+# 开发运行 — 日志自动输出到 local_log/
+# ============================================
+dev: venv-check $(LOG_DIR)
+	@echo "🚀 启动 API 服务..."
+	@echo "🌐 访问地址: http://localhost:8000"
+	@echo "📋 日志输出: $(API_LOG)"
+	$(PYTHON) -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 > $(API_LOG) 2>&1
+
+# Celery Worker
+celery: venv-check $(LOG_DIR)
+	@echo "🚀 启动 Celery Worker..."
+	@echo "📋 日志输出: $(CELERY_LOG)"
+	$(PYTHON) -m celery -A app.tasks.celery_app worker --loglevel=info > $(CELERY_LOG) 2>&1
+
+# Celery Beat (定时任务调度器)
+celery-beat: venv-check $(LOG_DIR)
+	@echo "🚀 启动 Celery Beat..."
+	@echo "📋 日志输出: $(LOG_DIR)/celery-beat.log"
+	$(PYTHON) -m celery -A app.tasks.celery_app beat --loglevel=info > $(LOG_DIR)/celery-beat.log 2>&1
 
 # 前端服务
 frontend: venv-check
@@ -147,6 +175,7 @@ frontend-dev: venv-check
 	@echo "请分别在两个终端运行:"
 	@echo "  终端1: make dev"
 	@echo "  终端2: make frontend"
+	@echo "  终端3: make celery    (如需异步任务)"
 
 # ============================================
 # 测试
@@ -243,6 +272,27 @@ docker-logs:
 docker-clean:
 	@echo "🧹 清理 Docker 资源..."
 	cd docker && docker-compose down -v --rmi local
+
+# ============================================
+# Git Hooks
+# ============================================
+install-hooks:
+	@echo "🔧 安装 Git hooks..."
+	@if [ -d .git ]; then \
+		ln -sf ../../scripts/pre_commit_hook.py .git/hooks/pre-commit; \
+		chmod +x .git/hooks/pre-commit; \
+		chmod +x scripts/pre_commit_hook.py; \
+		echo "✅ pre-commit hook 已安装"; \
+		echo "   路径: .git/hooks/pre-commit"; \
+	else \
+		echo "❌ 这不是一个 Git 仓库"; \
+		exit 1; \
+	fi
+
+uninstall-hooks:
+	@echo "🗑️  卸载 Git hooks..."
+	@rm -f .git/hooks/pre-commit
+	@echo "✅ pre-commit hook 已卸载"
 
 # ============================================
 # 其他工具
