@@ -270,6 +270,7 @@ class TushareClient:
 
         # 重试逻辑
         last_error: Exception | None = None
+        func_name = getattr(func, '__name__', getattr(func, 'func', func).__name__ if hasattr(getattr(func, 'func', func), '__name__') else str(func))
         for attempt in range(self.max_retries):
             try:
                 # Tushare 是同步 API，放到线程池执行
@@ -284,7 +285,7 @@ class TushareClient:
                     await record_success
                 logger.debug(
                     "tushare_api_success",
-                    func=func.__name__,
+                    func=func_name,
                     attempt=attempt + 1,
                 )
 
@@ -296,7 +297,7 @@ class TushareClient:
 
                 logger.warning(
                     "tushare_api_retry",
-                    func=func.__name__,
+                    func=func_name,
                     attempt=attempt + 1,
                     max_retries=self.max_retries,
                     error=str(e),
