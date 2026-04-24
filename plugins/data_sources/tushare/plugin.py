@@ -37,6 +37,9 @@ class TusharePlugin:
     # 插件名称
     name: str = "tushare"
 
+    # 插件优先级（数值越小优先级越高）
+    priority: int = 10
+
     # 支持的市场
     supported_markets: list[str] = ["SH", "SZ"]
 

@@ -19,7 +19,11 @@ class TestCLIBasic:
 
         # 清理之前的输出
         for f in output_dir.glob("*"):
-            f.unlink()
+            if f.is_file():
+                f.unlink()
+            elif f.is_dir():
+                import shutil
+                shutil.rmtree(f)
 
         # 执行CLI命令（真实调用，不Mock）
         result = subprocess.run(
