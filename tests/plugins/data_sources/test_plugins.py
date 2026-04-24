@@ -97,15 +97,18 @@ class TestPluginWithMockData:
     """使用 Mock 数据测试插件"""
 
     @pytest.mark.asyncio
-    async def test_local_plugin_with_mock_data(self, tmp_path):
+    async def test_local_plugin_with_mock_data(self):
         """测试 LocalPlugin 读取 Mock 数据"""
         from datetime import date
+        import os
 
         import pandas as pd
 
         from plugins.data_sources.local import LocalPlugin, LocalPluginConfig
 
-        # 创建测试数据文件
+        # 创建测试数据目录和文件
+        test_dir = "local_test_report/test_data"
+        os.makedirs(test_dir, exist_ok=True)
         test_data = pd.DataFrame(
             {
                 "date": ["2024-01-01", "2024-01-02", "2024-01-03"],
@@ -116,10 +119,10 @@ class TestPluginWithMockData:
                 "volume": [1000000, 1100000, 1200000],
             }
         )
-        test_data.to_csv(tmp_path / "600519_SH.csv", index=False)
+        test_data.to_csv(f"{test_dir}/600519_SH.csv", index=False)
 
         # 创建插件
-        config = LocalPluginConfig(data_dir=str(tmp_path))
+        config = LocalPluginConfig(data_dir=test_dir)
         plugin = LocalPlugin(config=config)
 
         # 获取数据
@@ -134,12 +137,15 @@ class TestPluginWithMockData:
         assert quotes[-1].close == 103.0
 
     @pytest.mark.asyncio
-    async def test_local_health_check(self, tmp_path):
+    async def test_local_health_check(self):
         """测试 LocalPlugin 健康检查"""
+        import os
         from plugins.data_sources.local import LocalPlugin, LocalPluginConfig
 
         # 目录存在
-        config = LocalPluginConfig(data_dir=str(tmp_path))
+        test_dir = "local_test_report/test_health"
+        os.makedirs(test_dir, exist_ok=True)
+        config = LocalPluginConfig(data_dir=test_dir)
         plugin = LocalPlugin(config=config)
         is_healthy = await plugin.health_check()
         assert is_healthy is True

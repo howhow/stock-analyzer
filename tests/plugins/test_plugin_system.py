@@ -141,7 +141,7 @@ class TestReportPlugins:
         assert "测试摘要" in content
         assert "HOLD" in content
 
-    def test_markdown_render_to_file(self, tmp_path):
+    def test_markdown_render_to_file(self):
         """测试 Markdown 渲染到文件"""
         from plugins.reports.markdown import MarkdownReportPlugin
 
@@ -150,7 +150,7 @@ class TestReportPlugins:
 
         output_path = plugin.render_to_file(
             test_data,
-            str(tmp_path / "test_report"),
+            "local_test_report/test_plugin_report",
         )
 
         assert output_path.endswith(".md")

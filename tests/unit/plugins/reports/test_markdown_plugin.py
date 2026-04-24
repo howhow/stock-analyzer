@@ -134,9 +134,9 @@ class TestMarkdownReportPlugin:
 
     # === render_to_file 测试 ===
 
-    def test_render_to_file(self, plugin, sample_data, tmp_path):
+    def test_render_to_file(self, plugin, sample_data):
         """渲染到文件"""
-        output_path = str(tmp_path / "test_report")
+        output_path = "local_test_report/test_markdown_report"
 
         result_path = plugin.render_to_file(sample_data, output_path)
 
@@ -145,9 +145,9 @@ class TestMarkdownReportPlugin:
         content = Path(result_path).read_text(encoding="utf-8")
         assert "600519.SH" in content
 
-    def test_render_to_file_with_extension(self, plugin, sample_data, tmp_path):
+    def test_render_to_file_with_extension(self, plugin, sample_data):
         """输出路径已有扩展名"""
-        output_path = str(tmp_path / "test_report.txt")
+        output_path = "local_test_report/test_report.txt"
 
         result_path = plugin.render_to_file(sample_data, output_path)
 
@@ -155,9 +155,9 @@ class TestMarkdownReportPlugin:
         assert result_path.endswith(".md")
         assert not result_path.endswith(".txt")
 
-    def test_render_to_file_creates_directory(self, plugin, sample_data, tmp_path):
+    def test_render_to_file_creates_directory(self, plugin, sample_data):
         """自动创建目录"""
-        output_path = str(tmp_path / "sub" / "dir" / "report")
+        output_path = "local_test_report/sub/dir/report"
 
         result_path = plugin.render_to_file(sample_data, output_path)
 

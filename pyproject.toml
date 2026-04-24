@@ -12,7 +12,7 @@ strict_optional = true
 
 [tool.coverage.run]
 # 覆盖率数据文件路径
-data_file = "local_analyze_report/coverage/.coverage"
+data_file = "local_test_report/coverage/.coverage"
 
 # 并行模式
 parallel = true
@@ -44,8 +44,8 @@ precision = 2
 
 [tool.coverage.html]
 # HTML报告输出目录
-directory = "local_analyze_report/coverage/htmlcov"
+directory = "local_test_report/coverage/htmlcov"
 
 [tool.coverage.xml]
 # XML报告输出路径
-output = "local_analyze_report/coverage/coverage.xml"
+output = "local_test_report/coverage/coverage.xml"

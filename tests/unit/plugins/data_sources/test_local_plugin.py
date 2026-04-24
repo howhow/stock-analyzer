@@ -125,9 +125,12 @@ class TestHealthCheck:
     """健康检查测试"""
 
     @pytest.mark.asyncio
-    async def test_health_check_existing_dir(self, tmp_path):
+    async def test_health_check_existing_dir(self):
         """测试目录存在时返回 True"""
-        config = LocalPluginConfig(data_dir=str(tmp_path))
+        import os
+
+        os.makedirs("local_test_report/test_data", exist_ok=True)
+        config = LocalPluginConfig(data_dir="local_test_report/test_data")
         plugin = LocalPlugin(config=config)
 
         result = await plugin.health_check()
