@@ -35,12 +35,15 @@ class TestMainApp:
         assert "version" in data
         assert "docs" in data
         assert "health" in data
+        # 验证返回的 health 路径正确
+        assert data.get("health") == "/api/v1/health"
 
     def test_health_endpoint(self):
         """测试健康检查"""
+        from app.api.paths import API_HEALTH
         client = TestClient(app)
 
-        response = client.get("/api/health")
+        response = client.get(API_HEALTH)
 
         # 可能返回 200 或 404（取决于路由）
         assert response.status_code in [200, 404]
