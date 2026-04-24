@@ -1,3 +1,5 @@
+import sys
+
 """Web服务启动验证集成测试"""
 
 import pytest

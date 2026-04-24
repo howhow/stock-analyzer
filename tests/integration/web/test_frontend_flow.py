@@ -1,3 +1,5 @@
+import sys
+
 """前端操作流程集成测试 — 使用Playwright模拟用户操作"""
 
 import pytest

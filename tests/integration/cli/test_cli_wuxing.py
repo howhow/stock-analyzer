@@ -1,3 +1,5 @@
+import sys
+
 """CLI五行引擎分析集成测试"""
 
 import subprocess
@@ -26,7 +28,7 @@ class TestCLIWuxing:
 
         result = subprocess.run(
             [
-                "python",
+                sys.executable,
                 "stock_analyzer.py",
                 "688981.SH",
                 "--type",

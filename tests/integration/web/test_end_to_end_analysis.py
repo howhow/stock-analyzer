@@ -1,3 +1,5 @@
+import sys
+
 """端到端分析流程集成测试 — 完整用户场景"""
 
 import subprocess
@@ -28,7 +30,7 @@ class TestEndToEndAnalysis:
         # 执行完整分析
         result = subprocess.run(
             [
-                "python",
+                sys.executable,
                 "stock_analyzer.py",
                 "688981.SH",
                 "--type",

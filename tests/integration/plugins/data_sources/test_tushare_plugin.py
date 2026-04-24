@@ -12,7 +12,7 @@ class TestTusharePluginIntegration:
         from plugins.data_sources.tushare.plugin import TusharePlugin
 
         plugin = TusharePlugin()
-        result = plugin.fetch_daily_quotes("688981.SH")
+        result = plugin.get_quotes("688981.SH")
 
         assert result is not None
         assert len(result) > 0
@@ -23,7 +23,7 @@ class TestTusharePluginIntegration:
         from plugins.data_sources.tushare.plugin import TusharePlugin
 
         plugin = TusharePlugin()
-        result = plugin.fetch_financial_data("688981.SH")
+        result = plugin.fetch_financial("688981.SH")
 
         assert result is not None
         assert "pe" in result or "pb" in result or len(result) > 0

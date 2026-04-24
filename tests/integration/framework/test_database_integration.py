@@ -13,10 +13,16 @@ class TestDatabaseIntegration:
 
         from sqlalchemy import create_engine, text
 
+        # 使用 sqlite 进行同步测试
         database_url = os.getenv(
             "DATABASE_URL", "sqlite:///local_test_report/test_integration.db"
         )
-        engine = create_engine(database_url)
+
+        # 如果是 asyncpg URL，转为 sqlite
+        if database_url.startswith("postgresql+asyncpg"):
+            database_url = "sqlite:///local_test_report/test_integration.db"
+
+        engine = create_engine(database_url, echo=False)
 
         with engine.connect() as conn:
             result = conn.execute(text("SELECT 1"))
@@ -29,10 +35,16 @@ class TestDatabaseIntegration:
         from sqlalchemy import Column, Integer, String, create_engine
         from sqlalchemy.orm import declarative_base, sessionmaker
 
+        # 使用 sqlite 进行同步测试
         database_url = os.getenv(
             "DATABASE_URL", "sqlite:///local_test_report/test_integration.db"
         )
-        engine = create_engine(database_url)
+
+        # 如果是 asyncpg URL，转为 sqlite
+        if database_url.startswith("postgresql+asyncpg"):
+            database_url = "sqlite:///local_test_report/test_integration.db"
+
+        engine = create_engine(database_url, echo=False)
         Base = declarative_base()
 
         class TestModel(Base):

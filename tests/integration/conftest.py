@@ -3,6 +3,7 @@
 import os
 import socket
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -93,8 +94,14 @@ def test_output_dir():
 def datahub():
     """真实 DataHub 实例（session 级别，通过 DataHub 调用数据源）"""
     from framework.data.hub import DataHub
+    from plugins.data_sources.tushare.plugin import TusharePlugin
+    from plugins.data_sources.akshare.plugin import AKSharePlugin
 
-    hub = DataHub()
+    # 创建数据源实例
+    tushare = TusharePlugin()
+    akshare = AKSharePlugin()
+
+    hub = DataHub(sources=[tushare, akshare])
     return hub
 
 
@@ -106,7 +113,7 @@ def api_service():
     # 启动API服务
     api_process = subprocess.Popen(
         [
-            "python",
+            sys.executable,
             "-m",
             "uvicorn",
             "app.main:app",
@@ -146,7 +153,7 @@ def celery_worker():
     """启动 Celery Worker（class 级别）"""
     celery_process = subprocess.Popen(
         [
-            "python",
+            sys.executable,
             "-m",
             "celery",
             "-A",

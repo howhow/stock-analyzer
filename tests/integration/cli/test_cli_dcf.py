@@ -1,3 +1,5 @@
+import sys
+
 """CLI DCF估值分析集成测试"""
 
 import subprocess
@@ -26,7 +28,7 @@ class TestCLIDCF:
 
         result = subprocess.run(
             [
-                "python",
+                sys.executable,
                 "stock_analyzer.py",
                 "688981.SH",  # 中芯国际
                 "--type",

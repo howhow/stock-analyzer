@@ -1,3 +1,5 @@
+import sys
+
 """CLI报告输出验证集成测试"""
 
 import subprocess
@@ -26,7 +28,7 @@ class TestCLIOutput:
 
         result = subprocess.run(
             [
-                "python",
+                sys.executable,
                 "stock_analyzer.py",
                 "688981.SH",
                 "--output",
@@ -65,7 +67,7 @@ class TestCLIOutput:
 
         result = subprocess.run(
             [
-                "python",
+                sys.executable,
                 "stock_analyzer.py",
                 "688981.SH",
                 "--output",
