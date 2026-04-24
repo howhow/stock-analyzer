@@ -7,6 +7,8 @@
 from datetime import date
 from typing import Protocol, runtime_checkable
 
+import pandas as pd
+
 from framework.models.quote import StandardQuote
 
 
@@ -96,5 +98,59 @@ class DataSourceInterface(Protocol):
 
         Returns:
             股票代码列表
+        """
+        ...
+
+    # ═══════════════════════════════════════════════════════════════
+    # 财务数据接口（v1.3 新增）
+    # 每个方法只获取一种原始数据，返回 DataFrame
+    # 数据聚合由业务层完成
+    # ═══════════════════════════════════════════════════════════════
+
+    async def fetch_financial(
+        self,
+        symbol: str,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """
+        获取每日财务指标（PE/PB/换手率等）
+
+        Args:
+            symbol: 股票代码（如 '600519.SH'）
+
+        Returns:
+            财务指标 DataFrame
+        """
+        ...
+
+    async def fetch_income(
+        self,
+        symbol: str,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """
+        获取利润表数据（营收、净利润等）
+
+        Args:
+            symbol: 股票代码（如 '600519.SH'）
+
+        Returns:
+            利润表 DataFrame
+        """
+        ...
+
+    async def fetch_fina_indicator(
+        self,
+        symbol: str,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """
+        获取财务指标数据（ROE/ROA等）
+
+        Args:
+            symbol: 股票代码（如 '600519.SH'）
+
+        Returns:
+            财务指标 DataFrame
         """
         ...

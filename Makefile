@@ -198,10 +198,16 @@ test-integration: venv-check
 	@echo "🔌 运行集成测试..."
 	@echo "⚠️  注意：集成测试会调用真实 Tushare API，消耗积分"
 	@test -f .env || (echo "❌ .env 文件不存在，集成测试需要 TUSHARE_TOKEN" && exit 1)
+	@mkdir -p local_test_report/integration
 	$(PYTHON) -m pytest tests/integration/ -v \
 		-s \
-		--tb=short
+		--tb=short \
+		--html=local_test_report/integration/report.html \
+		--self-contained-html \
+		2>&1 | tee local_test_report/integration/test_output.log
 	@echo "✅ 集成测试完成"
+	@echo "📊 HTML报告: local_test_report/integration/report.html"
+	@echo "📝 日志文件: local_test_report/integration/test_output.log"
 
 # test-all: 顺序运行单元测试 + 集成测试 + 压力测试
 test-all:

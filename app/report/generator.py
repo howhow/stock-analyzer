@@ -318,8 +318,11 @@ class ReportGenerator:
             "indicators": final_indicators,
             # 新增：基本面数据
             "fundamentals": final_fundamentals,
-            # 新增：动态风险提示
-            "risk_warnings": risk_warnings,
+            # 新增：框架级分析数据
+            "dcf": getattr(result, "details", {}).get("dcf", {}) if hasattr(result, "details") else {},
+            "seasons": getattr(result, "details", {}).get("seasons", {}) if hasattr(result, "details") else {},
+            "wuxing": getattr(result, "details", {}).get("wuxing", {}) if hasattr(result, "details") else {},
+            "safety_margin": getattr(result, "details", {}).get("safety_margin", {}) if hasattr(result, "details") else {},
             # 生成器版本
             "generator_version": self.version,
         }

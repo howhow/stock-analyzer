@@ -7,6 +7,8 @@ import asyncio
 from datetime import date, datetime
 from typing import Any
 
+import pandas as pd
+
 from app.utils.logger import get_logger
 from config import settings
 from framework.interfaces.data_source import DataSourceInterface
@@ -292,6 +294,155 @@ class TusharePlugin:
         """关闭插件（清理资源）"""
         await self._client.close()
         logger.info("tushare_plugin_closed")
+
+    # ═══════════════════════════════════════════════════════════════
+    # 财务数据接口（v1.3 新增）
+    # 每个方法只获取一种原始数据，返回 DataFrame
+    # 数据聚合由业务层完成
+    # ═══════════════════════════════════════════════════════════════
+
+    async def fetch_financial(
+        self,
+        symbol: str,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """获取每日财务指标（PE/PB/换手率等）
+
+        Args:
+            symbol: 股票代码（如 '600519.SH'）
+
+        Returns:
+            财务指标 DataFrame
+        """
+        normalized_code = self._normalize_stock_code(symbol)
+
+        logger.info(
+            "tushare_plugin_fetch_financial",
+            stock_code=normalized_code,
+        )
+
+        try:
+            df = await self._client.get_daily_basic(
+                ts_code=normalized_code,
+                fields="ts_code,trade_date,pe,pb,turnover_rate",
+            )
+
+            if df is None or df.empty:
+                raise TushareNoDataError(
+                    f"未找到股票 {normalized_code} 的财务指标数据"
+                )
+
+            logger.info(
+                "tushare_plugin_fetch_financial_success",
+                stock_code=normalized_code,
+                rows=len(df),
+            )
+
+            return df
+
+        except TushareError as e:
+            logger.error(
+                "tushare_plugin_fetch_financial_failed",
+                stock_code=normalized_code,
+                error=str(e),
+            )
+            raise
+
+    async def fetch_income(
+        self,
+        symbol: str,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """获取利润表数据（营收、净利润等）
+
+        Args:
+            symbol: 股票代码（如 '600519.SH'）
+
+        Returns:
+            利润表 DataFrame
+        """
+        normalized_code = self._normalize_stock_code(symbol)
+
+        logger.info(
+            "tushare_plugin_fetch_income",
+            stock_code=normalized_code,
+        )
+
+        try:
+            df = await self._client.get_income(
+                ts_code=normalized_code,
+                fields="ts_code,ann_date,f_ann_date,end_date,total_revenue,n_income",
+                limit=1,
+            )
+
+            if df is None or df.empty:
+                raise TushareNoDataError(
+                    f"未找到股票 {normalized_code} 的利润表数据"
+                )
+
+            logger.info(
+                "tushare_plugin_fetch_income_success",
+                stock_code=normalized_code,
+                rows=len(df),
+            )
+
+            return df
+
+        except TushareError as e:
+            logger.error(
+                "tushare_plugin_fetch_income_failed",
+                stock_code=normalized_code,
+                error=str(e),
+            )
+            raise
+
+    async def fetch_fina_indicator(
+        self,
+        symbol: str,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """获取财务指标数据（ROE/ROA等）
+
+        Args:
+            symbol: 股票代码（如 '600519.SH'）
+
+        Returns:
+            财务指标 DataFrame
+        """
+        normalized_code = self._normalize_stock_code(symbol)
+
+        logger.info(
+            "tushare_plugin_fetch_fina_indicator",
+            stock_code=normalized_code,
+        )
+
+        try:
+            df = await self._client.get_fina_indicator(
+                ts_code=normalized_code,
+                fields="ts_code,ann_date,end_date,roe,roe_diluted",
+                limit=1,
+            )
+
+            if df is None or df.empty:
+                raise TushareNoDataError(
+                    f"未找到股票 {normalized_code} 的财务指标数据"
+                )
+
+            logger.info(
+                "tushare_plugin_fetch_fina_indicator_success",
+                stock_code=normalized_code,
+                rows=len(df),
+            )
+
+            return df
+
+        except TushareError as e:
+            logger.error(
+                "tushare_plugin_fetch_fina_indicator_failed",
+                stock_code=normalized_code,
+                error=str(e),
+            )
+            raise
 
 
 # 插件注册信息（用于动态加载）

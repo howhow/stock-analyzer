@@ -14,7 +14,8 @@ class TestDCFIntegration:
         """使用真实 SMIC 数据进行 DCF 估值"""
         dcf = DCFValuation()
 
-        # 从真实数据提取 FCF
+        # 从真实数据提取参数（通过 DataHub 获取的聚合数据）
+        current_price = smic_financial_data.get("current_price", 80.0)
         current_fcf = smic_financial_data.get("free_cash_flow", 50.0)
         shares = smic_financial_data.get("shares_outstanding", 10.0)
 
@@ -30,5 +31,4 @@ class TestDCFIntegration:
         assert result.ci_95[0] < result.mean < result.ci_95[1]
 
         # 与当前股价对比（±30% 合理区间）
-        current_price = smic_financial_data.get("current_price", 80.0)
         assert result.ci_95[0] * 0.7 <= current_price <= result.ci_95[1] * 1.3

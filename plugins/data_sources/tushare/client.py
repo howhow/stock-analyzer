@@ -257,7 +257,10 @@ class TushareClient:
             TushareCircuitBreakerError: 熔断器开启
         """
         # 检查熔断器
-        if not await self._circuit_breaker.can_execute():
+        can_execute = self._circuit_breaker.can_execute()
+        if asyncio.iscoroutine(can_execute):
+            can_execute = await can_execute
+        if not can_execute:
             raise TushareCircuitBreakerError(
                 f"Tushare 服务熔断中，请稍后重试（状态：{self._circuit_breaker.state}）"
             )
@@ -276,7 +279,9 @@ class TushareClient:
                 )
 
                 # 记录成功
-                await self._circuit_breaker.record_success()
+                record_success = self._circuit_breaker.record_success()
+                if asyncio.iscoroutine(record_success):
+                    await record_success
                 logger.debug(
                     "tushare_api_success",
                     func=func.__name__,
@@ -299,7 +304,9 @@ class TushareClient:
 
                 # 认证错误 - 不重试
                 if "token" in error_msg or "auth" in error_msg:
-                    await self._circuit_breaker.record_failure()
+                    record_failure = self._circuit_breaker.record_failure()
+                    if asyncio.iscoroutine(record_failure):
+                        await record_failure
                     raise TushareAuthError(f"Tushare 认证失败：{e}") from e
 
                 # 速率限制 - 等待后重试
@@ -328,7 +335,9 @@ class TushareClient:
                     await asyncio.sleep(2**attempt)
 
         # 所有重试失败
-        await self._circuit_breaker.record_failure()
+        record_failure = self._circuit_breaker.record_failure()
+        if asyncio.iscoroutine(record_failure):
+            await record_failure
         raise TushareError(
             f"Tushare API 调用失败（重试 {self.max_retries} 次后）：{last_error}",
             code="API_ERROR",
@@ -351,3 +360,106 @@ class TushareClient:
     async def close(self) -> None:
         """关闭客户端（清理资源）"""
         logger.info("tushare_client_closed")
+
+    # ═══════════════════════════════════════════════════════════════
+    # 财务数据接口（v1.3 新增）
+    # 每个方法只获取一种原始数据，返回 DataFrame
+    # 数据聚合由业务层完成
+    # ═══════════════════════════════════════════════════════════════
+
+    async def get_daily_basic(
+        self,
+        ts_code: str,
+        fields: str = "ts_code,trade_date,pe,pb,turnover_rate",
+    ) -> pd.DataFrame:
+        """获取每日财务指标（PE/PB/换手率等）
+
+        Args:
+            ts_code: 股票代码（如 '600519.SH'）
+            fields: 返回字段
+
+        Returns:
+            财务指标 DataFrame
+        """
+        result = await self._call_api(
+            self.pro.daily_basic,
+            ts_code=ts_code,
+            fields=fields,
+        )
+
+        if result is None or result.empty:
+            raise TushareNoDataError(
+                f"未找到股票 {ts_code} 的每日财务指标数据"
+            )
+
+        return result
+
+    async def get_income(
+        self,
+        ts_code: str,
+        fields: str = "ts_code,ann_date,f_ann_date,end_date,total_revenue,n_income",
+        limit: int | None = None,
+    ) -> pd.DataFrame:
+        """获取利润表数据（营收、净利润等）
+
+        Args:
+            ts_code: 股票代码（如 '600519.SH'）
+            fields: 返回字段
+            limit: 限制返回条数
+
+        Returns:
+            利润表 DataFrame
+        """
+        kwargs: dict[str, Any] = {
+            "ts_code": ts_code,
+            "fields": fields,
+        }
+        if limit is not None:
+            kwargs["limit"] = limit
+
+        result = await self._call_api(
+            self.pro.income,
+            **kwargs,
+        )
+
+        if result is None or result.empty:
+            raise TushareNoDataError(
+                f"未找到股票 {ts_code} 的利润表数据"
+            )
+
+        return result
+
+    async def get_fina_indicator(
+        self,
+        ts_code: str,
+        fields: str = "ts_code,ann_date,end_date,roe,roe_diluted",
+        limit: int | None = None,
+    ) -> pd.DataFrame:
+        """获取财务指标数据（ROE/ROA等）
+
+        Args:
+            ts_code: 股票代码（如 '600519.SH'）
+            fields: 返回字段
+            limit: 限制返回条数
+
+        Returns:
+            财务指标 DataFrame
+        """
+        kwargs: dict[str, Any] = {
+            "ts_code": ts_code,
+            "fields": fields,
+        }
+        if limit is not None:
+            kwargs["limit"] = limit
+
+        result = await self._call_api(
+            self.pro.fina_indicator,
+            **kwargs,
+        )
+
+        if result is None or result.empty:
+            raise TushareNoDataError(
+                f"未找到股票 {ts_code} 的财务指标数据"
+            )
+
+        return result

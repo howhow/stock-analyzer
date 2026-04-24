@@ -93,6 +93,42 @@ class DataHub:
         """
         return await self._fetch_with_fallback(symbol, "fetch_financial", **kwargs)
 
+    async def fetch_income(
+        self,
+        symbol: str,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """获取利润表数据 — 主源失败自动降级
+
+        Args:
+            symbol: 股票代码
+
+        Returns:
+            利润表 DataFrame
+
+        Raises:
+            NoDataSourceAvailable: 所有数据源均不可用
+        """
+        return await self._fetch_with_fallback(symbol, "fetch_income", **kwargs)
+
+    async def fetch_fina_indicator(
+        self,
+        symbol: str,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """获取财务指标数据 — 主源失败自动降级
+
+        Args:
+            symbol: 股票代码
+
+        Returns:
+            财务指标 DataFrame
+
+        Raises:
+            NoDataSourceAvailable: 所有数据源均不可用
+        """
+        return await self._fetch_with_fallback(symbol, "fetch_fina_indicator", **kwargs)
+
     async def _fetch_with_fallback(
         self,
         symbol: str,

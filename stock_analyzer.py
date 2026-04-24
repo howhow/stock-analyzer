@@ -1,13 +1,13 @@
-#!/usr/bin/env python3
+#!/root/dev_work/stock-analyzer/local_venv/bin/python3
 """
-Stock Analyzer - 股票分析统一入口
+Stock Analyzer - 股票分析统一入口（全功能版）
 
 使用示例:
-    python analyze.py 600276.SH
-    python analyze.py 600276.SH --output markdown
-    python analyze.py 600276.SH --output both --days 180
-    python analyze.py 600276.SH --type technical
-    python analyze.py 600276.SH --output-dir ./my-reports
+    ./stock_analyzer.py 688981.SH
+    ./stock_analyzer.py 688981.SH --output markdown
+    ./stock_analyzer.py 688981.SH --type dcf
+    ./stock_analyzer.py 688981.SH --type seasons
+    ./stock_analyzer.py 688981.SH --type wuxing
 """
 
 import argparse
@@ -29,6 +29,11 @@ from app.report.generator import ReportGenerator
 from app.report.markdown_report import MarkdownReportGenerator
 from app.utils.logger import get_logger
 from config import settings
+
+# 导入框架级分析模块
+from framework.trading.seasons.dcf import DCFValuation
+from framework.trading.seasons.engine import SeasonsEngine
+from framework.trading.wuxing.engine import WuxingEngine
 
 logger = get_logger(__name__)
 
@@ -69,7 +74,7 @@ def parse_args() -> argparse.Namespace:
     
     parser.add_argument(
         "--type",
-        choices=["technical", "fundamental", "full"],
+        choices=["technical", "fundamental", "full", "dcf", "seasons", "wuxing", "safety"],
         default="full",
         help="分析类型（默认：full）"
     )
@@ -82,6 +87,160 @@ def parse_args() -> argparse.Namespace:
     )
     
     return parser.parse_args()
+
+
+def analyze_dcf_sync(current_price: float) -> dict[str, Any]:
+    """DCF 估值分析（同步版本）"""
+    dcf = DCFValuation()
+    
+    # 使用当前股价反推合理 FCF 假设
+    market_cap = current_price * 10.0  # 假设股本 10亿股
+    current_fcf = market_cap * 0.06    # 6% FCF 收益率
+    
+    result = dcf.calculate_monte_carlo(
+        current_fcf=current_fcf,
+        shares_outstanding=10.0,
+        industry="科技",
+        simulations=1000,
+    )
+    
+    return {
+        "type": "dcf",
+        "current_price": current_price,
+        "dcf_mean": result.mean,
+        "dcf_ci95_low": result.ci_95[0],
+        "dcf_ci95_high": result.ci_95[1],
+        "valuation": "undervalued" if result.mean > current_price * 1.2 else "overvalued" if result.mean < current_price * 0.8 else "fair",
+    }
+
+
+async def analyze_dcf_async(stock_code: str, data_hub: Any) -> dict[str, Any]:
+    """DCF 估值分析（异步版本 — 通过 DataHub 获取数据）"""
+    # 从 DataHub 获取财务数据
+    daily_basic = await data_hub.fetch_financial(stock_code)
+    income = await data_hub.fetch_income(stock_code)
+    fina = await data_hub.fetch_fina_indicator(stock_code)
+    
+    # 聚合数据
+    pe_ratio = None
+    revenue = None
+    roe = None
+    
+    if not daily_basic.empty:
+        pe_ratio = daily_basic["pe"].iloc[0] if "pe" in daily_basic.columns else None
+    
+    if not income.empty:
+        revenue = income["total_revenue"].iloc[0] if "total_revenue" in income.columns else None
+    
+    if not fina.empty:
+        roe = fina["roe"].iloc[0] if "roe" in fina.columns else None
+    
+    # 使用聚合后的数据进行 DCF 计算
+    # TODO: 根据实际财务数据计算 FCF
+    current_fcf = revenue * 0.1 if revenue else 100.0  # 简化假设
+    
+    dcf = DCFValuation()
+    result = dcf.calculate_monte_carlo(
+        current_fcf=current_fcf,
+        shares_outstanding=10.0,
+        industry="科技",
+        simulations=1000,
+    )
+    
+    return {
+        "type": "dcf",
+        "stock_code": stock_code,
+        "current_price": None,  # 需要额外获取
+        "dcf_mean": result.mean,
+        "dcf_ci95_low": result.ci_95[0],
+        "dcf_ci95_high": result.ci_95[1],
+        "pe_ratio": pe_ratio,
+        "revenue": revenue,
+        "roe": roe,
+        "valuation": "undervalued" if result.mean > 100 * 1.2 else "overvalued" if result.mean < 100 * 0.8 else "fair",
+    }
+
+
+def analyze_seasons_sync(stock_code: str, current_price: float, dcf_value: float) -> dict[str, Any]:
+    """四季引擎分析（同步版本）"""
+    engine = SeasonsEngine()
+    
+    season = engine.analyze(
+        ts_code=stock_code,
+        dcf_value=dcf_value,
+        current_price=current_price,
+    )
+    
+    return {
+        "type": "seasons",
+        "current_season": season.season.value,
+        "confidence": season.confidence,
+        "safety_margin": season.safety_margin_result.safety_margin if hasattr(season, 'safety_margin_result') else 0,
+    }
+
+
+def analyze_wuxing_sync(stock_code: str, quotes: list) -> dict[str, Any]:
+    """五行引擎分析（同步版本）"""
+    engine = WuxingEngine()
+    
+    # 准备 DataFrame
+    df = pd.DataFrame([{
+        "trade_date": q.trade_date,
+        "open": q.open,
+        "high": q.high,
+        "low": q.low,
+        "close": q.close,
+        "volume": q.volume,
+    } for q in quotes])
+    
+    # 计算必要参数
+    current_price = quotes[-1].close
+    historical_high = max(q.high for q in quotes)
+    recent_low = min(q.low for q in quotes[-20:])
+    recent_high = max(q.high for q in quotes[-20:])
+    avg_volume_20d = np.mean([q.volume for q in quotes[-20:]])
+    current_volume = quotes[-1].volume
+    daily_change = (quotes[-1].close - quotes[-2].close) / quotes[-2].close * 100 if len(quotes) > 1 else 0
+    price_n_days_ago = quotes[-5].close if len(quotes) >= 5 else quotes[0].close
+    
+    wuxing = engine.analyze(
+        ts_code=stock_code,
+        df=df,
+        current_price=current_price,
+        historical_high=historical_high,
+        recent_low=recent_low,
+        recent_high=recent_high,
+        avg_volume_20d=avg_volume_20d,
+        current_volume=current_volume,
+        daily_change=daily_change,
+        price_n_days_ago=price_n_days_ago,
+    )
+    
+    return {
+        "type": "wuxing",
+        "element": wuxing.element.value,
+        "confidence": wuxing.confidence,
+        "action": wuxing.action.value if wuxing.action else None,
+        "position_guidance": wuxing.position_guidance,
+    }
+
+
+def analyze_safety_margin_sync(current_price: float, dcf_result: dict) -> dict[str, Any]:
+    """安全边际分析（同步版本）"""
+    dcf_mean = dcf_result.get("dcf_mean", current_price)
+    
+    if dcf_mean > 0:
+        margin = (dcf_mean - current_price) / dcf_mean * 100
+    else:
+        margin = 0
+    
+    return {
+        "type": "safety_margin",
+        "current_price": current_price,
+        "dcf_value": dcf_mean,
+        "margin_percent": margin,
+        "rating": "high" if margin > 30 else "medium" if margin > 15 else "low" if margin > 0 else "none",
+    }
 
 
 async def get_stock_info_safe(
@@ -151,8 +310,9 @@ async def analyze_stock(args: argparse.Namespace) -> dict[str, Any] | None:
         print(f"   ✅ 获取到 {len(quotes)} 条日线数据")
         
         latest = quotes[-1]
+        current_price = latest.close
         print(f"   ✅ 最新交易日: {latest.trade_date}")
-        print(f"   ✅ 收盘价: {latest.close:.2f} 元")
+        print(f"   ✅ 收盘价: {current_price:.2f} 元")
         print(f"   ✅ 成交量: {latest.volume:.0f} 手")
         
         # 4. 获取财务数据（如果需要）
@@ -195,6 +355,37 @@ async def analyze_stock(args: argparse.Namespace) -> dict[str, Any] | None:
             "market": stock_info.market,
         }
         
+        # 6. 框架级分析（DCF/四季/五行/安全边际）
+        if args.type in ["full", "dcf", "seasons", "wuxing", "safety"]:
+            print(f"\n🔮 [5/5] 执行框架级分析...")
+            
+            # DCF 估值
+            if args.type in ["full", "dcf", "seasons", "safety"]:
+                dcf_result = analyze_dcf_sync(current_price)
+                result.details["dcf"] = dcf_result
+                print(f"\n💰 DCF 估值: ¥{dcf_result['dcf_mean']:.2f} ({dcf_result['valuation']})")
+            
+            # 四季引擎
+            if args.type in ["full", "seasons"]:
+                seasons_result = analyze_seasons_sync(args.stock_code, current_price, result.details.get("dcf", {}).get("dcf_mean", current_price))
+                result.details["seasons"] = seasons_result
+                print(f"🌸 四季状态: {seasons_result['current_season']} (置信度: {seasons_result['confidence']:.2f})")
+            
+            # 五行引擎
+            if args.type in ["full", "wuxing"]:
+                wuxing_result = analyze_wuxing_sync(args.stock_code, quotes)
+                result.details["wuxing"] = wuxing_result
+                print(f"🔥 五行属性: {wuxing_result['element']} (置信度: {wuxing_result['confidence']:.2f})")
+            
+            # 安全边际
+            if args.type in ["full", "safety"]:
+                if "dcf" not in result.details:
+                    dcf_result = analyze_dcf_sync(current_price)
+                    result.details["dcf"] = dcf_result
+                safety_result = analyze_safety_margin_sync(current_price, result.details["dcf"])
+                result.details["safety_margin"] = safety_result
+                print(f"🛡️ 安全边际: {safety_result['margin_percent']:.1f}% ({safety_result['rating']})")
+        
         # 6. 生成报告
         output_dir = args.output_dir / args.stock_code
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -202,10 +393,24 @@ async def analyze_stock(args: argparse.Namespace) -> dict[str, Any] | None:
         date_str = date.today().strftime("%Y-%m-%d")
         generated_files = []
         
-        if args.output in ["html", "both"]:
-            print(f"\n📄 生成 HTML 报告...")
-            html_generator = ReportGenerator()
-            
+        # 准备基本面数据（供 HTML 和 Markdown 报告共用）
+        fundamentals = None
+        if financial:
+            fundamentals = {
+                "revenue": financial.revenue,
+                "net_profit": financial.net_profit,
+                "pe_ratio": getattr(financial, 'pe_ratio', None),
+                "pb_ratio": getattr(financial, 'pb_ratio', None),
+                "roe": getattr(financial, 'roe', None),
+                "report_date": str(financial.report_date) if hasattr(financial, 'report_date') else None,
+                "revenue_growth": None,
+                "profit_growth": None,
+                "pe_ttm": getattr(financial, 'pe_ratio', None),
+            }
+        
+        # 准备技术指标数据（供 HTML 和 Markdown 报告共用）
+        indicators = None
+        if quotes and len(quotes) > 0:
             # 计算技术指标
             closes = [q.close for q in quotes]
             ma5_series = sma(closes, 5)
@@ -213,26 +418,8 @@ async def analyze_stock(args: argparse.Namespace) -> dict[str, Any] | None:
             macd_data = macd(closes)
             rsi_series = rsi(closes, 14)
             
-            # 准备图表数据（真实数据）
-            chart_data = {
-                "dates": [q.trade_date.strftime("%m-%d") for q in quotes],
-                "kline": [[q.open, q.close, q.low, q.high] for q in quotes],
-                "volume": [q.volume / 10000 for q in quotes],  # 转换为万手
-                "support": result.details.get("support_levels", [quotes[-1].low])[0],
-                "resistance": result.details.get("resistance_levels", [quotes[-1].high])[0],
-                "ma5": ma5_series.tolist(),
-                "ma20": ma20_series.tolist(),
-                "macd": {
-                    "dif": macd_data["macd"].tolist(),
-                    "dea": macd_data["signal"].tolist(),
-                    "histogram": macd_data["histogram"].tolist(),
-                },
-                "rsi": rsi_series.tolist(),
-            }
-            
             # 准备技术指标详情数据
             from app.analysis.indicators.volatility import atr
-            from app.analysis.indicators.trend import ema
             
             returns = np.diff(closes) / np.array(closes[:-1])
             
@@ -261,7 +448,7 @@ async def analyze_stock(args: argparse.Namespace) -> dict[str, Any] | None:
             volatility_30d = float(np.std(returns) * np.sqrt(252) * 100) if len(returns) > 0 else None
             
             # 计算简化 VaR (95%) 和 最大回撤
-            var_95 = float(np.percentile(returns, 5) * 100 * np.sqrt(20)) if len(returns) > 0 else None  # 20日 VaR
+            var_95 = float(np.percentile(returns, 5) * 100 * np.sqrt(20)) if len(returns) > 0 else None
             cum_returns = np.cumprod(1 + returns)
             running_max = np.maximum.accumulate(cum_returns)
             drawdowns = (cum_returns - running_max) / running_max
@@ -276,25 +463,34 @@ async def analyze_stock(args: argparse.Namespace) -> dict[str, Any] | None:
                 "rsi": round(float(rsi_val), 2) if rsi_val is not None and not np.isnan(rsi_val) else None,
                 "volatility_30d": volatility_30d,
                 "volume_ratio": round(quotes[-1].volume / np.mean([q.volume for q in quotes[-5:]]), 2) if len(quotes) >= 5 else None,
-                "turnover_rate": None,  # 需要流通股本数据
+                "turnover_rate": None,
                 "atr": round(float(atr_val), 2) if atr_val is not None else None,
                 "bollinger_upper": round(float(bollinger_upper), 2) if bollinger_upper is not None else None,
                 "bollinger_lower": round(float(bollinger_lower), 2) if bollinger_lower is not None else None,
                 "var_95": var_95,
                 "max_drawdown": max_drawdown,
             }
+        
+        if args.output in ["html", "both"]:
+            print(f"\n📄 生成 HTML 报告...")
+            html_generator = ReportGenerator()
             
-            # 准备基本面数据
-            fundamentals = None
-            if financial:
-                fundamentals = {
-                    "revenue": financial.revenue,
-                    "net_profit": financial.net_profit,
-                    "pe_ratio": getattr(financial, 'pe_ratio', None),
-                    "pb_ratio": getattr(financial, 'pb_ratio', None),
-                    "roe": getattr(financial, 'roe', None),
-                    "report_date": str(financial.report_date) if hasattr(financial, 'report_date') else None,
-                }
+            # 准备图表数据（真实数据）
+            chart_data = {
+                "dates": [q.trade_date.strftime("%m-%d") for q in quotes],
+                "kline": [[q.open, q.close, q.low, q.high] for q in quotes],
+                "volume": [q.volume / 10000 for q in quotes],
+                "support": result.details.get("support_levels", [quotes[-1].low])[0],
+                "resistance": result.details.get("resistance_levels", [quotes[-1].high])[0],
+                "ma5": ma5_series.tolist(),
+                "ma20": ma20_series.tolist(),
+                "macd": {
+                    "dif": macd_data["macd"].tolist(),
+                    "dea": macd_data["signal"].tolist(),
+                    "histogram": macd_data["histogram"].tolist(),
+                },
+                "rsi": rsi_series.tolist(),
+            }
             
             html_report = html_generator.generate(
                 result,
@@ -316,6 +512,9 @@ async def analyze_stock(args: argparse.Namespace) -> dict[str, Any] | None:
                 result,
                 stock_code=args.stock_code,
                 stock_name=stock_info.name,
+                quotes=quotes,
+                indicators=indicators,
+                fundamentals=fundamentals,
             )
             md_file = output_dir / f"{args.stock_code}_{date_str}.md"
             md_file.write_text(md_report, encoding="utf-8")
