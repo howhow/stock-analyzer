@@ -21,7 +21,7 @@ parallel = true
 branch = true
 
 # 源代码目录
-source = ["app", "framework"]
+source = ["app", "framework", "plugins"]
 
 # 排除 Protocol 接口（接口契约，非可执行代码）
 omit = [
