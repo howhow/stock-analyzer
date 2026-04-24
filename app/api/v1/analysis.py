@@ -233,7 +233,7 @@ async def analyze_stock_by_symbol(
     Returns:
         分析结果
     """
-    from app.models import AnalysisType, AnalysisMode
+    from app.models import AnalysisMode, AnalysisType
 
     # 构建请求对象
     request = AnalysisRequest(

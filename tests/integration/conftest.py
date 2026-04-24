@@ -94,8 +94,8 @@ def test_output_dir():
 def datahub():
     """真实 DataHub 实例（session 级别，通过 DataHub 调用数据源）"""
     from framework.data.hub import DataHub
-    from plugins.data_sources.tushare.plugin import TusharePlugin
     from plugins.data_sources.akshare.plugin import AKSharePlugin
+    from plugins.data_sources.tushare.plugin import TusharePlugin
 
     # 创建数据源实例
     tushare = TusharePlugin()
