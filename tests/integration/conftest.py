@@ -1,8 +1,12 @@
 """集成测试全局配置 — 集中加载 .env + 验证环境 + 共享 fixtures"""
 
 import os
+import subprocess
+import time
+from pathlib import Path
 
 import pytest
+import requests
 from dotenv import load_dotenv
 
 # ═══════════════════════════════════════════════════════════════
@@ -43,25 +47,85 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.fixture(scope="session")
-def tushare_client():
-    """真实 Tushare 客户端（session 级别，只创建一次）"""
-    import asyncio
-
-    from app.data.tushare_client import TushareClient
-
-    token = os.getenv("TUSHARE_TOKEN")
-    client = TushareClient(token)
-    # 如果有异步初始化，在这里处理
-    return client
+def test_output_dir():
+    """集成测试输出目录"""
+    output_dir = Path("local_test_report/integration")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    return output_dir
 
 
 @pytest.fixture(scope="session")
-def smic_financial_data(tushare_client):
-    """中芯国际真实财务数据"""
-    # 返回模拟数据，避免异步问题
-    return {
-        "free_cash_flow": 50.0,
-        "shares_outstanding": 10.0,
-        "current_price": 80.0,
-        "dcf_value": 100.0,
-    }
+def datahub():
+    """真实 DataHub 实例（session 级别，通过 DataHub 调用数据源）"""
+    from framework.data.hub import DataHub
+
+    hub = DataHub()
+    return hub
+
+
+@pytest.fixture(scope="class")
+def api_service():
+    """启动 API 服务（class 级别）"""
+    # 启动API服务
+    api_process = subprocess.Popen(
+        [
+            "python",
+            "-m",
+            "uvicorn",
+            "app.main:app",
+            "--host",
+            "0.0.0.0",
+            "--port",
+            "8000",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    # 等待服务就绪
+    max_retries = 30
+    for _ in range(max_retries):
+        try:
+            response = requests.get("http://localhost:8000/api/v1/health", timeout=1)
+            if response.status_code == 200:
+                break
+        except requests.exceptions.ConnectionError:
+            pass
+        time.sleep(1)
+    else:
+        api_process.terminate()
+        api_process.wait(timeout=5)
+        pytest.fail("API服务启动超时")
+
+    yield api_process
+
+    # 清理
+    api_process.terminate()
+    api_process.wait(timeout=5)
+
+
+@pytest.fixture(scope="class")
+def celery_worker():
+    """启动 Celery Worker（class 级别）"""
+    celery_process = subprocess.Popen(
+        [
+            "python",
+            "-m",
+            "celery",
+            "-A",
+            "app.tasks.celery_app",
+            "worker",
+            "--loglevel=info",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    # 等待worker启动
+    time.sleep(5)
+
+    yield celery_process
+
+    # 清理
+    celery_process.terminate()
+    celery_process.wait(timeout=5)
