@@ -51,6 +51,11 @@ class AKSharePlugin:
         return "akshare"
 
     @property
+    def priority(self) -> int:
+        """插件优先级（数值越小优先级越高）"""
+        return 20
+
+    @property
     def supported_markets(self) -> list[str]:
         """支持的市场列表"""
         return ["SH", "SZ"]
@@ -258,6 +263,51 @@ class AKSharePlugin:
         """
         logger.warning(f"AKShare 插件暂不支持财务指标数据: {symbol}")
         return pd.DataFrame()
+
+    async def fetch_daily(
+        self,
+        symbol: str,
+        start_date: date | None = None,
+        end_date: date | None = None,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """获取日线数据（DataHub 兼容接口）
+
+        Args:
+            symbol: 股票代码（如 '600519.SH'）
+            start_date: 开始日期
+            end_date: 结束日期
+            **kwargs: 额外参数
+
+        Returns:
+            日线数据 DataFrame
+        """
+        from datetime import timedelta
+
+        if end_date is None:
+            end_date = date.today()
+        if start_date is None:
+            start_date = end_date - timedelta(days=120)
+
+        quotes = await self.get_quotes(symbol, start_date, end_date)
+
+        if not quotes:
+            return pd.DataFrame()
+
+        # 转换为 DataFrame
+        data = []
+        for q in quotes:
+            data.append({
+                "ts_code": symbol,
+                "trade_date": q.trade_date.strftime("%Y%m%d"),
+                "open": q.open,
+                "high": q.high,
+                "low": q.low,
+                "close": q.close,
+                "volume": q.volume,
+            })
+
+        return pd.DataFrame(data)
 
     @property
     def client(self) -> AKShareClient:
