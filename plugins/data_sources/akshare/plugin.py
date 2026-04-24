@@ -7,6 +7,8 @@ AKShare 数据源插件
 import logging
 from datetime import date
 
+import pandas as pd
+
 from framework.models.quote import StandardQuote
 
 from .client import AKShareClient
@@ -205,6 +207,57 @@ class AKSharePlugin:
         logger.info(f"Retrieved {len(stocks)} stocks for market {market}")
 
         return stocks
+
+    async def fetch_financial(
+        self,
+        symbol: str,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """获取每日财务指标（PE/PB/换手率等）
+
+        Args:
+            symbol: 股票代码（如 '600519.SH'）
+            **kwargs: 额外参数
+
+        Returns:
+            财务指标 DataFrame
+        """
+        logger.warning(f"AKShare 插件暂不支持财务指标数据: {symbol}")
+        return pd.DataFrame()
+
+    async def fetch_income(
+        self,
+        symbol: str,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """获取利润表数据（营收、净利润等）
+
+        Args:
+            symbol: 股票代码（如 '600519.SH'）
+            **kwargs: 额外参数
+
+        Returns:
+            利润表 DataFrame
+        """
+        logger.warning(f"AKShare 插件暂不支持利润表数据: {symbol}")
+        return pd.DataFrame()
+
+    async def fetch_fina_indicator(
+        self,
+        symbol: str,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """获取财务指标数据（ROE/ROA等）
+
+        Args:
+            symbol: 股票代码（如 '600519.SH'）
+            **kwargs: 额外参数
+
+        Returns:
+            财务指标 DataFrame
+        """
+        logger.warning(f"AKShare 插件暂不支持财务指标数据: {symbol}")
+        return pd.DataFrame()
 
     @property
     def client(self) -> AKShareClient:
