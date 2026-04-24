@@ -39,6 +39,9 @@ class TestBloomFilterWithRedis:
         # 由于mock返回全1，应该返回True
         assert result is True
 
+        # 清理异步mock
+        await mock_redis.aclose()
+
     @pytest.mark.asyncio
     async def test_bloom_filter_add_many(self):
         """测试批量添加"""
@@ -60,6 +63,9 @@ class TestBloomFilterWithRedis:
         # 应该调用了pipeline
         assert mock_pipe.execute.called
 
+        # 清理异步mock
+        await mock_redis.aclose()
+
     @pytest.mark.asyncio
     async def test_bloom_filter_clear(self):
         """测试清空过滤器"""
@@ -75,6 +81,9 @@ class TestBloomFilterWithRedis:
 
         # 应该调用了delete
         assert mock_redis.delete.called
+
+        # 清理异步mock
+        await mock_redis.aclose()
 
     @pytest.mark.asyncio
     async def test_bloom_filter_count(self):
@@ -92,3 +101,6 @@ class TestBloomFilterWithRedis:
 
         # 应该返回一个估算数量
         assert result >= 0
+
+        # 清理异步mock
+        await mock_redis.aclose()

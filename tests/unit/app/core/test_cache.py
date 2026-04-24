@@ -18,12 +18,9 @@ class TestCacheManager:
     async def test_set_get(self):
         """测试设置和获取"""
         cache = CacheManager(redis_url="")
-        # 同步设置
-        cache.set("key1", "value1", ttl=60)
-        # 验证本地缓存已设置（set方法会启动async任务，需要等待）
-        import asyncio
-
-        await asyncio.sleep(0.1)
+        # 使用await调用异步方法
+        await cache.set("key1", "value1", ttl=60)
+        # 验证本地缓存已设置
         assert "key1" in cache._local_cache or True  # 允许异步写入未完成
 
     @pytest.mark.asyncio
