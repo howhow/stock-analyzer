@@ -229,6 +229,12 @@ class OpenBBPlugin:
         )
 
 
-# 确保满足 Protocol 接口
-# DataSourceInterface 是 Protocol，鸭子类型检查通过即可
-_openbb_plugin: DataSourceInterface = OpenBBPlugin()
+# 插件注册信息（用于动态加载）
+PLUGIN_INFO = {
+    "name": "openbb",
+    "version": "1.0.0",
+    "description": "OpenBB 数据源插件，支持全球市场数据",
+    "supported_markets": ["US", "HK", "CN"],
+    "author": "Stock Analyzer Team",
+    "dependencies": ["openbb>=4.0.0"],
+}

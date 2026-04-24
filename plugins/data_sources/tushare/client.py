@@ -361,12 +361,6 @@ class TushareClient:
         """关闭客户端（清理资源）"""
         logger.info("tushare_client_closed")
 
-    # ═══════════════════════════════════════════════════════════════
-    # 财务数据接口（v1.3 新增）
-    # 每个方法只获取一种原始数据，返回 DataFrame
-    # 数据聚合由业务层完成
-    # ═══════════════════════════════════════════════════════════════
-
     async def get_daily_basic(
         self,
         ts_code: str,
@@ -388,9 +382,7 @@ class TushareClient:
         )
 
         if result is None or result.empty:
-            raise TushareNoDataError(
-                f"未找到股票 {ts_code} 的每日财务指标数据"
-            )
+            raise TushareNoDataError(f"未找到股票 {ts_code} 的每日财务指标数据")
 
         return result
 
@@ -423,9 +415,7 @@ class TushareClient:
         )
 
         if result is None or result.empty:
-            raise TushareNoDataError(
-                f"未找到股票 {ts_code} 的利润表数据"
-            )
+            raise TushareNoDataError(f"未找到股票 {ts_code} 的利润表数据")
 
         return result
 
@@ -458,8 +448,6 @@ class TushareClient:
         )
 
         if result is None or result.empty:
-            raise TushareNoDataError(
-                f"未找到股票 {ts_code} 的财务指标数据"
-            )
+            raise TushareNoDataError(f"未找到股票 {ts_code} 的财务指标数据")
 
         return result

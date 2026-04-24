@@ -24,21 +24,29 @@ class TestDataHubFinancial:
         if should_fail:
             source.fetch_financial = AsyncMock(side_effect=Exception(f"{name} 不可用"))
             source.fetch_income = AsyncMock(side_effect=Exception(f"{name} 不可用"))
-            source.fetch_fina_indicator = AsyncMock(side_effect=Exception(f"{name} 不可用"))
+            source.fetch_fina_indicator = AsyncMock(
+                side_effect=Exception(f"{name} 不可用")
+            )
         else:
-            mock_financial = pd.DataFrame({
-                "ts_code": ["600519.SH"],
-                "pe": [30.5],
-                "pb": [8.2],
-            })
-            mock_income = pd.DataFrame({
-                "ts_code": ["600519.SH"],
-                "total_revenue": [1500000000.0],
-            })
-            mock_fina = pd.DataFrame({
-                "ts_code": ["600519.SH"],
-                "roe": [15.5],
-            })
+            mock_financial = pd.DataFrame(
+                {
+                    "ts_code": ["600519.SH"],
+                    "pe": [30.5],
+                    "pb": [8.2],
+                }
+            )
+            mock_income = pd.DataFrame(
+                {
+                    "ts_code": ["600519.SH"],
+                    "total_revenue": [1500000000.0],
+                }
+            )
+            mock_fina = pd.DataFrame(
+                {
+                    "ts_code": ["600519.SH"],
+                    "roe": [15.5],
+                }
+            )
             source.fetch_financial = AsyncMock(return_value=mock_financial)
             source.fetch_income = AsyncMock(return_value=mock_income)
             source.fetch_fina_indicator = AsyncMock(return_value=mock_fina)

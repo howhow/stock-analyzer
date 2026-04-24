@@ -8,6 +8,9 @@ VENV = $(VENV_NAME)
 PYTHON = $(VENV)/bin/python3
 PIP = $(VENV)/bin/pip
 
+# 代码目录（新增模块时必须同步更新）
+CODE_DIRS = app framework plugins tests frontend
+
 # ============================================
 # 帮助信息
 # ============================================
@@ -24,14 +27,15 @@ help:
 	@echo "  make celery-beat 启动 Celery 定时任务（日志→local_log/）"
 	@echo "  make frontend    启动前端服务"
 	@echo "  make frontend-dev 同时启动前后端（需要两个终端）"
-	@echo "  make test        运行所有测试 + 覆盖率"
+	@echo "  make test        运行单元测试 + 覆盖率"
 	@echo "  make lint        完整代码检查(style + type)"
-	@echo "  make lint-style  代码风格检查(black + flake8，覆盖所有代码)"
-	@echo "  make lint-type   类型检查(mypy，只检查生产代码)"
+	@echo "  make lint-style  代码风格检查(black + flake8)"
+	@echo "  make lint-type   类型检查(mypy)"
 	@echo "  make format      格式化代码(black + isort)"
-	@echo "  make clean       清理缓存文件"
+	@echo "  make clean       清理缓存文件 + 测试产物"
+	@echo "  make clean-all   深度清理（含虚拟环境）"
 	@echo ""
-	@echo "【Docker 部署]"
+	@echo "【Docker 部署】"
 	@echo "  make docker       启动开发环境容器"
 	@echo "  make docker-prod  启动生产环境容器"
 	@echo "  make docker-stop  停止容器"
@@ -83,7 +87,11 @@ check-deps: venv-check
 	@$(PYTHON) -c "import talib" 2>/dev/null && echo "  ✅ talib" || echo "  ❌ talib"
 	@$(PYTHON) -c "import pandas" 2>/dev/null && echo "  ✅ pandas" || echo "  ❌ pandas"
 	@echo ""
-	@echo "【开发依赖】"
+	@echo "【核心框架】"
+	@$(PYTHON) -c "import uvicorn" 2>/dev/null && echo "  ✅ uvicorn" || echo "  ❌ uvicorn"
+	@$(PYTHON) -c "import celery" 2>/dev/null && echo "  ✅ celery" || echo "  ❌ celery"
+	@$(PYTHON) -c "import streamlit" 2>/dev/null && echo "  ✅ streamlit" || echo "  ❌ streamlit"
+	@echo ""
 	@$(PYTHON) -c "import pytest" 2>/dev/null && echo "  ✅ pytest" || echo "  ❌ pytest"
 	@$(PYTHON) -c "import black" 2>/dev/null && echo "  ✅ black" || echo "  ❌ black"
 	@$(PYTHON) -c "import flake8" 2>/dev/null && echo "  ✅ flake8" || echo "  ❌ flake8"
@@ -111,6 +119,7 @@ install: venv
 # 强制重新安装所有依赖
 reinstall: venv
 	@echo "🔄 强制重新安装所有依赖..."
+	$(PIP) install --force-reinstall -r requirements.txt
 	$(PIP) install --force-reinstall -r requirements-dev.txt
 	@echo "✅ 重新安装完成"
 
@@ -184,7 +193,6 @@ frontend-dev: venv-check
 test: venv-check
 	@echo "🧪 运行单元测试..."
 	$(PYTHON) -m pytest tests/unit/ -v \
-		--cov=app --cov=framework \
 		--cov-report=term-missing \
 		--cov-report=html:local_test_report/htmlcov
 	@echo "✅ 单元测试完成"
@@ -230,3 +238,120 @@ stress-test: venv-check
 		--run-time 30s \
 		--host http://localhost:8000
 	@echo "✅ 压力测试完成"
+
+# ============================================
+# 代码质量检查
+# ============================================
+# lint: 完整代码检查（style + type）
+lint: lint-style lint-type
+	@echo "✅ 完整代码检查完成"
+
+# lint-style: 代码风格检查（black + flake8）
+lint-style: venv-check
+	@echo "🔍 代码风格检查..."
+	@echo "  → black 格式检查"
+	$(PYTHON) -m black --check $(CODE_DIRS)
+	@echo "  → flake8 静态分析"
+	$(PYTHON) -m flake8 $(CODE_DIRS)
+	@echo "✅ 代码风格检查通过"
+
+# lint-type: 类型检查（mypy，只检查生产代码）
+lint-type: venv-check
+	@echo "🔍 类型检查..."
+	$(PYTHON) -m mypy app framework plugins --ignore-missing-imports
+	@echo "✅ 类型检查通过"
+
+# format: 格式化代码（black + isort）
+format: venv-check
+	@echo "🎨 格式化代码..."
+	@echo "  → isort 导入排序"
+	$(PYTHON) -m isort $(CODE_DIRS)
+	@echo "  → black 代码格式化"
+	$(PYTHON) -m black $(CODE_DIRS)
+	@echo "✅ 格式化完成"
+
+# ============================================
+# 清理（修复版）
+# ============================================
+# clean: 清理缓存文件 + 测试产物（保留虚拟环境）
+clean:
+	@echo "🧹 清理缓存文件..."
+	@echo "  → Python 缓存"
+	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	@find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	@find . -type f -name "*.pyo" -delete 2>/dev/null || true
+	@echo "  → 测试产物"
+	@rm -rf .pytest_cache 2>/dev/null || true
+	@rm -rf .coverage 2>/dev/null || true
+	@rm -rf local_test_report/htmlcov 2>/dev/null || true
+	@rm -rf local_test_report/integration 2>/dev/null || true
+	@echo "  → mypy 缓存"
+	@rm -rf .mypy_cache 2>/dev/null || true
+	@echo "  → 日志文件（保留目录）"
+	@find $(LOG_DIR) -type f -name "*.log" -delete 2>/dev/null || true
+	@echo "✅ 清理完成"
+
+# clean-all: 深度清理（含虚拟环境 + 所有生成文件）
+clean-all: clean
+	@echo "🧹 深度清理..."
+	@rm -rf $(VENV) 2>/dev/null || true
+	@rm -rf local_venv 2>/dev/null || true
+	@rm -rf local_test_report 2>/dev/null || true
+	@rm -rf $(LOG_DIR) 2>/dev/null || true
+	@rm -rf .tox 2>/dev/null || true
+	@echo "✅ 深度清理完成（虚拟环境已删除，需重新 make venv + make install）"
+
+# ============================================
+# Docker 部署
+# ============================================
+docker: venv-check
+	@echo "🐳 启动 Docker 开发环境..."
+	docker-compose -f docker-compose.yml up -d --build
+	@echo "✅ Docker 开发环境已启动"
+
+docker-prod:
+	@echo "🐳 启动 Docker 生产环境..."
+	docker-compose -f docker-compose.prod.yml up -d --build
+	@echo "✅ Docker 生产环境已启动"
+
+docker-stop:
+	@echo "🛑 停止 Docker 容器..."
+	docker-compose -f docker-compose.yml down 2>/dev/null || true
+	docker-compose -f docker-compose.prod.yml down 2>/dev/null || true
+	@echo "✅ Docker 容器已停止"
+
+docker-logs:
+	@echo "📋 查看 Docker 日志..."
+	docker-compose -f docker-compose.yml logs -f
+
+docker-clean:
+	@echo "🧹 清理 Docker 容器和镜像..."
+	docker-compose -f docker-compose.yml down -v --rmi all 2>/dev/null || true
+	docker-compose -f docker-compose.prod.yml down -v --rmi all 2>/dev/null || true
+	@echo "✅ Docker 清理完成"
+
+# ============================================
+# 数据库
+# ============================================
+db-init: venv-check
+	@echo "🗄️  初始化数据库..."
+	$(PYTHON) -c "from app.db.database import init_db; init_db()"
+	@echo "✅ 数据库初始化完成"
+
+db-migrate: venv-check
+	@echo "🗄️  运行数据库迁移..."
+	$(PYTHON) -m alembic upgrade head
+	@echo "✅ 数据库迁移完成"
+
+# ============================================
+# Git Hooks
+# ============================================
+install-hooks: venv-check
+	@echo "🔧 安装 Git Hooks..."
+	$(PYTHON) -m pre_commit install
+	@echo "✅ Git Hooks 安装完成"
+
+uninstall-hooks: venv-check
+	@echo "🔧 卸载 Git Hooks..."
+	$(PYTHON) -m pre_commit uninstall
+	@echo "✅ Git Hooks 卸载完成"

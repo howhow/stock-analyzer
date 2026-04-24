@@ -41,13 +41,15 @@ class TestTushareClientFinancial:
     @pytest.mark.asyncio
     async def test_get_daily_basic_success(self, client):
         """get_daily_basic: 成功获取每日财务指标"""
-        mock_df = pd.DataFrame({
-            "ts_code": ["600519.SH"],
-            "trade_date": ["20240101"],
-            "pe": [30.5],
-            "pb": [8.2],
-            "turnover_rate": [1.5],
-        })
+        mock_df = pd.DataFrame(
+            {
+                "ts_code": ["600519.SH"],
+                "trade_date": ["20240101"],
+                "pe": [30.5],
+                "pb": [8.2],
+                "turnover_rate": [1.5],
+            }
+        )
 
         client._pro = _create_mock_pro("daily_basic", mock_df)
 
@@ -73,12 +75,14 @@ class TestTushareClientFinancial:
     @pytest.mark.asyncio
     async def test_get_income_success(self, client):
         """get_income: 成功获取利润表数据"""
-        mock_df = pd.DataFrame({
-            "ts_code": ["600519.SH"],
-            "ann_date": ["20240331"],
-            "total_revenue": [1500000000.0],
-            "n_income": [500000000.0],
-        })
+        mock_df = pd.DataFrame(
+            {
+                "ts_code": ["600519.SH"],
+                "ann_date": ["20240331"],
+                "total_revenue": [1500000000.0],
+                "n_income": [500000000.0],
+            }
+        )
 
         client._pro = _create_mock_pro("income", mock_df)
 
@@ -95,10 +99,12 @@ class TestTushareClientFinancial:
     @pytest.mark.asyncio
     async def test_get_income_with_limit(self, client):
         """get_income: 支持 limit 参数"""
-        mock_df = pd.DataFrame({
-            "ts_code": ["600519.SH"],
-            "total_revenue": [1500000000.0],
-        })
+        mock_df = pd.DataFrame(
+            {
+                "ts_code": ["600519.SH"],
+                "total_revenue": [1500000000.0],
+            }
+        )
 
         client._pro = _create_mock_pro("income", mock_df)
 
@@ -122,12 +128,14 @@ class TestTushareClientFinancial:
     @pytest.mark.asyncio
     async def test_get_fina_indicator_success(self, client):
         """get_fina_indicator: 成功获取财务指标数据"""
-        mock_df = pd.DataFrame({
-            "ts_code": ["600519.SH"],
-            "ann_date": ["20240331"],
-            "roe": [15.5],
-            "roe_diluted": [14.8],
-        })
+        mock_df = pd.DataFrame(
+            {
+                "ts_code": ["600519.SH"],
+                "ann_date": ["20240331"],
+                "roe": [15.5],
+                "roe_diluted": [14.8],
+            }
+        )
 
         client._pro = _create_mock_pro("fina_indicator", mock_df)
 

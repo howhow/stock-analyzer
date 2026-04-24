@@ -295,12 +295,6 @@ class TusharePlugin:
         await self._client.close()
         logger.info("tushare_plugin_closed")
 
-    # ═══════════════════════════════════════════════════════════════
-    # 财务数据接口（v1.3 新增）
-    # 每个方法只获取一种原始数据，返回 DataFrame
-    # 数据聚合由业务层完成
-    # ═══════════════════════════════════════════════════════════════
-
     async def fetch_financial(
         self,
         symbol: str,
@@ -310,6 +304,7 @@ class TusharePlugin:
 
         Args:
             symbol: 股票代码（如 '600519.SH'）
+            **kwargs: 额外参数（如 fields, limit 等）
 
         Returns:
             财务指标 DataFrame
@@ -322,15 +317,14 @@ class TusharePlugin:
         )
 
         try:
+            # 透传 kwargs 给底层 client，让业务层控制参数
             df = await self._client.get_daily_basic(
                 ts_code=normalized_code,
-                fields="ts_code,trade_date,pe,pb,turnover_rate",
+                **kwargs,
             )
 
             if df is None or df.empty:
-                raise TushareNoDataError(
-                    f"未找到股票 {normalized_code} 的财务指标数据"
-                )
+                raise TushareNoDataError(f"未找到股票 {normalized_code} 的财务指标数据")
 
             logger.info(
                 "tushare_plugin_fetch_financial_success",
@@ -357,6 +351,7 @@ class TusharePlugin:
 
         Args:
             symbol: 股票代码（如 '600519.SH'）
+            **kwargs: 额外参数（如 fields, limit 等）
 
         Returns:
             利润表 DataFrame
@@ -369,16 +364,14 @@ class TusharePlugin:
         )
 
         try:
+            # 透传 kwargs 给底层 client，让业务层控制参数
             df = await self._client.get_income(
                 ts_code=normalized_code,
-                fields="ts_code,ann_date,f_ann_date,end_date,total_revenue,n_income",
-                limit=1,
+                **kwargs,
             )
 
             if df is None or df.empty:
-                raise TushareNoDataError(
-                    f"未找到股票 {normalized_code} 的利润表数据"
-                )
+                raise TushareNoDataError(f"未找到股票 {normalized_code} 的利润表数据")
 
             logger.info(
                 "tushare_plugin_fetch_income_success",
@@ -405,6 +398,7 @@ class TusharePlugin:
 
         Args:
             symbol: 股票代码（如 '600519.SH'）
+            **kwargs: 额外参数（如 fields, limit 等）
 
         Returns:
             财务指标 DataFrame
@@ -417,16 +411,14 @@ class TusharePlugin:
         )
 
         try:
+            # 透传 kwargs 给底层 client，让业务层控制参数
             df = await self._client.get_fina_indicator(
                 ts_code=normalized_code,
-                fields="ts_code,ann_date,end_date,roe,roe_diluted",
-                limit=1,
+                **kwargs,
             )
 
             if df is None or df.empty:
-                raise TushareNoDataError(
-                    f"未找到股票 {normalized_code} 的财务指标数据"
-                )
+                raise TushareNoDataError(f"未找到股票 {normalized_code} 的财务指标数据")
 
             logger.info(
                 "tushare_plugin_fetch_fina_indicator_success",
