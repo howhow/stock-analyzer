@@ -25,6 +25,8 @@ local_*/
 # 环境变量
 .env
 .env.local
+.env.production
+.env.staging
 
 # OS
 .DS_Store
