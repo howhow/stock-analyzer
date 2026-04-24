@@ -193,6 +193,7 @@ frontend-dev: venv-check
 test: venv-check
 	@echo "🧪 运行单元测试..."
 	$(PYTHON) -m pytest tests/unit/ -v \
+		--cov=app --cov=framework --cov=plugins \
 		--cov-report=term-missing \
 		--cov-report=html:local_test_report/htmlcov
 	@echo "✅ 单元测试完成"
