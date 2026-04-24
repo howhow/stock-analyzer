@@ -1,6 +1,7 @@
 """集成测试全局配置 — 集中加载 .env + 验证环境 + 共享 fixtures"""
 
 import os
+import socket
 import subprocess
 import time
 from pathlib import Path
@@ -41,9 +42,43 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(pytest.mark.flaky(reruns=3, reruns_delay=5))
 
 
+def pytest_terminal_summary(terminalreporter, exitstatus, config):
+    """显示集成测试时长统计"""
+    integration_tests = [
+        report
+        for report in terminalreporter.stats.get("passed", [])
+        if "integration" in report.nodeid
+    ]
+
+    if integration_tests:
+        total_time = sum(report.duration for report in integration_tests)
+        avg_time = total_time / len(integration_tests)
+
+        terminalreporter.write_sep("=", "集成测试统计")
+        terminalreporter.write_line(f"集成测试数量: {len(integration_tests)}")
+        terminalreporter.write_line(f"总耗时: {total_time:.2f}s")
+        terminalreporter.write_line(f"平均耗时: {avg_time:.2f}s")
+
+        # 标记长时间测试（可能涉及真实API调用）
+        slow_tests = [report for report in integration_tests if report.duration > 30]
+        if slow_tests:
+            terminalreporter.write_line(f"慢测试(>30s): {len(slow_tests)}个")
+            for report in slow_tests:
+                terminalreporter.write_line(
+                    f"  - {report.nodeid}: {report.duration:.2f}s"
+                )
+
+
 # ═══════════════════════════════════════════════════════════════
 # 共享 fixtures
 # ═══════════════════════════════════════════════════════════════
+
+
+def get_free_port() -> int:
+    """获取一个空闲端口"""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("0.0.0.0", 0))
+        return s.getsockname()[1]
 
 
 @pytest.fixture(scope="session")
@@ -65,7 +100,9 @@ def datahub():
 
 @pytest.fixture(scope="class")
 def api_service():
-    """启动 API 服务（class 级别）"""
+    """启动 API 服务（class 级别，使用随机端口）"""
+    port = get_free_port()
+
     # 启动API服务
     api_process = subprocess.Popen(
         [
@@ -76,7 +113,7 @@ def api_service():
             "--host",
             "0.0.0.0",
             "--port",
-            "8000",
+            str(port),
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -86,7 +123,7 @@ def api_service():
     max_retries = 30
     for _ in range(max_retries):
         try:
-            response = requests.get("http://localhost:8000/api/v1/health", timeout=1)
+            response = requests.get(f"http://localhost:{port}/api/v1/health", timeout=1)
             if response.status_code == 200:
                 break
         except requests.exceptions.ConnectionError:
@@ -97,7 +134,7 @@ def api_service():
         api_process.wait(timeout=5)
         pytest.fail("API服务启动超时")
 
-    yield api_process
+    yield {"process": api_process, "port": port}
 
     # 清理
     api_process.terminate()

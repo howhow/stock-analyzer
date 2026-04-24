@@ -59,9 +59,10 @@ class TestEndToEndAnalysis:
 
     def test_api_end_to_end(self, api_service, test_output_dir):
         """API完整流程: 请求 → 分析 → 结果"""
+        port = api_service["port"]
         # 发送分析请求
         response = requests.get(
-            "http://localhost:8000/api/v1/analysis/688981.SH",
+            f"http://localhost:{port}/api/v1/analysis/688981.SH",
             timeout=120,
         )
         assert response.status_code in [200, 202]
@@ -74,7 +75,7 @@ class TestEndToEndAnalysis:
                 for _ in range(max_retries):
                     time.sleep(2)
                     status_response = requests.get(
-                        f"http://localhost:8000/api/v1/tasks/{task_id}",
+                        f"http://localhost:{port}/api/v1/tasks/{task_id}",
                         timeout=10,
                     )
                     if status_response.status_code == 200:

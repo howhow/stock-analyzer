@@ -10,15 +10,17 @@ class TestServiceStartup:
 
     def test_api_service_running(self, api_service):
         """验证API服务已启动"""
-        response = requests.get("http://localhost:8000/api/v1/health")
+        port = api_service["port"]
+        response = requests.get(f"http://localhost:{port}/api/v1/health")
         assert response.status_code == 200
         data = response.json()
         assert data.get("status") == "ok" or data.get("status") == "healthy"
 
     def test_api_analysis_endpoint(self, api_service):
         """验证API分析端点可用"""
+        port = api_service["port"]
         response = requests.get(
-            "http://localhost:8000/api/v1/analysis/688981.SH",
+            f"http://localhost:{port}/api/v1/analysis/688981.SH",
             timeout=120,
         )
         # 可能返回200或202（异步任务）
