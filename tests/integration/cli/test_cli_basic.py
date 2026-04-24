@@ -39,7 +39,6 @@ class TestCLIBasic:
         assert result.returncode == 0, f"CLI执行失败: {result.stderr}"
 
         # 验证输出报告存在
-        report_file = output_dir / "688981.SH" / "688981.SH_*.md"
         report_files = list(output_dir.glob("688981.SH/*.md"))
         assert len(report_files) > 0, "报告文件未生成"
 
