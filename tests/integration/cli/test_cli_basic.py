@@ -23,6 +23,7 @@ class TestCLIBasic:
                 f.unlink()
             elif f.is_dir():
                 import shutil
+
                 shutil.rmtree(f)
 
         # 执行CLI命令（真实调用，不Mock）

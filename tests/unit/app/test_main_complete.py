@@ -41,6 +41,7 @@ class TestMainApp:
     def test_health_endpoint(self):
         """测试健康检查"""
         from app.api.paths import API_HEALTH
+
         client = TestClient(app)
 
         response = client.get(API_HEALTH)

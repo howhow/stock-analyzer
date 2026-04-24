@@ -15,10 +15,10 @@ class TestTusharePluginIntegration:
         from plugins.data_sources.tushare.plugin import TusharePlugin
 
         plugin = TusharePlugin()
-        
+
         end_date = date.today()
         start_date = end_date - timedelta(days=30)
-        
+
         result = asyncio.run(plugin.get_quotes("688981.SH", start_date, end_date))
 
         assert result is not None

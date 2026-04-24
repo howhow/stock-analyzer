@@ -297,15 +297,17 @@ class AKSharePlugin:
         # 转换为 DataFrame
         data = []
         for q in quotes:
-            data.append({
-                "ts_code": symbol,
-                "trade_date": q.trade_date.strftime("%Y%m%d"),
-                "open": q.open,
-                "high": q.high,
-                "low": q.low,
-                "close": q.close,
-                "volume": q.volume,
-            })
+            data.append(
+                {
+                    "ts_code": symbol,
+                    "trade_date": q.trade_date.strftime("%Y%m%d"),
+                    "open": q.open,
+                    "high": q.high,
+                    "low": q.low,
+                    "close": q.close,
+                    "volume": q.volume,
+                }
+            )
 
         return pd.DataFrame(data)
 

@@ -270,7 +270,15 @@ class TushareClient:
 
         # 重试逻辑
         last_error: Exception | None = None
-        func_name = getattr(func, '__name__', getattr(func, 'func', func).__name__ if hasattr(getattr(func, 'func', func), '__name__') else str(func))
+        func_name = getattr(
+            func,
+            "__name__",
+            (
+                getattr(func, "func", func).__name__
+                if hasattr(getattr(func, "func", func), "__name__")
+                else str(func)
+            ),
+        )
         for attempt in range(self.max_retries):
             try:
                 # Tushare 是同步 API，放到线程池执行

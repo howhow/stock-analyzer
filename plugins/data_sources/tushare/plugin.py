@@ -311,17 +311,17 @@ class TusharePlugin:
         Returns:
             日线数据 DataFrame
         """
-        from datetime import date, timedelta
+        from datetime import datetime as dt, timedelta
 
         if end_date is None:
-            end_date_obj = date.today()
+            end_date_obj = dt.today().date()
         else:
-            end_date_obj = date.strptime(end_date, "%Y%m%d")
+            end_date_obj = dt.strptime(end_date, "%Y%m%d").date()
 
         if start_date is None:
             start_date_obj = end_date_obj - timedelta(days=120)
         else:
-            start_date_obj = date.strptime(start_date, "%Y%m%d")
+            start_date_obj = dt.strptime(start_date, "%Y%m%d").date()
 
         quotes = await self.get_quotes(symbol, start_date_obj, end_date_obj)
 
@@ -331,15 +331,17 @@ class TusharePlugin:
         # 转换为 DataFrame
         data = []
         for q in quotes:
-            data.append({
-                "ts_code": symbol,
-                "trade_date": q.trade_date.strftime("%Y%m%d"),
-                "open": q.open,
-                "high": q.high,
-                "low": q.low,
-                "close": q.close,
-                "volume": q.volume,
-            })
+            data.append(
+                {
+                    "ts_code": symbol,
+                    "trade_date": q.trade_date.strftime("%Y%m%d"),
+                    "open": q.open,
+                    "high": q.high,
+                    "low": q.low,
+                    "close": q.close,
+                    "volume": q.volume,
+                }
+            )
 
         return pd.DataFrame(data)
 

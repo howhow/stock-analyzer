@@ -36,8 +36,12 @@ class TestMarkdownReportIntegration:
             },
             "technical_analysis": {
                 "indicators": {
-                    "最新收盘价": quotes["close"].iloc[-1] if len(quotes) > 0 else "N/A",
-                    "最新成交量": quotes["volume"].iloc[-1] if len(quotes) > 0 else "N/A",
+                    "最新收盘价": (
+                        quotes["close"].iloc[-1] if len(quotes) > 0 else "N/A"
+                    ),
+                    "最新成交量": (
+                        quotes["volume"].iloc[-1] if len(quotes) > 0 else "N/A"
+                    ),
                 },
             },
             "risks": ["测试数据，不构成投资建议"],

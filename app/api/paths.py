@@ -5,7 +5,7 @@ API 路径常量
 
 使用方式:
     from app.api.paths import API_HEALTH, API_ANALYZE
-    
+
     response = client.get(API_HEALTH)
 """
 

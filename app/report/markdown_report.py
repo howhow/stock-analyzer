@@ -54,7 +54,7 @@ class MarkdownReportGenerator:
     def _generate_basic_info(self, data: ReportData) -> str:
         """生成基本信息"""
         analysis_type = data.result.details.get("analysis_type", "full")
-        
+
         type_map = {
             "full": "完整分析",
             "technical": "技术分析",
@@ -198,68 +198,78 @@ class MarkdownReportGenerator:
         # DCF 估值结果
         dcf_data = data.result.details.get("dcf")
         if dcf_data:
-            lines.extend([
-                "### DCF 估值",
-                "",
-                "| 指标 | 数值 |",
-                "|-----|------|",
-                f"| DCF估值 | ¥{dcf_data.get('dcf_mean', 0):.2f} |",
-                f"| 估值状态 | {dcf_data.get('valuation', '未知')} |",
-            ])
+            lines.extend(
+                [
+                    "### DCF 估值",
+                    "",
+                    "| 指标 | 数值 |",
+                    "|-----|------|",
+                    f"| DCF估值 | ¥{dcf_data.get('dcf_mean', 0):.2f} |",
+                    f"| 估值状态 | {dcf_data.get('valuation', '未知')} |",
+                ]
+            )
             lines.append("")
 
         # 安全边际
         safety_data = data.result.details.get("safety_margin")
         if safety_data:
-            lines.extend([
-                "### 安全边际",
-                "",
-                "| 指标 | 数值 |",
-                "|-----|------|",
-                f"| 当前价格 | ¥{safety_data.get('current_price', 0):.2f} |",
-                f"| DCF价值 | ¥{safety_data.get('dcf_value', 0):.2f} |",
-                f"| 安全边际 | {safety_data.get('margin_percent', 0):.1f}% |",
-                f"| 评级 | {safety_data.get('rating', '未知')} |",
-            ])
+            lines.extend(
+                [
+                    "### 安全边际",
+                    "",
+                    "| 指标 | 数值 |",
+                    "|-----|------|",
+                    f"| 当前价格 | ¥{safety_data.get('current_price', 0):.2f} |",
+                    f"| DCF价值 | ¥{safety_data.get('dcf_value', 0):.2f} |",
+                    f"| 安全边际 | {safety_data.get('margin_percent', 0):.1f}% |",
+                    f"| 评级 | {safety_data.get('rating', '未知')} |",
+                ]
+            )
             lines.append("")
 
         # 四季引擎
         seasons_data = data.result.details.get("seasons")
         if seasons_data:
-            lines.extend([
-                "### 四季分析",
-                "",
-                "| 指标 | 数值 |",
-                "|-----|------|",
-                f"| 当前季节 | {seasons_data.get('current_season', '未知')} |",
-                f"| 置信度 | {seasons_data.get('confidence', 0):.2f} |",
-            ])
+            lines.extend(
+                [
+                    "### 四季分析",
+                    "",
+                    "| 指标 | 数值 |",
+                    "|-----|------|",
+                    f"| 当前季节 | {seasons_data.get('current_season', '未知')} |",
+                    f"| 置信度 | {seasons_data.get('confidence', 0):.2f} |",
+                ]
+            )
             lines.append("")
 
         # 五行引擎
         wuxing_data = data.result.details.get("wuxing")
         if wuxing_data:
-            lines.extend([
-                "### 五行分析",
-                "",
-                "| 指标 | 数值 |",
-                "|-----|------|",
-                f"| 五行属性 | {wuxing_data.get('element', '未知')} |",
-                f"| 置信度 | {wuxing_data.get('confidence', 0):.2f} |",
-                f"| 建议操作 | {wuxing_data.get('action', '未知') or '观望'} |",
-            ])
+            lines.extend(
+                [
+                    "### 五行分析",
+                    "",
+                    "| 指标 | 数值 |",
+                    "|-----|------|",
+                    f"| 五行属性 | {wuxing_data.get('element', '未知')} |",
+                    f"| 置信度 | {wuxing_data.get('confidence', 0):.2f} |",
+                    f"| 建议操作 | {wuxing_data.get('action', '未知') or '观望'} |",
+                ]
+            )
             lines.append("")
 
         # 基础财务数据
         if data.fundamentals:
-            lines.extend([
-                "### 财务指标",
-                "",
-                "| 指标 | 数值 |",
-                "|-----|------|",
-            ])
+            lines.extend(
+                [
+                    "### 财务指标",
+                    "",
+                    "| 指标 | 数值 |",
+                    "|-----|------|",
+                ]
+            )
             for key, value in data.fundamentals.items():
-                if value is not None and key not in ['report_date']:
+                if value is not None and key not in ["report_date"]:
                     if isinstance(value, (int, float)):
                         lines.append(f"| {key} | {value:.2f} |")
                     else:
@@ -270,13 +280,15 @@ class MarkdownReportGenerator:
             analyst_data = data.result.details.get("analyst", {})
             if analyst_data and "scores" in analyst_data:
                 fund_score = analyst_data["scores"].get("fundamental", 0)
-                lines.extend([
-                    "### 基本面评分",
-                    "",
-                    f"| 项目 | 数值 |",
-                    f"|-----|------|",
-                    f"| 基本面评分 | {fund_score:.1f}/100 |",
-                ])
+                lines.extend(
+                    [
+                        "### 基本面评分",
+                        "",
+                        "| 项目 | 数值 |",
+                        "|-----|------|",
+                        f"| 基本面评分 | {fund_score:.1f}/100 |",
+                    ]
+                )
             else:
                 lines.append("暂无详细基本面数据")
 
