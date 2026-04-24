@@ -99,8 +99,8 @@ class TestPluginWithMockData:
     @pytest.mark.asyncio
     async def test_local_plugin_with_mock_data(self):
         """测试 LocalPlugin 读取 Mock 数据"""
-        from datetime import date
         import os
+        from datetime import date
 
         import pandas as pd
 
@@ -140,6 +140,7 @@ class TestPluginWithMockData:
     async def test_local_health_check(self):
         """测试 LocalPlugin 健康检查"""
         import os
+
         from plugins.data_sources.local import LocalPlugin, LocalPluginConfig
 
         # 目录存在
