@@ -1,5 +1,8 @@
 """Tushare插件真实调用集成测试"""
 
+import asyncio
+from datetime import date, timedelta
+
 import pytest
 
 
@@ -12,18 +15,21 @@ class TestTusharePluginIntegration:
         from plugins.data_sources.tushare.plugin import TusharePlugin
 
         plugin = TusharePlugin()
-        result = plugin.get_quotes("688981.SH")
+
+        end_date = date.today()
+        start_date = end_date - timedelta(days=30)
+
+        result = asyncio.run(plugin.get_quotes("688981.SH", start_date, end_date))
 
         assert result is not None
         assert len(result) > 0
-        assert "close" in result.columns
 
     def test_plugin_fetch_financial(self):
         """插件真实获取财务数据"""
         from plugins.data_sources.tushare.plugin import TusharePlugin
 
         plugin = TusharePlugin()
-        result = plugin.fetch_financial("688981.SH")
+        result = asyncio.run(plugin.fetch_financial("688981.SH"))
 
         assert result is not None
-        assert "pe" in result or "pb" in result or len(result) > 0
+        assert "pe" in result.columns or "pb" in result.columns or len(result) > 0

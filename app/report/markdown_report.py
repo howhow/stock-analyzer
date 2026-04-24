@@ -8,8 +8,7 @@ import json
 from datetime import date
 from typing import Any
 
-from app.analysis.base import AnalyzerResult
-from app.models.stock import DailyQuote
+from app.report.report_data import ReportData
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -18,59 +17,43 @@ logger = get_logger(__name__)
 class MarkdownReportGenerator:
     """Markdown 格式报告生成器"""
 
-    def generate(
-        self,
-        result: AnalyzerResult,
-        stock_code: str | None = None,
-        stock_name: str | None = None,
-        quotes: list[DailyQuote] | None = None,
-        indicators: dict[str, Any] | None = None,
-    ) -> str:
+    def generate(self, data: ReportData) -> str:
         """
         生成 Markdown 格式报告
 
         Args:
-            result: 分析结果
-            stock_code: 股票代码（兼容简单 AnalysisResult）
-            stock_name: 股票名称（兼容简单 AnalysisResult）
-            quotes: 行情数据
-            indicators: 技术指标
+            data: 报告数据容器
 
         Returns:
             Markdown 格式的报告文本
         """
         # 将额外信息添加到 result.details 中
-        if stock_code:
-            result.details["stock_code"] = stock_code
-        if stock_name:
-            result.details["stock_name"] = stock_name
+        data.result.details["stock_code"] = data.stock_code
+        data.result.details["stock_name"] = data.stock_name
 
         sections = [
-            self._generate_header(result),
-            self._generate_basic_info(result),
-            self._generate_scores(result),
-            self._generate_recommendation(result),
-            self._generate_key_indicators(result, quotes, indicators),
-            self._generate_technical_analysis(result, indicators),
-            self._generate_fundamental_analysis(result),
-            self._generate_risks(result),
-            self._generate_opportunities(result),
-            self._generate_trading_advice(result),
-            self._generate_metadata(result),
+            self._generate_header(data),
+            self._generate_basic_info(data),
+            self._generate_scores(data),
+            self._generate_recommendation(data),
+            self._generate_key_indicators(data),
+            self._generate_technical_analysis(data),
+            self._generate_fundamental_analysis(data),
+            self._generate_risks(data),
+            self._generate_opportunities(data),
+            self._generate_trading_advice(data),
+            self._generate_metadata(data),
         ]
 
         return "\n\n".join(sections)
 
-    def _generate_header(self, result: AnalyzerResult) -> str:
+    def _generate_header(self, data: ReportData) -> str:
         """生成报告标题"""
-        stock_name = result.details.get("stock_name", "未知")
-        return f"# 股票分析报告 - {stock_name}"
+        return f"# 股票分析报告 - {data.stock_name}"
 
-    def _generate_basic_info(self, result: AnalyzerResult) -> str:
+    def _generate_basic_info(self, data: ReportData) -> str:
         """生成基本信息"""
-        stock_name = result.details.get("stock_name", "未知")
-        analysis_type = result.details.get("analysis_type", "full")
-        analysis_days = result.details.get("analysis_days", 120)
+        analysis_type = data.result.details.get("analysis_type", "full")
 
         type_map = {
             "full": "完整分析",
@@ -78,39 +61,32 @@ class MarkdownReportGenerator:
             "fundamental": "基本面分析",
         }
 
-        # 提取股票代码
-        stock_code_value = (
-            result.analyzer_name if hasattr(result, "analyzer_name") else "-"
-        )
-
         lines = [
             "## 基本信息",
             "",
             "| 项目 | 内容 |",
             "|-----|------|",
-            f"| 股票代码 | {stock_code_value} |",
-            f"| 股票名称 | {stock_name} |",
-            f"| 分析日期 | {date.today().strftime('%Y-%m-%d')} |",
+            f"| 股票代码 | {data.stock_code} |",
+            f"| 股票名称 | {data.stock_name} |",
+            f"| 分析日期 | {data.report_date.strftime('%Y-%m-%d')} |",
             f"| 分析类型 | {type_map.get(analysis_type, analysis_type)} |",
-            f"| 分析天数 | {analysis_days} 天 |",
+            f"| 分析天数 | {data.analysis_days} 天 |",
         ]
 
         return "\n".join(lines)
 
-    def _generate_scores(self, result: AnalyzerResult) -> str:
+    def _generate_scores(self, data: ReportData) -> str:
         """生成评分结果"""
-        total_score = result.scores.get("total", 0)
-
         lines = [
             "## 评分结果",
             "",
             "| 维度 | 评分 |",
             "|-----|------|",
-            f"| 综合评分 | {total_score:.1f}/100 |",
+            f"| 综合评分 | {data.total_score:.1f}/100 |",
         ]
 
         # 获取分析师评分
-        analyst_data = result.details.get("analyst", {})
+        analyst_data = data.result.details.get("analyst", {})
         if analyst_data and "scores" in analyst_data:
             scores = analyst_data["scores"]
             if "fundamental" in scores:
@@ -119,7 +95,7 @@ class MarkdownReportGenerator:
                 lines.append(f"| 技术面评分 | {scores['technical']:.1f} |")
 
         # 获取交易员评分
-        trader_data = result.details.get("trader", {})
+        trader_data = data.result.details.get("trader", {})
         if trader_data and "scores" in trader_data:
             scores = trader_data["scores"]
             if "signal_strength" in scores:
@@ -131,11 +107,8 @@ class MarkdownReportGenerator:
 
         return "\n".join(lines)
 
-    def _generate_recommendation(self, result: AnalyzerResult) -> str:
+    def _generate_recommendation(self, data: ReportData) -> str:
         """生成投资建议"""
-        recommendation = result.details.get("recommendation", "无")
-        confidence = result.details.get("confidence", 0)
-
         rec_map = {
             "强烈买入": "强烈买入",
             "买入": "买入",
@@ -150,33 +123,28 @@ class MarkdownReportGenerator:
             "",
             "| 项目 | 内容 |",
             "|-----|------|",
-            f"| 建议 | {rec_map.get(recommendation, recommendation)} |",
-            f"| 置信度 | {confidence}% |",
+            f"| 建议 | {rec_map.get(data.recommendation, data.recommendation)} |",
+            f"| 置信度 | {data.confidence}% |",
         ]
 
         return "\n".join(lines)
 
-    def _generate_key_indicators(
-        self,
-        result: AnalyzerResult,
-        quotes: list[DailyQuote] | None,
-        indicators: dict[str, Any] | None,
-    ) -> str:
+    def _generate_key_indicators(self, data: ReportData) -> str:
         """生成关键指标"""
         lines = ["## 关键指标", ""]
 
         # 价格指标
-        if quotes and len(quotes) > 0:
-            latest = quotes[-1]
+        if data.quotes and len(data.quotes) > 0:
+            latest = data.quotes[-1]
             high_30 = (
-                max(q.high for q in quotes[-30:])
-                if len(quotes) >= 30
-                else max(q.high for q in quotes)
+                max(q.high for q in data.quotes[-30:])
+                if len(data.quotes) >= 30
+                else max(q.high for q in data.quotes)
             )
             low_30 = (
-                min(q.low for q in quotes[-30:])
-                if len(quotes) >= 30
-                else min(q.low for q in quotes)
+                min(q.low for q in data.quotes[-30:])
+                if len(data.quotes) >= 30
+                else min(q.low for q in data.quotes)
             )
 
             lines.extend(
@@ -193,11 +161,7 @@ class MarkdownReportGenerator:
 
         return "\n".join(lines)
 
-    def _generate_technical_analysis(
-        self,
-        result: AnalyzerResult,
-        indicators: dict[str, Any] | None,
-    ) -> str:
+    def _generate_technical_analysis(self, data: ReportData) -> str:
         """生成技术分析"""
         lines = [
             "## 技术分析",
@@ -209,8 +173,8 @@ class MarkdownReportGenerator:
         ]
 
         # 从信号中提取趋势信息
-        if result.signals:
-            for signal in result.signals:
+        if data.signals:
+            for signal in data.signals:
                 if "上涨趋势" in signal:
                     lines.append("| 中期 | 上涨 | 中 |")
                     break
@@ -224,47 +188,132 @@ class MarkdownReportGenerator:
 
         return "\n".join(lines)
 
-    def _generate_fundamental_analysis(self, result: AnalyzerResult) -> str:
+    def _generate_fundamental_analysis(self, data: ReportData) -> str:
         """生成基本面分析"""
         lines = [
             "## 基本面分析",
             "",
-            "### 财务状况",
-            "",
-            "| 项目 | 数值 |",
-            "|-----|------|",
         ]
 
-        # 从分析师结果获取基本面数据
-        analyst_data = result.details.get("analyst", {})
-        if analyst_data and "scores" in analyst_data:
-            fund_score = analyst_data["scores"].get("fundamental", 0)
-            lines.append(f"| 基本面评分 | {fund_score:.1f}/100 |")
+        # DCF 估值结果
+        dcf_data = data.result.details.get("dcf")
+        if dcf_data:
+            lines.extend(
+                [
+                    "### DCF 估值",
+                    "",
+                    "| 指标 | 数值 |",
+                    "|-----|------|",
+                    f"| DCF估值 | ¥{dcf_data.get('dcf_mean', 0):.2f} |",
+                    f"| 估值状态 | {dcf_data.get('valuation', '未知')} |",
+                ]
+            )
+            lines.append("")
+
+        # 安全边际
+        safety_data = data.result.details.get("safety_margin")
+        if safety_data:
+            lines.extend(
+                [
+                    "### 安全边际",
+                    "",
+                    "| 指标 | 数值 |",
+                    "|-----|------|",
+                    f"| 当前价格 | ¥{safety_data.get('current_price', 0):.2f} |",
+                    f"| DCF价值 | ¥{safety_data.get('dcf_value', 0):.2f} |",
+                    f"| 安全边际 | {safety_data.get('margin_percent', 0):.1f}% |",
+                    f"| 评级 | {safety_data.get('rating', '未知')} |",
+                ]
+            )
+            lines.append("")
+
+        # 四季引擎
+        seasons_data = data.result.details.get("seasons")
+        if seasons_data:
+            lines.extend(
+                [
+                    "### 四季分析",
+                    "",
+                    "| 指标 | 数值 |",
+                    "|-----|------|",
+                    f"| 当前季节 | {seasons_data.get('current_season', '未知')} |",
+                    f"| 置信度 | {seasons_data.get('confidence', 0):.2f} |",
+                ]
+            )
+            lines.append("")
+
+        # 五行引擎
+        wuxing_data = data.result.details.get("wuxing")
+        if wuxing_data:
+            lines.extend(
+                [
+                    "### 五行分析",
+                    "",
+                    "| 指标 | 数值 |",
+                    "|-----|------|",
+                    f"| 五行属性 | {wuxing_data.get('element', '未知')} |",
+                    f"| 置信度 | {wuxing_data.get('confidence', 0):.2f} |",
+                    f"| 建议操作 | {wuxing_data.get('action', '未知') or '观望'} |",
+                ]
+            )
+            lines.append("")
+
+        # 基础财务数据
+        if data.fundamentals:
+            lines.extend(
+                [
+                    "### 财务指标",
+                    "",
+                    "| 指标 | 数值 |",
+                    "|-----|------|",
+                ]
+            )
+            for key, value in data.fundamentals.items():
+                if value is not None and key not in ["report_date"]:
+                    if isinstance(value, (int, float)):
+                        lines.append(f"| {key} | {value:.2f} |")
+                    else:
+                        lines.append(f"| {key} | {value} |")
+            lines.append("")
         else:
-            lines.append("| 数据 | 暂无 |")
+            # 从分析师结果获取基本面数据
+            analyst_data = data.result.details.get("analyst", {})
+            if analyst_data and "scores" in analyst_data:
+                fund_score = analyst_data["scores"].get("fundamental", 0)
+                lines.extend(
+                    [
+                        "### 基本面评分",
+                        "",
+                        "| 项目 | 数值 |",
+                        "|-----|------|",
+                        f"| 基本面评分 | {fund_score:.1f}/100 |",
+                    ]
+                )
+            else:
+                lines.append("暂无详细基本面数据")
 
         return "\n".join(lines)
 
-    def _generate_risks(self, result: AnalyzerResult) -> str:
+    def _generate_risks(self, data: ReportData) -> str:
         """生成风险提示"""
         lines = ["## 风险提示", ""]
 
-        if result.warnings:
-            for i, warning in enumerate(result.warnings, 1):
+        if data.warnings:
+            for i, warning in enumerate(data.warnings, 1):
                 lines.append(f"{i}. {warning}")
         else:
             lines.append("暂无明确风险提示")
 
         return "\n".join(lines)
 
-    def _generate_opportunities(self, result: AnalyzerResult) -> str:
+    def _generate_opportunities(self, data: ReportData) -> str:
         """生成投资机会"""
         lines = ["## 投资机会", ""]
 
         # 从信号中提取机会
         opportunities = []
-        if result.signals:
-            for signal in result.signals:
+        if data.signals:
+            for signal in data.signals:
                 if "上涨" in signal or "买入" in signal:
                     opportunities.append(signal)
 
@@ -276,39 +325,31 @@ class MarkdownReportGenerator:
 
         return "\n".join(lines)
 
-    def _generate_trading_advice(self, result: AnalyzerResult) -> str:
+    def _generate_trading_advice(self, data: ReportData) -> str:
         """生成交易建议"""
-        recommendation = result.details.get("recommendation", "无")
-        confidence = result.details.get("confidence", 0)
-
         lines = [
             "## 交易建议",
             "",
             "| 项目 | 内容 |",
             "|-----|------|",
-            f"| 操作方向 | {recommendation} |",
-            f"| 置信度 | {confidence}% |",
+            f"| 操作方向 | {data.recommendation} |",
+            f"| 置信度 | {data.confidence}% |",
         ]
 
         return "\n".join(lines)
 
-    def _generate_metadata(self, result: AnalyzerResult) -> str:
+    def _generate_metadata(self, data: ReportData) -> str:
         """生成报告元数据"""
-        stock_code = result.details.get("stock_code", "unknown")
-        stock_name = result.details.get("stock_name", "未知")
-        analysis_type = result.details.get("analysis_type", "full")
-        analysis_days = result.details.get("analysis_days", 120)
-
         report_id = (
-            f"ana-{stock_code.replace('.', '-')}-{date.today().strftime('%Y%m%d')}"
+            f"ana-{data.stock_code.replace('.', '-')}-{date.today().strftime('%Y%m%d')}"
         )
         metadata = {
             "report_id": report_id,
-            "stock_code": stock_code,
-            "stock_name": stock_name,
-            "analysis_date": date.today().strftime("%Y-%m-%d"),
-            "analysis_type": analysis_type,
-            "analysis_days": analysis_days,
+            "stock_code": data.stock_code,
+            "stock_name": data.stock_name,
+            "analysis_date": data.report_date.strftime("%Y-%m-%d"),
+            "analysis_type": data.analysis_type,
+            "analysis_days": data.analysis_days,
             "generated_at": date.today().isoformat(),
             "version": "1.0.0",
         }

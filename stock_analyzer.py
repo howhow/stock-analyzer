@@ -27,6 +27,7 @@ from app.analysis.indicators.momentum import rsi
 from app.models.stock import StockInfo
 from app.report.generator import ReportGenerator
 from app.report.markdown_report import MarkdownReportGenerator
+from app.report.report_data import ReportData
 from app.utils.logger import get_logger
 from config import settings
 
@@ -508,14 +509,17 @@ async def analyze_stock(args: argparse.Namespace) -> dict[str, Any] | None:
         if args.output in ["markdown", "both"]:
             print(f"\n📄 生成 Markdown 报告...")
             md_generator = MarkdownReportGenerator()
-            md_report = md_generator.generate(
-                result,
+            report_data = ReportData.from_analysis(
+                result=result,
                 stock_code=args.stock_code,
                 stock_name=stock_info.name,
                 quotes=quotes,
                 indicators=indicators,
                 fundamentals=fundamentals,
+                analysis_days=args.days,
+                analysis_type=args.type,
             )
+            md_report = md_generator.generate(report_data)
             md_file = output_dir / f"{args.stock_code}_{date_str}.md"
             md_file.write_text(md_report, encoding="utf-8")
             print(f"   ✅ Markdown 报告: {md_file}")

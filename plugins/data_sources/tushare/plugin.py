@@ -37,6 +37,9 @@ class TusharePlugin:
     # 插件名称
     name: str = "tushare"
 
+    # 插件优先级（数值越小优先级越高）
+    priority: int = 10
+
     # 支持的市场
     supported_markets: list[str] = ["SH", "SZ"]
 
@@ -289,6 +292,58 @@ class TusharePlugin:
                 code = f"{code}.SZ"
 
         return code
+
+    async def fetch_daily(
+        self,
+        symbol: str,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """获取日线数据（DataHub 兼容接口）
+
+        Args:
+            symbol: 股票代码（如 '600519.SH'）
+            start_date: 开始日期（YYYYMMDD格式）
+            end_date: 结束日期（YYYYMMDD格式）
+            **kwargs: 额外参数
+
+        Returns:
+            日线数据 DataFrame
+        """
+        from datetime import datetime as dt, timedelta
+
+        if end_date is None:
+            end_date_obj = dt.today().date()
+        else:
+            end_date_obj = dt.strptime(end_date, "%Y%m%d").date()
+
+        if start_date is None:
+            start_date_obj = end_date_obj - timedelta(days=120)
+        else:
+            start_date_obj = dt.strptime(start_date, "%Y%m%d").date()
+
+        quotes = await self.get_quotes(symbol, start_date_obj, end_date_obj)
+
+        if not quotes:
+            return pd.DataFrame()
+
+        # 转换为 DataFrame
+        data = []
+        for q in quotes:
+            data.append(
+                {
+                    "ts_code": symbol,
+                    "trade_date": q.trade_date.strftime("%Y%m%d"),
+                    "open": q.open,
+                    "high": q.high,
+                    "low": q.low,
+                    "close": q.close,
+                    "volume": q.volume,
+                }
+            )
+
+        return pd.DataFrame(data)
 
     async def close(self) -> None:
         """关闭插件（清理资源）"""

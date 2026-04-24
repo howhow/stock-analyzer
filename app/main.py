@@ -96,7 +96,8 @@ def create_app() -> FastAPI:
             "name": settings.app_name,
             "version": "0.1.0",
             "docs": "/docs",
-            "health": "/api/health",
+            "health": "/api/v1/health",
+            "ready": "/api/v1/ready",
         }
 
     return app

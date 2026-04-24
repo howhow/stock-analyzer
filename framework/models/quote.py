@@ -7,7 +7,7 @@
 from datetime import date
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 
 
 class StandardQuote(BaseModel):
@@ -43,10 +43,14 @@ class StandardQuote(BaseModel):
     currency: Literal["CNY", "USD", "HKD"] = Field("CNY", description="货币")
 
     model_config = {
-        "json_encoders": {date: lambda v: v.isoformat()},
         "frozen": False,
         "extra": "ignore",
     }
+
+    @field_serializer("trade_date")
+    def serialize_trade_date(self, value: date) -> str:
+        """序列化日期为 ISO 格式字符串"""
+        return value.isoformat()
 
     def is_complete(self) -> bool:
         """检查数据是否完整（所有价格和成交字段都有值）"""

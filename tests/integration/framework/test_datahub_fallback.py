@@ -12,12 +12,12 @@ class TestDataHubFallback:
         import asyncio
 
         # 正常调用
-        result1 = asyncio.run(datahub.fetch_daily_quotes("688981.SH"))
+        result1 = asyncio.run(datahub.fetch_daily("688981.SH"))
         assert result1 is not None
 
         # 连续调用验证熔断器状态
         for _ in range(5):
-            result = asyncio.run(datahub.fetch_daily_quotes("688981.SH"))
+            result = asyncio.run(datahub.fetch_daily("688981.SH"))
             assert result is not None
 
     def test_datahub_invalid_symbol(self, datahub):
@@ -26,7 +26,7 @@ class TestDataHubFallback:
 
         # 无效代码应该返回空数据或抛出异常
         try:
-            result = asyncio.run(datahub.fetch_daily_quotes("INVALID.CODE"))
+            result = asyncio.run(datahub.fetch_daily("INVALID.CODE"))
             # 如果返回数据，应该是空的
             assert result is None or len(result) == 0
         except Exception:

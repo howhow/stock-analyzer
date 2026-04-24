@@ -3,6 +3,7 @@
 """
 
 from app.models.analysis import (
+    AnalysisMode,
     AnalysisRequest,
     AnalysisResponse,
     AnalysisResult,
@@ -24,6 +25,7 @@ __all__ = [
     "AnalysisRequest",
     "AnalysisResponse",
     "AnalysisType",
+    "AnalysisMode",
     "ReportFormat",
     "ReportStatus",
     "UserConfig",

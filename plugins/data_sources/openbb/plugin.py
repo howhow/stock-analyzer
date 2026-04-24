@@ -38,6 +38,9 @@ class OpenBBPlugin:
     # 支持的市场
     _supported_markets = ["SH", "SZ", "HK", "US"]
 
+    # 插件优先级（数值越小优先级越高）
+    priority = 30
+
     def __init__(
         self,
         timeout: int = 30,
@@ -221,6 +224,53 @@ class OpenBBPlugin:
         except Exception as e:
             logger.error(f"获取股票列表失败: {e}")
             return []
+
+    async def fetch_daily(
+        self,
+        symbol: str,
+        start_date: date | None = None,
+        end_date: date | None = None,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """获取日线数据（DataHub 兼容接口）
+
+        Args:
+            symbol: 股票代码（如 '600519.SH'）
+            start_date: 开始日期
+            end_date: 结束日期
+            **kwargs: 额外参数
+
+        Returns:
+            日线数据 DataFrame
+        """
+        from datetime import timedelta
+
+        if end_date is None:
+            end_date = date.today()
+        if start_date is None:
+            start_date = end_date - timedelta(days=120)
+
+        quotes = await self.get_quotes(symbol, start_date, end_date)
+
+        if not quotes:
+            return pd.DataFrame()
+
+        # 转换为 DataFrame
+        data = []
+        for q in quotes:
+            data.append(
+                {
+                    "ts_code": symbol,
+                    "trade_date": q.trade_date.strftime("%Y%m%d"),
+                    "open": q.open,
+                    "high": q.high,
+                    "low": q.low,
+                    "close": q.close,
+                    "volume": q.volume,
+                }
+            )
+
+        return pd.DataFrame(data)
 
     async def fetch_financial(
         self,

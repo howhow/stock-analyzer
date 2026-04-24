@@ -210,6 +210,43 @@ async def batch_analyze(request: BatchAnalysisRequest) -> dict[str, str | int]:
 
 
 @router.get(
+    "/{symbol}",
+    response_model=AnalysisResponse,
+    summary="快捷股票分析",
+    description="通过URL路径参数快速分析单只股票，GET请求幂等且可缓存",
+)
+async def analyze_stock_by_symbol(
+    symbol: str,
+    fetcher: DataFetcherDep,
+    analysis_type: str = "both",
+    mode: str = "algorithm",
+) -> AnalysisResponse:
+    """
+    快捷股票分析 - GET 接口
+
+    Args:
+        symbol: 股票代码（如 688981.SH）
+        fetcher: 数据获取器（依赖注入）
+        analysis_type: 分析类型（comprehensive/technical/fundamental）
+        mode: 分析模式（realtime/historical）
+
+    Returns:
+        分析结果
+    """
+    from app.models import AnalysisType, AnalysisMode
+
+    # 构建请求对象
+    request = AnalysisRequest(
+        stock_code=symbol,
+        analysis_type=AnalysisType(analysis_type),
+        mode=AnalysisMode(mode),
+    )
+
+    # 复用 POST 接口逻辑
+    return await analyze_stock(request, fetcher)
+
+
+@router.get(
     "/result/{analysis_id}",
     response_model=AnalysisResult,
     summary="获取分析结果",
